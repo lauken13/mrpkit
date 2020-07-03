@@ -1,0 +1,116 @@
+---
+title: "Working with existing data"
+author: "Lauren Kennedy"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load/read in survey data
+
+Typically the first thing that I do is load in survey data that I am using from an external source (sometimes a direct read from a server, sometimes an special folder on my computer). I normally use the foreign or haven packages for this, depending on the data type. 
+
+```{r, eval =  FALSE}
+survey_data <- read.csv("survey_data_loc.csv")
+```
+
+```{r, echo = FALSE}
+#This isn't how I would simulate data in actuality
+library(brms) #loading brms for inv_logit_scaled function
+survey_data <- data.frame(sid = 1:100,
+                          v1 = sample.int(10),
+                          v2 = sample.int(5),
+                          v3 = sample.int(2))
+survey_data$y <- rbinom(100,1,inv_logit_scaled(0 + rnorm(10,0,1)[survey_data$v1]))
+```
+
+This data typically looks like this, with an outcome ($y$), a subject id (sid) and some potential covariates. 
+
+```{r}
+head(survey_data)
+```
+
+We also know a lot of auxiliary information about the survey. For example, we know the variables generally reflect actual questions:
+
+```{r}
+survey_questions <- data.frame(c("","What is your age?","What education level have you achieved?","What is your sex?","Given a choice between owning a dog and a cat, which would you choose?"),colnames(survey_data))
+```
+
+We also know the numbers in the questions represent actual answers. Sometimes we store them as a factor type because that lets us map the number to the answer.
+
+
+```{r}
+survey_data$v1 <- factor(survey_data$v1, labels = c("<18","18-24","25-34","35-44","45-55","55-64","65-74","75-84","85-94","94+"))
+survey_data$v2 <-  factor(survey_data$v2, labels = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +"))
+survey_data$v3 <- factor(survey_data$v3, labels = c("Male","Female"))
+survey_data$y <- factor(survey_data$y, labels = c("Would prefer a dog","Would prefer a cat"))
+```
+
+Now if we look at the data the columns retain the names we just gave them:
+
+```{r}
+head(survey_data)
+```
+
+But now they (only occasionally) act like numerics, which is a pain because giving to Stan we have to give numeric indices. Rstanarm/brms have wrappers to convert from one to another, but a lot of MRP is mapping various factors to other factors, so this is important to keep in mind. 
+
+The sample also has a design too. Sometimes it's just a random sample, sometimes it's a stratified or cluster sample, sometimes it has multiple frames and sometimes it's a non-probability sample. Different sampling mechanisms should be modelled differently. Some are easier than others, some designs are something we're actively researching. Let's pretend our toy sample is made up of one frame, and that frame is sampled using geographic strata, where we bin different geograhies into strata and then sample from each with some sort of probability. 
+
+In the survey package we can add an attribute to the survey object to communicate this. In DeclareDesign, it becomes an attribute of the sampling process. DeclareDesign has an emphasis on the population, the survey package has an emphasis on the sample as the primary object. I think our primary object is the mapping between the two...?
+
+In any case we would generally have a variable for the strata in the data. If there were multiple frames/samples we would have a variable for that as well.
+
+```{r, echo = FALSE}
+survey_data$strata <- sample.int(3,100,replace=TRUE)
+```
+
+```{r}
+head(survey_data)
+```
+
+So now we have our sample (and often the sample has been cleaned a bit before this, but that's the job of the survey administrator/whoever knows the data). We now need the population. We have to think about this now because the information in the population will determine how we model the data. 
+
+In this case we'll just pretend that we've loaded something like the ACS - a large survey of individual level data with weights (and replicate weights which we typically ignore). Other possibilities could be getting just a poststrat matrix, or getting a few matrices we have to bind together or having to estimate a poststrat matrix (lots of research questions here!). 
+
+```{r, eval =  FALSE}
+popn_data <- read.csv("popn_data_loc.csv")
+```
+
+```{r, echo = FALSE}
+#This isn't how I would simulate data in actuality
+library(brms) #loading brms for inv_logit_scaled function
+popn_data <- data.frame(sid = 1:1000,
+                          v1 = sample.int(4,1000,replace=TRUE),
+                          v2 = sample.int(5,1000,replace=TRUE),
+                          v3 = sample.int(2,1000,replace=TRUE),
+                         geo = sample.int(30,1000,replace=TRUE),
+                          wt = abs(rnorm(1000,0,1)))
+```
+If we take a look at the population data, you'll see it looks pretty much like the sample data - spoiler alert, there's actually not a lot different except one is bigger!
+
+```{r}
+head(popn_data)
+```
+
+Like the survey, the population data actually represents different questions
+
+```{r}
+popn_questions <- data.frame(question = c("","What is your age?","What is the highest education level have you achieved?","What is your sex?","geo_coding","person_wts"),variable = colnames(popn_data))
+```
+
+And the levels in each question can also respond to answers. 
+
+```{r}
+popn_data$v1 <- factor(popn_data$v1, labels = c("18-34","35-54","55-64","65+"))
+popn_data$v2 <-  factor(popn_data$v2, labels = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +"))
+popn_data$v3 <- factor(popn_data$v3, labels = c("Male","Female"))
+```
+
+When we do MRP we match questions to questions, levels to levels. It would be good to have a way to make this explicit. 
+
+
+
+
