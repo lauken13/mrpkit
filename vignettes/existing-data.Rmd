@@ -36,7 +36,7 @@ head(survey_data)
 We also know a lot of auxiliary information about the survey. For example, we know the variables generally reflect actual questions:
 
 ```{r}
-survey_questions <- data.frame(c("","What is your age?","What education level have you achieved?","What is your sex?","Given a choice between owning a dog and a cat, which would you choose?"),colnames(survey_data))
+survey_questions <- data.frame(question = c("","What is your age?","What education level have you achieved?","What is your sex?","Given a choice between owning a dog and a cat, which would you choose?"),variable = colnames(survey_data))
 ```
 
 We also know the numbers in the questions represent actual answers. Sometimes we store them as a factor type because that lets us map the number to the answer.
@@ -106,11 +106,132 @@ And the levels in each question can also respond to answers.
 ```{r}
 popn_data$v1 <- factor(popn_data$v1, labels = c("18-34","35-54","55-64","65+"))
 popn_data$v2 <-  factor(popn_data$v2, labels = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +"))
-popn_data$v3 <- factor(popn_data$v3, labels = c("Male","Female"))
+popn_data$v3 <- factor(popn_data$v3, labels = c("M","F"))
 ```
 
 When we do MRP we match questions to questions, levels to levels. It would be good to have a way to make this explicit. 
 
+For example matching the questions to questions helps us to see explicitly what questions are measured in both sample and population and what is not
+
+```{r}
+question_map <- data.frame(popn = c("sid",NA,"v1","v2","v3","geo","wt",
+                    NA),sample = c(NA,"sid","v1","v2","v3","strata", NA,"y"))
+```
+
+and then within those questions a way to make the levels map from one to the other. 
+
+```{r}
+answer_map <- list(
+  NA,
+  NA,
+  data.frame(sample = c("<18","18-24","25-34","35-44","45-55","55-64","65-74","75-84","85-94","94+")
+, popn = c("18-34","18-34","18-34","35-54","35-54","55-64","65+","65+","65+","65+")),
+  data.frame(sample = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +")
+, popn = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +")),
+  data.frame(sample = c("Male", "Female"),
+ popn = c("M", "F")),
+  data.frame(sample = c(rep(1,6),rep(2,13),rep(3,11)),
+             popn = 1:30),
+NA,
+NA)
+```
+
+So much of the work of MRP is doing this mapping, and it's so finicky that it's difficult to debug and has to be done very carefully. By allowing these sorts of maps and attributes we could allow for easier debugging. It would be nice to have an easier way to write it in the code or declare it, but I don't know what that would be. 
+
+Then we could have methods that create clean versions of the data and the population according to the two maps we made. For now I'll just write a quick loop (and by quick it took me hours to work out how to do this...), but these methods would go here
+
+```{r}
+survey_data_clean <- survey_data
+popn_data_clean <- popn_data
+adjustment_vars <- c()
+for(q in 1:nrow(question_map)){
+  if(complete.cases(question_map[q,])){
+  #need to declare the default group
+      if(length(unique(answer_map[[q]][,2]))<length(unique(answer_map[[q]][,1]))){
+      name = "popn"
+    }else{
+      name = "sample"
+    }
+    for (a in 1:nrow(answer_map[[q]])){
+      tmp_name <- paste0(question_map[q,name],name)
+      loc_popn <- popn_data[,colnames(popn_data) == question_map[q,1]] == answer_map[[q]][["popn"]][a]
+      loc_survey <- survey_data[,colnames(survey_data) == question_map[q,"sample"]] == answer_map[[q]][["sample"]][a]
+      popn_data_clean[loc_popn,tmp_name]<- answer_map[[q]][[name]][a]
+      survey_data_clean[loc_survey,tmp_name]<- answer_map[[q]][[name]][a]
+    }
+    #Potential variables for adjusting
+    adjustment_vars <- c(adjustment_vars, tmp_name)
+  }
+}
+
+```
+
+One of the neat things about this is we now have a list of "potential adjustment variables" which are in both sample and population. 
+
+```{r}
+adjustment_vars
+```
+
+We also need to check to make all of the adjustment variables are the same type in sample and population and force the outcome to be binary 0/1 (which loses our answer info which isn't ideal)
+
+```{r}
+potential_response <- levels(survey_data_clean$y)
+survey_data_clean$y <- as.numeric(survey_data_clean$y)-1
+```
 
 
+Now we have that, it's relatively straight forward to set up a formula. For ease I'll just turn them all into random effects, but really sex should be coded as 0/1.
 
+```{r}
+brm_form <- formula(paste0("y ~ (1|",paste(adjustment_vars, collapse=") + (1|"),")"))
+```
+And then run the model using brms. We'd also want to set priors typically but this is just a toy example
+```{r}
+samp_fit <- brm(brm_form, data = survey_data_clean, family = binomial(link="logit"))
+```
+We also need to make the poststratification matrix
+
+```{r}
+library(dplyr)
+popn_poststrat <- group_by_at(popn_data_clean, all_of(adjustment_vars)) %>%
+  summarise(N = sum(wt)) %>%
+  ungroup()
+```
+
+Then we can predict probabilities into the poststrat matrix
+
+```{r}
+post_pred <- posterior_epred(samp_fit, newdata = popn_poststrat)
+post_pred <- cbind(popn_poststrat,t(post_pred))
+```
+
+Summarise over different education levels
+
+```{r}
+educat_lvls <- answer_map[[4]]$sample
+educat_est <- matrix(nrow=length(educat_lvls), ncol = 4000)
+for (l in 1:length(educat_lvls)){
+  educat_est[l,] <- apply(post_pred[post_pred$v2sample==educat_lvls[l],6:4005],2,function(x) sum(post_pred$N[post_pred$v2sample==educat_lvls[l]]*x)/sum(post_pred$N[post_pred$v2sample==educat_lvls[l]]))
+}
+
+educat_summary <- data.frame(educat = answer_map[[4]]$sample,
+                             med = apply(educat_est,1,median),
+                             low = apply(educat_est,1,function(x) quantile(x,.10)),
+                             up = apply(educat_est,1,function(x) quantile(x,.9)))
+```
+
+We can use ggplot2 to makea pretty labelled plot
+
+```{r}
+library(ggplot2)
+library(stringr)
+
+ggplot(educat_summary, aes(x=educat,y=med,ymin=low,ymax=up)) +
+  geom_errorbar() +
+  geom_point() +
+  ggtitle(str_wrap(survey_questions[5,1],width=50))+
+  xlab(survey_questions[3,1])+
+  ylim(c(0,1))+
+  theme(axis.title.x = element_blank())+
+  coord_flip()
+```
