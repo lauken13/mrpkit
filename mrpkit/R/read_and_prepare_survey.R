@@ -1,7 +1,5 @@
 #' Read and prepare survey data
 #'
-#' @title read_and_prepare_survey
-#'
 #' @description This gets a CSV and checks whether the list of the variables is correct.
 #'
 #' @param dataset A CSV file in which every row is a response and every column is a variable.
