@@ -2,10 +2,9 @@
 % Please edit documentation in R/read_and_prepare_survey.R
 \name{read_and_prepare_survey}
 \alias{read_and_prepare_survey}
-\title{Read and prepare survey data}
+\title{read_and_prepare_survey}
 \usage{
-read_and_prepare_survey(dataset_of_interest, desired_variables,
-  correct_class)
+read_and_prepare_survey(dataset_of_interest, desired_variables, correct_class)
 }
 \arguments{
 \item{dataset}{A CSV file in which every row is a response and every column is a variable.}
@@ -19,6 +18,9 @@ survey_dataset A dataset that is reduced to essentials and properly formatted.
 }
 \description{
 This gets a CSV and checks whether the list of the variables is correct.
+}
+\details{
+Read and prepare survey data
 }
 \examples{
 TBD
