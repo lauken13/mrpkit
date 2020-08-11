@@ -4,11 +4,8 @@
 \alias{read_and_prepare_poststratification_dataset}
 \title{read_and_prepare_poststrat}
 \usage{
-read_and_prepare_poststratification_dataset(
-  dataset_of_interest,
-  desired_variables,
-  correct_class
-)
+read_and_prepare_poststratification_dataset(dataset_of_interest,
+  desired_variables, correct_class)
 }
 \arguments{
 \item{dataset}{A CSV file in which every row is a response and every column is a variable.}

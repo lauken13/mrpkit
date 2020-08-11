@@ -4,7 +4,8 @@
 \alias{read_and_prepare_survey}
 \title{read_and_prepare_survey}
 \usage{
-read_and_prepare_survey(dataset_of_interest, desired_variables, correct_class)
+read_and_prepare_survey(dataset_of_interest, desired_variables,
+  correct_class)
 }
 \arguments{
 \item{dataset}{A CSV file in which every row is a response and every column is a variable.}
