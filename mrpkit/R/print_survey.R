@@ -2,16 +2,25 @@
 #'
 #' @title print_survey
 #'
-#' @description Prints the survey object in a neat format
+#' @description Prints the survey object or survey mapin a neat format
 #'
-#' @param SurveyObj A survey object.
+#' @param SurveyObj or SurveyMap
 #'
 #' @return A neat summmary.
 #'
 #' @examples test_obj <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
 #' questions = c("q1","q2"),
 #' answers = list(c('a','b'),c("c",'d')))
-#' PrintSurvey(test_obj)
+#' print_survey(test_obj)
+#'
+#'
+#' survey_answers <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
+#' popn_answers <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
+#' test_map <- map_survey_popn(survey_answers, popn_answers, "q1","q1alt")
+#' survey_answers2 <- c('M','F')
+#' popn_answers2 <- c('Male','Female')
+#' test_map <- map_survey_popn(survey_answers2, popn_answers2, "q2","q2alt", survey_map = test_map)
+#' print_survey(test_map)
 #'
 #' @export
 
@@ -26,3 +35,15 @@ setMethod("print_survey", "SurveyObj", function(x) {
     cat(x@answers[[i]], "\n")
   }
 })
+
+setMethod("print_survey", "SurveyMap", function(x) {
+  for(j in 1: length(x@survey_name)){
+    cat("==============",'\n')
+    cat(x@survey_name[j], "=", x@popn_name[j], '\n')
+    cat("--------------",'\n')
+    for(i in 1:length(x@survey_answer[[j]])){
+      cat(x@survey_answer[[j]][i], "=", x@popn_answer[[j]][i], '\n')
+    }
+  }
+})
+
