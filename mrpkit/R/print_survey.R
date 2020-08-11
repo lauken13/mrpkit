@@ -10,9 +10,21 @@
 #'
 #' @examples test_obj <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
 #' questions = c("q1","q2"),
-#' answers = list(c('a','b'),c("c",'d')))
+#' answers = list(c('a','b'),c("c",'d')),
+#' design =  "~.")
 #' print_survey(test_obj)
 #'
+#' test_obj_cluster <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
+#' questions = c("q1","q2"),
+#' answers = list(c('a','b'),c("c",'d')),
+#' design =  as.formula("~ (1|school)"))
+#' print_survey(test_obj_cluster)
+#'
+#' test_obj_stratified <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
+#' questions = c("q1","q2"),
+#' answers = list(c('a','b'),c("c",'d')),
+#' design =  as.formula("~ geo_strata"))
+#' print_survey(test_obj_stratified)
 #'
 #' survey_answers <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
 #' popn_answers <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
@@ -30,6 +42,16 @@ setGeneric("print_survey",
 )
 setMethod("print_survey", "SurveyObj", function(x) {
   cat("Survey containing",nrow(x@survey_data),"observations", "\n")
+  if(length(x@design==2) & x@design[2]==".()"){
+    cat("Random Sampling Design \n")
+  } else if(length(x@design==2)){
+    cat("Simple")
+    if(is.null(findbars(x@design))){
+      cat(" stratified sample with strata",all.vars(terms(x@design))[[1]],"\n")
+    } else {
+      cat(" cluster sample with cluster",all.vars(terms(x@design))[[1]],"\n")
+    }
+  }
   for(i in 1:nrow(x@survey_data)){
     cat("Question ",i," (",x@questions[i],")","\n",sep = "")
     cat(x@answers[[i]], "\n")

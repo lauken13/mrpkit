@@ -7,13 +7,13 @@
 print_survey(x, ..., verbose = TRUE)
 }
 \arguments{
-\item{SurveyObj}{A survey object.}
+\item{SurveyObj}{or SurveyMap}
 }
 \value{
 A neat summmary.
 }
 \description{
-Prints the survey object in a neat format
+Prints the survey object or survey mapin a neat format
 }
 \details{
 Print survey object summary
@@ -21,9 +21,21 @@ Print survey object summary
 \examples{
 test_obj <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
 questions = c("q1","q2"),
-answers = list(c('a','b'),c("c",'d')))
+answers = list(c('a','b'),c("c",'d')),
+design =  "~.")
 print_survey(test_obj)
 
+test_obj_cluster <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
+questions = c("q1","q2"),
+answers = list(c('a','b'),c("c",'d')),
+design =  as.formula("~ (1|school)"))
+print_survey(test_obj_cluster)
+
+test_obj_stratified <- SurveyObj(survey_data = data.frame(a=c(1,2),b=c(3,4)),
+questions = c("q1","q2"),
+answers = list(c('a','b'),c("c",'d')),
+design =  as.formula("~ geo_strata"))
+print_survey(test_obj_stratified)
 
 survey_answers <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
 popn_answers <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
