@@ -115,7 +115,7 @@ For example matching the questions to questions helps us to see explicitly what 
 
 ```{r}
 question_map <- data.frame(popn = c("sid",NA,"v1","v2","v3","geo","wt",
-                    NA),sample = c(NA,"sid","v1","v2","v3","strata", NA,"y"))
+                    NA),sample =   c(NA,"sid","v1","v2","v3","strata", NA,"y"))
 ```
 
 and then within those questions a way to make the levels map from one to the other. 
@@ -125,7 +125,7 @@ answer_map <- list(
   NA,
   NA,
   data.frame(sample = c("<18","18-24","25-34","35-44","45-55","55-64","65-74","75-84","85-94","94+")
-, popn = c("18-34","18-34","18-34","35-54","35-54","55-64","65+","65+","65+","65+")),
+, popn = c(NA,"18-34","18-34","35-54","35-54","55-64","65+","65+","65+","65+")),
   data.frame(sample = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +")
 , popn = c("less than secondary","HS","2 year degree","Bachelors/4year degree","Bachelor +")),
   data.frame(sample = c("Male", "Female"),
