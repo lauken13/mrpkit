@@ -36,6 +36,24 @@ SurveyObj <- R6::R6Class(
                 stop("found mismatch between number of survey questions and answers.",
                      call. = FALSE)
             }
+        },
+        print = function(...) {
+            cat("Survey containing",nrow(self$survey_data),"observations", "\n")
+            if(length(self$design==2)) {
+                cat("Random Sampling Design \n")
+            } else {
+                cat("Simple")
+                if(is.null(findbars(self$design))){
+                    cat(" stratified sample with strata",all.vars(terms(self$design))[[1]],"\n")
+                } else {
+                    cat(" cluster sample with cluster",all.vars(terms(self$design))[[1]],"\n")
+                }
+            }
+            for(i in 1:nrow(self$survey_data)){
+                cat("Question ",i," (",self$questions[i],")","\n",sep = "")
+                cat(self$answers[[i]], "\n")
+            }
+            invisible(self)
         }
     )
 )

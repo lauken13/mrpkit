@@ -18,13 +18,24 @@ SurveyMap <- R6::R6Class(
                               survey_name,
                               popn_name) {
             self$survey_answer <- survey_answer
-            self$pop_answer <- pop_answer
+            self$popn_answer <- popn_answer
             self$survey_name <- survey_name
-            self$pop_name <- pop_name
+            self$popn_name <- popn_name
             if (length(survey_answer) != length(popn_answer)) {
                 stop("Survey and population lists must have same number of entries.",
                      call. = FALSE)
             }
+        },
+        print = function(...) {
+            for(j in 1: length(self$survey_name)){
+                cat("==============",'\n')
+                cat(self$survey_name[j], "=", self$popn_name[j], '\n')
+                cat("--------------",'\n')
+                for(i in 1:length(self$survey_answer[[j]])){
+                    cat(self$survey_answer[[j]][i], "=", self$popn_answer[[j]][i], '\n')
+                }
+            }
+            invisible(self)
         }
     )
 )
