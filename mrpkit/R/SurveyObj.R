@@ -1,44 +1,42 @@
-#' An S4 class to represent a survey
+#' SurveyObject
 #'
-#' @slot survey_data A dataframe
-#' @slot questions A vector of questions
-#' @slot design A formula class that specifies the survey design. Examples include
+#' @name SurveyObject
+#'
+#' @description A `SurveyObject` represents a survey.  It contains
+#' a dataframe which contains all the survey data,
+#' a vector of questions, and a formula class that specifies
+#' the survey design.
+#'
+#' Examples of survey design include:
 #' ~. a random sample, ~ (1|cluster), a one stage cluster sample, ~ stratum, a stratified sample
 #'
-#' @export
 
-SurveyObj <- setClass("SurveyObj",
-                      slots = c(
-                        survey_data = "data.frame",
-                        questions = "character",
-                        answers = "list",
-                        design = "formula"
-                      ),
-                      prototype = c(
-                        survey_data = data.frame(NULL),
-                        questions = as.character(NA),
-                        answers = list(NULL),
-                        design = as.formula("~.")
-                      )
+SurveyObj <- R6::R6Class(
+    classname = "SurveyObj",
+    public = list(
+        survey_data = data.frame(NULL),
+        questions = as.character(NA),
+        answers = list(NULL),
+        design = as.formula("~."),
+        initialize = function(survey_data,
+                              questions,
+                              answers,
+                              design) {
+            self$survey_data <- survey_data
+            self$questions <- questions
+            self$answers <- answers
+            self$design <- design
+            if (ncol(survey_data) != length(questions) &
+                length(questions) == sum(complete.cases(questions))) {
+                stop("survey_data columns must match number of questions.",
+                     call. = FALSE)
+            }
+            if (length(answers) != length(questions) &
+                length(answers) != sum(complete.cases(answers))) {
+                stop("found mismatch between number of survey questions and answers.",
+                     call. = FALSE)
+            }
+        }
+    )
 )
-
-
-SurveyObj<- function(survey_data, questions = NA, answers = NA, design = "~.") {
-  survey_data <- as.data.frame(survey_data)
-  questions <- as.character(questions)
-  answers <- as.list(answers)
-  design <- as.formula(design)
-  new("SurveyObj", survey_data = survey_data, questions = questions, answers = answers, design = design)
-}
-
-setValidity("SurveyObj", function(object) {
-  if (ncol(object@survey_data) != length(object@questions) & length(object@questions) == sum(complete.cases(object@questions))) {
-    "@survey_data and @questions must be same length"
-  } else if (length(object@answers) != length(object@questions) & length(object@answers) != sum(complete.cases(object@answers))) {
-    "@answers and @questions must be same length"
-  } else {
-    TRUE
-  }
-})
-
 
