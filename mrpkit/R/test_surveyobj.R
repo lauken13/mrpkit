@@ -6,5 +6,7 @@ ex_survey = read.csv("ex_survey_cats.csv")
 # create obj sans info
 sobj = SurveyObj$new(ex_survey)
 sobj
+sobj$summary()
 
 
+# now add lables, response values

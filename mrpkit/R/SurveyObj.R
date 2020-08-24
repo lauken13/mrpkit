@@ -6,7 +6,7 @@
 #' The survey itself is a dataframe.
 #' The survey metatdata consists of
 #'  - per-column questions - a list of strings
-#'  - er-column allowed response values - a list of lists
+#'  - per-column allowed response values - a list of lists
 #'  - per-column survey weights, - a vector of numeric weights
 #'  - a string that specifies the survey design using lmer forumula syntax
 #'
@@ -14,7 +14,7 @@
 #' ~. a random sample, ~ (1|cluster), a one stage cluster sample, ~ stratum, a stratified sample
 #'
 #' @examples
-#' 
+#' feline_prefs = SurveyObj$new(feline_survey)
 
 SurveyObj <- R6::R6Class(
     classname = "SurveyObj",
@@ -73,7 +73,14 @@ SurveyObj <- R6::R6Class(
                 }
             }
             invisible(self)
+        },
+        summary = function(...) {
+            for(i in 1:ncol(self$survey_data)){
+                codes_used = names(table(self$survey_data[i]))
+                cat("Column ",i," label: ",names(self$survey_data)[i],"\n")
+                cat("\t", length(codes_used), " responses, values: ")
+                cat(paste(codes_used, collapse=", "), "\n")
+            }
         }
     )
 )
-
