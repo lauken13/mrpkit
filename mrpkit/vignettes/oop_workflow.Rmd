@@ -1,0 +1,74 @@
+---
+title: "Working with existing data"
+author: "Lauren Kennedy"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load/read in survey data
+
+Typically the first thing that I do is load in survey data that I am using from an external source (sometimes a direct read from a server, sometimes an special folder on my computer). I normally use the foreign or haven packages for this, depending on the data type. 
+
+```{r, eval =  FALSE}
+survey_data <- read.csv("survey_data_loc.csv")
+```
+
+This data typically has an outcome ($y$), a subject id (sid) and some potential covariates. 
+
+This dataframe is the first component of our survey object. We then want to go through and add extra things to it based on the  auxiliary information we know about the survey. For example, we know the variables generally reflect actual questions. What would be nice is if we could add descriptions like this:
+
+```{r}
+ make_question_link(survey_obj, "" = "sid","What is your age?" = "v1","What education level have you achieved?" ="v2","What is your sex?"="v3","Given a choice between owning a dog and a cat, which would you choose?" = "v4")
+```
+
+We also know the numbers in the questions represent actual answers. Sometimes we store them as a factor type because that lets us map the number to the answer. I guess we could have something like a function to make the answers map to the actual values. Forcats does something similar that we could wrap.  
+
+```{r}
+make_answers_link(survey_obj, var = v1, 
+              "<18" = 1,  
+              "18-24" = 2, 
+              "25-34" = 4,
+              "35-44" = 5,
+              "45-55" = 6,
+              "55-64" = 7,
+              "65-74" = 8,
+              "75-84" = 9,
+              "85-94" = 10,
+              "94+" = 11)
+
+```
+
+
+The sample also has a design too. Potential formats could be:
+
+```{r}
+"~ strata" #stratified sample
+"~ (1|cluster)" #cluster sample
+"~ ." #non probability sample
+"~ *" #random sample
+```
+
+The population data can be thought of as the same sort of object as the survey. It's either a survey (with weights), or a postratification matrix (where the N_j act as weights) or a full population in some cases (in which case the weights are equal to 1).
+
+Once we have both objects, we then need to create a map to move from one to the other. This map would be given by users in much the same way as the other label links. 
+
+```{r}
+
+```
+
+We could then use this map to find the maximum number of levels we could adjust for. We should add functionality to use less than the max number of levels in a variable, and less than the max number of adjustment variables. 
+
+Then we create a method on a survey object that uses the survey map to create a dataset with these levels and runs a regularized model with them. 
+
+We then create a method on a survey object that uses the survey map to create a popn poststrat matrix with these levels and estimates the poststrat matrix with them. >> will this be a survey object still ... would it just be a survey object with an extra matrix poststrat? No reason to make it be a dataframe really. 
+
+We can then create helper functions to 
+- make plots
+- summarize over areas
+- create uncertainty estiamtes *where possible*
+
+
