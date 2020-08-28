@@ -30,10 +30,10 @@ SurveyMap <- R6::R6Class(
         popn_labels = character(0),
         survey_values = list(),
         popn_values = list(),
-        initialize = function(survey_labels,
-                              popn_labels,
-                              survey_values,
-                              popn_values) {
+        initialize = function(survey_labels = character(0),
+                              popn_labels = character(0),
+                              survey_values = list(),
+                              popn_values = list()) {
             self$survey_labels <- survey_labels
             self$popn_labels <- popn_labels
             if (is.list(survey_values))
@@ -64,13 +64,18 @@ SurveyMap <- R6::R6Class(
             }
         },
         print = function(...) {
-            for(i in 1: length(self$survey_labels)){
-                cat("==============",'\n')
-                cat(self$survey_labels[i], "=", self$popn_labels[i], '\n')
-                cat("--------------",'\n')
-                for(j in 1:length(self$survey_values[[i]])){
-                    cat(self$survey_values[[i]][j], "=", self$popn_values[[i]][j], '\n')
+            if (length(self$survey_labels) > 0) {
+                for(i in 1: length(self$survey_labels)){
+                    cat("==============",'\n')
+                    cat(self$survey_labels[i], "=", self$popn_labels[i], '\n')
+                    cat("--------------",'\n')
+                    for(j in 1:length(self$survey_values[[i]])){
+                        cat(self$survey_values[[i]][j], "=", self$popn_values[[i]][j], '\n')
+                    }
                 }
+            } else {
+                cat("==============",'\n')
+                cat("empty mapping",'\n')
             }
             invisible(self)
         },

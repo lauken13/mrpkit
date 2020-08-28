@@ -21,35 +21,39 @@ SurveyObj <- R6::R6Class(
     public = list(
         survey_data = data.frame(NULL),
         questions = character(0),
-        response_values = list(),
+        responses = list(),
         weights = numeric(),
         design = as.formula("~."),
         initialize = function(survey_data,
                               questions = character(0),
-                              response_values = list(),
+                              responses = list(),
                               weights = numeric(),
                               design = as.formula("~.")) {
             self$survey_data <- survey_data
             self$questions <- questions
-            self$response_values <- response_values
+            self$responses <- responses
             self$weights <- weights
             self$design <- design
+            if (ncol(survey_data) == 0) {
+                    stop("survey_data cannot be empty.",
+                         call. = FALSE)
+            }                
             # allow no question/response, else require info for all columns
-            if (length(questions) != 0 | length(response_values) != 0) {
+            if (length(questions) != 0 | length(responses) != 0) {
                 if (ncol(survey_data) != length(questions) &
                     length(questions) == sum(complete.cases(questions))) {
-                    stop("survey_data columns must match number of questions.",
+                    stop("mismatch between number of survey_data columns and questions.",
                          call. = FALSE)
                 }
-                if (length(response_values) != length(questions) &
-                    length(response_values) != sum(complete.cases(response_values))) {
-                    stop("found mismatch between number of survey questions and answers.",
+                if (length(responses) != length(questions) &
+                    length(responses) != sum(complete.cases(responses))) {
+                    stop("mismatch between number of survey questions and answers.",
                      call. = FALSE)
                 }
             }
             # allow no weights, else require weights for all columns
             if (length(weights) != 0 & ncol(survey_data) != length(weights)) {
-                stop("survey_data columns must match number of weights.",
+                stop("mismatch between number of survey_data columns and weights.",
                      call. = FALSE)
             }
         },
