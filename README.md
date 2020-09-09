@@ -25,20 +25,25 @@ Tools and tutorials for multi-level regression and post-stratification of survey
 - no variable should be unmapped. Some confusion there. 
 
 - what do we want the code to look like? (Jonah adds in code) - see below: 
+```r
 samp <- surveyStr$new(...)
 pop <- surveyStr$new(...)
 map <- surveyMap$new(samp, pop, ...)
 mrp1 <- MRP$new(samp, pop, map)
+```
 
 # option 1
+```r
 mod1 <- mrp1$fit(y ~ x + (1|group))
 mod2 <- mrp1$fit(y ~ x + (1|group) + (1|group2))
 mod1$poststratify()
 mod2$poststratify()
 mod1$plot()
 mrp_plot(mod1, mod2, what = "mse")
+```
 
 # option 2
+```r
 mrp1$fit(y ~ x + (1|group), name = "model1")
 mrp1$fit(y ~ x + (1|group) + (1|group2), name = "model2")
 mrp1$poststratify("model1")
@@ -48,6 +53,7 @@ mrp1$plot(models = c("model1", "model2"))
 mrp1$save(models = c("model1"))
 mrp1$sample() # returns survey sample data 
 mrp1$population() # returns population data
+```
 
 Option 1 isn't mutable and compartmentalised
 
