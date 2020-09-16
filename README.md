@@ -1,6 +1,37 @@
 # mrp-kit
 Tools and tutorials for multi-level regression and post-stratification of survey data
 
+# Sept 17, 2020
+- Decided to go with no God object
+
+Spec for MRP object:
+- Takes two survey obj and map object
+- Methods: 
+ -> create a poststrat matrix - the maximum ps matrix 
+ -> run a models with back ends and return the modelling function
+ -> see issue for more details
+ 
+Suggests names (v2)
+surveyData 
+surveyMap
+ 
+Three datasets:
+- Mitzi put data in the data folder
+- Rohan's two datasets are removed because they were from previous examples
+
+Jonah moved the repo up (closed an issue)
+Rohan added an issue RE: writing
+Decide to write paper in rmarkdown
+
+Next stages and todos:
+- Jonah to add folder and ignore file for paper
+- Lauren to change the issue #3
+- Mitzi Rohan's functions to make sure we have coverage 
+- Jonah to work on spec (level of detail - don't need to write algorithm but need names and signatures (what it takes in
+and what is returned))
+
+
+
 # Sept 3, 2020
 - Need to move the folder out of the folder
 - Need to change the MRP object so that the names are not seperate lists they're linked lists
@@ -71,4 +102,5 @@ Will memory force us one option or the other?
 This week's todos:
 - Think about the options wrt memory issues, usable issues
 - Add the small change to the mrp object
+
 
