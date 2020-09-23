@@ -23,6 +23,12 @@ What does poststrat return?
 
 Poststrat returns \[poststrat cells, posterior draws\] matrix
 
+Agenda for next week:
+
+- What plots do we want to support? (Lauren to scribble estimates)
+- Do we need a function -  that so long as it produces a certain outcome it can be included.
+- Take a look at Rviz? 
+
 
 # Sept 17, 2020
 - Decided to go with no God object
