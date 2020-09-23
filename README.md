@@ -28,6 +28,7 @@ Agenda for next week:
 - What plots do we want to support? (Lauren to scribble estimates)
 - Do we need a function -  that so long as it produces a certain outcome it can be included.
 - Take a look at Rviz? 
+- Talk about paper! :)
 
 
 # Sept 17, 2020
