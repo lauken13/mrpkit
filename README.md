@@ -1,6 +1,29 @@
 # mrp-kit
 Tools and tutorials for multi-level regression and post-stratification of survey data
 
+# Sept 24, 2020
+Jonah shows the spec he wrote
+Two ways of  creating an object
+MRP$new()
+or a regular R function that wraps
+mrp_setup() - wraps the above - decided we preferred because it's more similar with the other R functionality
+
+Need to use the "..." part of R because different types of functions have different functionality
+Should the function - e.g., "stan_glmer" be at the endof the modelling component because then they're standard?
+
+How to deal with different outcomes? LK: not so simple, we're working out how to do that. 
+Logistic case - we know is likely to be prob
+Summary arguement -> "probability"
+
+What does poststrat return?
+- if binomial outcome -> NxM matrix
+- if multinomial outcome -> NxMXK array
+- if continuous outcome -> mean and variance? (will leave this too complicated!)
+-> poststrat should return the same outcomes
+
+Poststrat returns \[poststrat cells, posterior draws\] matrix
+
+
 # Sept 17, 2020
 - Decided to go with no God object
 
