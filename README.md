@@ -1,6 +1,57 @@
 # mrp-kit
 Tools and tutorials for multi-level regression and post-stratification of survey data
 
+# Oct 1, 2020
+
+Issue RE spec : current spec:
+fit_rstanarm
+fit_brms
+fit_lme4
+
+Suggestion: one function called fit: 
+- with other method any model we want would need to be a dependency. 
+- User loads a package and provides us with whatever is needed to get that to run
+- Other than posteriors we don't really need much from these packages. 
+- R -> more of a grammar, nice from a workflow perspective
+- M -> What would the imputs be? Would be producing fitted model object. 
+- L -> What about lme4? 
+- J -> Do we want to implement it? Should that be R responsibility? A lot for us to 
+implement that bootstrapping. 
+- L -> Helper function/common methods examples + documentation on how you do your own!
+- M -> In Stan ran up into this in the same way with distributions, implemented common ones and then documented how to generalize
+- J -> If we want to generalize this, the poststratify function might need different input. 
+- J -> Why not take into account the predictions? 
+- L -> From a user perspective it might be easier to specify fit_brms, fit_rstanarm, fit_lme4, fit_bart
+
+- What plots do we want to support? (Lauren to scribble estimates)
+- Research how to bootstrap lme4 - looks like lme4 has a bootstrap component in it (https://rdrr.io/cran/lme4/man/bootMer.html)
+- Start with brms so we know what we need for lme4/bart and we know rstanarm will be synonymous. 
+- posterior_epred, new levels allowed to be TRUE, var is guassian
+- Still unresolved questions like the multinomial case. 
+>> Jonah left <<
+R: on the paper. We have a rmd file for the paper. Some of the content is a bit old.
+We have a grammar of MRP that is agnostic similarly to the package like grammar of graphics
+M: A taxonomy of a set of things in your universe plus a rules about how they are combined. 
+Test data is cat survey 
+Survey
+Population
+Map
+Model 
+Predict
+Poststratify
+
+To do:
+Need to resolve issues:
+M -> need a list of pairs
+  -> plus some helper functions to help Jonah for checking. 
+  -> helper functions for munging
+L -> What plots do we want to support? (Lauren to scribble estimates)
+ 
+Future to do:
+J to look at survey fit assuming certain things about the map
+ -> it won't be in the map if it's not in the survey and popn 
+
+
 # Sept 24, 2020
 Jonah shows the spec he wrote
 Two ways of  creating an object
