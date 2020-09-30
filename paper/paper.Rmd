@@ -1,0 +1,159 @@
+---
+documentclass: jss
+author:
+  - name: Lauren Kennedy
+    affiliation: Monash University
+    email: \email{name@company.com}
+    url: http://rstudio.com
+  - name: Mitzi Morris
+    affiliation: Columbia University
+  - name: Jonah Gabry
+    affiliation: Columbia University
+  - name: Rohan Alexander
+    affiliation: University of Toronto
+title:
+  formatted: "\\pkg{MRP-Kit} A 'grammar' of multilevel regression with post-stratification and implementation in \\proglang{R}"
+  # If you use tex in the formatted title, also supply version without
+  plain:     "A 'grammar' of multilevel regression with post-stratification and implementation in R"
+  # For running headers, if needed
+  short:     "\\pkg{foo}: A grammar of MRP"
+abstract: >
+  In this paper we define a grammar for multilevel regression with post-stratification (MRP) and implement this grammar in the R Package \pkg{MRPKit}. Our grammar is centered around the following verbs: add, remove, delete, and replace. These act on survey objects. Our grammar, and its implementation, provides a detailed workflow when conducting MRP that will be useful for researchers and in teaching.
+keywords:
+  # at least one keyword must be supplied
+  formatted: [multilevel regression with post-stratification, "\\proglang{R}", reproducibility, statistics, political science]
+  plain:     [multilevel regression with post-stratification, R, reproducibility, statistics, political science]
+preamble: >
+  \usepackage{amsmath}
+output: rticles::jss_article
+---
+
+```{r, setup, include=FALSE}
+options(prompt = 'R> ', continue = '+ ')
+```
+
+
+
+\section[Introduction]{Introduction} \label{sec:intro}
+
+Multilevel regression with post-stratification (MRP) is a statistical approach in which surveys are related to each other using a statistical model. This is important because known biases in one survey, can be adjusted for by another in a statistically reasonable way. This enables better use of non-representative surveys, additional information, and propagation of uncertainty. However it can be difficult to use MRP due to this need to related two different datasets. This package defines a grammar, or list of underlying rules, of MRP and then describes an R package, \proglang{MRPKit}, that implements this grammar.
+
+At its core, MRP is a mapping between a survey object and a population object. It is from this mapping that the power of MRP exists, but it also establishing this mapping that is the difficult part of implementing MRP models. Making this implementation easier and more reproducible is important as interest in, and the use of, MRP increases. It can be difficult even for those experienced with MRP to ensure there are no mistakes in this mapping and easing this is an important contribution to enhancing the reproducibility of MRP analysis. 
+
+We first define a grammar of MRP, which we define as the underlying rules and principles that are common to every analysis based on MRP. This grammar is based around the following verbs: 'add', 'remove', 'delete', and 'replace'. These verbs are applied to a survey object, a post-stratification object, and survey\_map object. These three objects come together to create a mapping object, which is what processes such as regression act on. Finally, common diagnostics and graphs are implemented. In this way, our grammar and package implement an entire statistical workflow for conducting MRP.
+
+The survey object would typically be a regular survey, such as a political poll of 1,000 respondents, but it could also be a larger survey, such as the Canadian Election Survey, or similar. The post-stratification object would typically be a larger survey, such as, in the case of the US, the (INSERT THE USUAL ONE), or a census.
+
+Our grammar and package complements existing packages such as \proglang{survey} (ADD CITATION), X and Y. These packages... Instead, ours is focused on what is needed for MRP. 
+
+The remainder of this paper is structured as follows: Section \ref{sec:review} reviews similar packages and contributions and places ours within that context. Section \ref{sec:components} discusses the grammar and the core aspects of MRP as implemented in \proglang{MRPKit}. Section \ref{sec:implementation} discusses some of the implementation issues and technical notes related to the decisions that were made. Section \ref{sec:vignette} provides two examples of the package in use, one using SOMETHING, and the other using SOMETHING ELSE. Finally, Section \ref{sec:summary} provides a summary discussion, some cautions and weaknesses, as well as notes about next steps.
+
+
+
+
+
+
+
+
+
+
+\section{Review of the other packages} \label{sec:review}
+
+The most common alternative at the moment to this package is for users to do all aspects themselves. While there is nothing conceptually difficult about MRP, the implementation can be difficult. In particular, preparing and matching different levels between surveys can be time consuming and potentially introduce errors.
+
+HERE
+
+Survey package
+
+Declare design
+
+DIY
+
+MRP package - https://github.com/gelman/mrp
+
+And how we're different
+
+
+
+\section{Components and grammar} \label{sec:components}
+
+The \proglang{MRPKit} package has the following key components: survey objects, which for most users will be a collection of two surveys where one is larger than the other; a survey map, that relates the survey objects and then an MRP object, which is created once the survey map is applied to the survey objects. Regression acts on the MRP object. These objects are subject to the following verbs: 'add', 'delete', 'new', and 'replace'. For instance: \proglang{SurveyMap\$add}, \proglang{SurveyOb\$delete}, \proglang{SurveyMap\$new}, and \proglang{SurveyMap\$replace}.
+
+\subsection*{Survey objects}
+
+Survey objects are the surveys that MRP will bring together. A user can \proglang{add} a survey object by providing a CSV file location. The user then needs to identify the data types of each column. Typically, there will need to be two survey objects, where one will be the survey that is of interest for its response variables, such as political opinion, and another will be a survey that is to be used for post-stratification.
+
+
+New is when you have a new survey object and you are bringing it in. e.g.
+
+% sampl <- surveyStr$new(...)
+% pop <- surveyStr$new(...)
+% map <- surveyMap$new(sampl, pop, ...)
+% mrp1 <- MRP$new(sampl, pop, map)
+
+% option 1
+% mod1 <- mrp1$fit(y ~ x + (1|group))
+% mod1 <- mrp1$fit(y ~ x + (1|group) + (1|group2))
+
+% mod1$poststratify()
+% mod2$poststratify("model1")
+
+% or
+
+% option 2
+% mrp1$fit(y ~ x + (1|group), name = "model1")
+% mrp1$fit(y ~ x + (1|group) + (1|group2), name = "model2")
+
+% mrp1$poststartify("model1")
+% mrp1$poststartify("model2")
+
+
+
+What is the difference between add and new? What is replace doing? URGH, I just need to look at the repo.
+
+
+
+\subsection*{Survey map}
+
+A `SurveyMap` object holds the mapping between a set of items in a survey and a population dataset. The label is the item label in each dataset and the values is a list of all possible values.   The values for the survey and population must be aligned, i.e., the lists must have the same number of elements and the values at index i in each list are equivalent.  If there is a meaningful ordering over the values, they should be listed in that order, either descending or ascending.
+
+One of the fundamental issues when conducting MRP is to ensure that 
+
+\subsection*{MRP object}
+
+An  MRP object contains survey objects, and a survey map. At the point at which the survey objects are put into the MRP object they become immutable but the survey map object is.
+
+The MRP object outputs an analysis. There would be a MRP model fit class that would
+
+Many objects on the same class. There are two 
+
+
+
+
+\section{Implementation and technical notes} \label{sec:implementation}
+
+
+
+\section{Vignette} \label{sec:vignette}
+
+
+\subsection*{Using CCES data}
+
+\subsection*{Using your own data}
+
+
+
+\section{Summary and discussion} \label{sec:summary}
+
+
+
+\subsection*{Next steps and cautions}
+
+
+
+
+
+
+
+\section*{Acknowledgments}
+
