@@ -24,15 +24,15 @@
 
 map_survey_popn <- function(survey_answers, popn_answers,
                             survey_name, popn_name,survey_map=NULL){
-  sm <- SurveyMap(survey_answer = list(survey_answers),popn_answer = list(popn_answers),
+  sm <- SurveyMap$new(survey_answer = list(survey_answers),popn_answer = list(popn_answers),
             survey_name = survey_name,
             popn_name = popn_name)
   if(!is.null(survey_map)){
-    ll <- length(survey_map@survey_answer)+1
-    survey_map@survey_answer[[ll]] <- sm@survey_answer[[1]]
-    survey_map@popn_answer[[ll]] <- sm@popn_answer[[1]]
-    survey_map@survey_name <- c(survey_map@survey_name,sm@survey_name)
-    survey_map@popn_name <- c(survey_map@popn_name,sm@popn_name)
+    ll <- length(survey_map$survey_answer)+1
+    survey_map$survey_answer[[ll]] <- sm$survey_answer[[1]]
+    survey_map$popn_answer[[ll]] <- sm$popn_answer[[1]]
+    survey_map$survey_name <- c(survey_map$survey_name,sm$survey_name)
+    survey_map$popn_name <- c(survey_map$popn_name,sm$popn_name)
     return(survey_map)
   } else {
     return(sm)
