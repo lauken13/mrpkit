@@ -22,7 +22,7 @@ This data typically has an outcome ($y$), a subject id (sid) and some potential 
 This dataframe is the first component of our survey object. We then want to go through and add extra things to it based on the  auxiliary information we know about the survey. For example, we know the variables generally reflect actual questions. What would be nice is if we could add descriptions like this:
 
 ```{r}
- make_question_link(survey_obj, "" = "sid","What is your age?" = "v1","What education level have you achieved?" ="v2","What is your sex?"="v3","Given a choice between owning a dog and a cat, which would you choose?" = "v4")
+make_question_link(survey_obj, "" = "sid","What is your age?" = "v1","What education level have you achieved?" ="v2","What is your sex?"="v3","Given a choice between owning a dog and a cat, which would you choose?" = "v4")
 ```
 
 We also know the numbers in the questions represent actual answers. Sometimes we store them as a factor type because that lets us map the number to the answer. I guess we could have something like a function to make the answers map to the actual values. Forcats does something similar that we could wrap.  
