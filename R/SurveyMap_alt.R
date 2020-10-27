@@ -78,18 +78,32 @@ SurveyMap_alt <- R6::R6Class(
     add = function(...){
       for(i in 1:length(list(...))){
         ll_length <- length(self$item_map)
+        if (list(...)[[i]]$name %in% names(self$item_map)) {
+          stop("Survey label: ", list(...)[[i]]$name, " already defined.  ",
+               "Use function 'replace' instead. ", call. = FALSE)
+        }
         self$item_map[[ll_length+1]]<- list(...)[[i]]
         names(self$item_map)[ll_length+1] <- self$item_map[[ll_length+1]]$name
       }
       invisible(self)
     },
-    delete = function(rm_val){
-      if(inherits(rm_val, "question")){
-        loc_id <- names(self$item_map) %in% rm_val$name
-      }else {
-        loc_id <- names(self$item_map) %in% rm_val
+    delete = function(...){
+      tmp_list <- list(...)
+      for(i in length(tmp_list)){
+        if(inherits(tmp_list[[i]], "question")){
+          loc_id <- names(self$item_map) %in% tmp_list[[i]]$name
+          loc_name <- tmp_list$name[[i]]
+        }else {
+          loc_id <- names(self$item_map) %in% tmp_list[[i]]
+          loc_name <- tmp_list[[i]]
+        }
+        if(sum(loc_id)==0){
+          stop("Survey label: ", loc_name, " not defined.  ",
+                                                call. = FALSE)
+        }else{
+          self$item_map[[which(loc_id)]] = NULL
+        }
       }
-      self$item_map[[which(loc_id)]] = NULL
       invisible(self)
     },
     replace = function(old_question, new_question) {
