@@ -28,6 +28,10 @@
 #' print(tmp_map)
 #' tmp_map$delete(q3)
 #' print(tmp_map)
+#' tmp_map$delete("pet")
+#' print(tmp_map)
+#' tmp_map$add(q2)
+#' print(tmp_map)
 #' tmp_map$replace(q1,q3)
 #' print(tmp_map)
 
