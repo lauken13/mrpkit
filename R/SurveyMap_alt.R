@@ -12,15 +12,6 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' survey_values <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
-#' popn_values <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
-#' q1 <- question$new(name = "age", col_names = c(samp = "age1",popn = "age2"), values = data.frame(age1 = survey_values,age2 = popn_values))
-#' survey_values2 <- c('cat','cat','dog','dog')
-#' popn_values2 <- c('cat','kitten','dog','puppy')
-#' q2 <- question$new(name = "pet", col_names = c(samp = "pet_pref",popn = "pet_own"), values = data.frame(pet_pref = survey_values2,pet_own = popn_values2))
-#' survey_values3 <- c('male','female','nonbinary')
-#' popn_values3 <- c('m','f','nb')
-#' q3 <- question$new(name = "gender", col_names = c(samp = "gender",popn = "gender"), values = data.frame(gender = survey_values3,gender = popn_values3))
 #'
 #' tmp_map <- SurveyMap_alt$new(q1,q2)
 #' print(tmp_map)
@@ -35,24 +26,15 @@
 #' tmp_map$replace(q1,q3)
 #' print(tmp_map)
 
-question <- R6::R6Class(
-  "question",
-  list(
-    name = character(),
-    col_names = character(),
-    values = data.frame(),
-    initialize = function(name,col_names,values) {
-      self$name <- name
-      self$col_names  <- col_names
-      self$values <- values
-      names(self$values) <- col_names
-      invisible(self)
-    }
-  )
-)
-
+# add a method called validate_questions on the survey map
+# need methods that minimize the connection between two them
+# Add sample object
+# Some method that creates the dataframe that will be passed to the modelling function
+# Need to take in weights
+# validate method
 
 SurveyMap_alt <- R6::R6Class(
+  #Add in a named data frame for sample and population
   classname  = "survey",
   list(
     item_map = list(),

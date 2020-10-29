@@ -2,5 +2,6 @@
 
 export(get_aligned_levels_for_survey)
 export(map_survey_popn)
+export(question)
 export(read_and_prepare_poststratification_dataset)
 export(read_and_prepare_survey)
