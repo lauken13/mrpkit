@@ -14,7 +14,17 @@
 #' ~. a random sample, ~ (1|cluster), a one stage cluster sample, ~ stratum, a stratified sample
 #'
 #' @examples
-#' feline_prefs = SurveyObj$new(feline_survey)
+#' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
+#' questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
+#' responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
+#' weights = feline_survey$wt,
+#' design = formula("~."))
+#'
+#'popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
+#' questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
+#' responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
+#' weights = approx_popn$wt,
+#' design = formula("~."))
 
 SurveyObj <- R6::R6Class(
     classname = "SurveyObj",
@@ -37,7 +47,7 @@ SurveyObj <- R6::R6Class(
             if (ncol(survey_data) == 0) {
                     stop("survey_data cannot be empty.",
                          call. = FALSE)
-            }                
+            }
             # allow no question/response, else require info for all columns
             if (length(questions) != 0 | length(responses) != 0) {
                 if (ncol(survey_data) != length(questions) &
@@ -45,14 +55,13 @@ SurveyObj <- R6::R6Class(
                     stop("mismatch between number of survey_data columns and questions.",
                          call. = FALSE)
                 }
-                if (length(responses) != length(questions) &
-                    length(responses) != sum(complete.cases(responses))) {
+                if (length(responses) != length(questions)) {
                     stop("mismatch between number of survey questions and answers.",
                      call. = FALSE)
                 }
             }
             # allow no weights, else require weights for all columns
-            if (length(weights) != 0 & ncol(survey_data) != length(weights)) {
+            if (length(weights) != 0 & nrow(survey_data) != length(weights)) {
                 stop("mismatch between number of survey_data columns and weights.",
                      call. = FALSE)
             }
@@ -73,7 +82,7 @@ SurveyObj <- R6::R6Class(
                 cat("Column ",i," label: ",names(self$survey_data)[i],"\n")
                 if (length(self$questions) > 0) {
                     cat("Question ",i," (",self$questions[i],")","\n")
-                    cat("Allowed answers: ", paste(self$answers[[i]],collapse=", "), "\n")
+                    cat("Allowed answers: ", paste(self$responses[[i]],collapse=", "), "\n")
                 }
             }
             invisible(self)

@@ -12,10 +12,16 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#'
-#' tmp_map <- SurveyMap_alt$new(q1,q2)
+#' q1 <- question$new(name = "age", col_names = c("age1","age_group"),
+#' values_map = list("18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+#'         "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
+#' q2 <- question$new(name = "pet", col_names = c("pet_pref","pet_own"),
+#' values = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog"))
+#' q3 <- question$new(name = "gender", col_names = c("gender","gender"),
+#' values = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+#' tmp_map <- SurveyMap_alt$new(q1)
 #' print(tmp_map)
-#' tmp_map$add(q3)
+#' tmp_map$add(q3,q2)
 #' print(tmp_map)
 #' tmp_map$delete(q3)
 #' print(tmp_map)
@@ -32,14 +38,14 @@
 # Some method that creates the dataframe that will be passed to the modelling function
 # Need to take in weights
 # validate method
+# Add in a named data frame for sample and population
 
 SurveyMap_alt <- R6::R6Class(
-  #Add in a named data frame for sample and population
   classname  = "survey",
   list(
     item_map = list(),
-    initialize = function(...) {
-      self$item_map <- list(...)
+    initialize = function(questions,samp_obj, popn_obj){
+      self$item_map <- list(questions)
       for(i in 1:length(self$item_map)){
         names(self$item_map)[i] <- self$item_map[[i]]$name
       }

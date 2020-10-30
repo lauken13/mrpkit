@@ -22,6 +22,16 @@ Examples of survey design include:
 ~. a random sample, ~ (1|cluster), a one stage cluster sample, ~ stratum, a stratified sample
 }
 \examples{
-feline_prefs = SurveyObj$new(feline_survey)
+feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
+questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
+responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
+weights = feline_survey$wt,
+design = formula("~."))
+
+popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
+questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
+responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
+weights = approx_popn$wt,
+design = formula("~."))
 }
 \keyword{datasets}
