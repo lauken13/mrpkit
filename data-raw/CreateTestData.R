@@ -61,10 +61,11 @@ feline_survey$wt <- weights(wts_trim_feline_survey)
 
 feline_survey <- feline_survey %>%
   select(-S_inclusion_prob) %>%
-  mutate_at(c("age_group","gender","pet_own"), as.factor) %>%
+  mutate_at(c("age_group","gender","pet_own","y"), as.factor) %>%
   mutate(age1 =fct_recode(age_group, `18-25` = "1", `26-35` = "2", `36-45` = "3",`46-55` = "4", `56-65` = "5", `66-75` = "6", `76-90` = "7"),
          gender = fct_recode(gender, "male" = "1", "female" = "2", "nonbinary" = "3"),
-         pet_own = fct_recode(pet_own, "cat" = "1", "kitten" = "2", "dog" = "3", "puppy" = "4")) %>%
+         pet_own = fct_recode(pet_own, "cat" = "1", "kitten" = "2", "dog" = "3", "puppy" = "4"),
+         y = fct_recode(y,"no" = "0", "yes" = "1")) %>%
   select(c(age1, gender, pet_own, y, wt))
 
 approx_popn <- approx_popn %>%
@@ -74,4 +75,6 @@ approx_popn <- approx_popn %>%
          gender = fct_recode(gender, "m" = "1", "f" = "2", "nb" = "3"),
          pet_pref = fct_recode(pet_own, "cat" = "1", "cat" = "2", "dog" = "3", "dog" = "4")) %>%
   select(c(age2, gender, pet_pref, wt))
+
+use_data(feline_survey, approx_popn, overwrite = TRUE)
 

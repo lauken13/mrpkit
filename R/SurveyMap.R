@@ -1,6 +1,7 @@
 #' SurveyMap
 #'
 #' @name SurveyMap
+#' @export
 #'
 #' @description A `SurveyMap` object holds the mapping
 #' between a set of items in a survey and a population dataset.
@@ -12,116 +13,163 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' survey_values <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
-#' popn_values <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
-#' test_map <- SurveyMap$new("age_s", "age_p", survey_values, popn_values)
-#'
-#' survey_values2 <- c('M','F')
-#' popn_values2 <- c('Male','Female')
-#' test_map$add_item("sex_s", "sex_p", survey_values2, popn_values2)
-#'
-#' test2_map$new(c("age_s", "sex_s"), c("age_p", "sex_p"),
-#'               c(list(survey_values, survey_values2), list(pop_values, pop_values2))
+#' #' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
+#' questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
+#' responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
+#' weights = feline_survey$wt,
+#' design = formula("~."))
+#'popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")]),
+#' questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
+#' responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
+#' weights = approx_popn$wt,
+#' design = formula("~."))
+#' q1 <- question$new(name = "age", col_names = c("age1","age2"),
+#' values_map = list("18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+#'         "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
+#' q2 <- question$new(name = "pet", col_names = c("pet_own","pet_pref"),
+#' values = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog"))
+#' q3 <- question$new(name = "gender", col_names = c("gender","gender"),
+#' values = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+#' tmp_map <- SurveyMap_alt$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+#' print(tmp_map)
+#' tmp_map$validate
+#' tmp_map$add(q3)
+#' print(tmp_map)
+#' tmp_map$delete(q3)
+#' print(tmp_map)
+#' tmp_map$delete("pet")
+#' print(tmp_map)
+#' tmp_map$add(q2)
+#' print(tmp_map)
+#' tmp_map$replace(q1,q3)
+#' print(tmp_map)
+#' tmp_map$validate
 
-SurveyMap <- R6::R6Class(
-    classname = "SurveyMap",
-    public = list(
-        survey_labels = character(0),
-        popn_labels = character(0),
-        survey_values = list(),
-        popn_values = list(),
-        initialize = function(survey_labels = character(0),
-                              popn_labels = character(0),
-                              survey_values = list(),
-                              popn_values = list()) {
-            self$survey_labels <- survey_labels
-            self$popn_labels <- popn_labels
-            if (is.list(survey_values))
-                self$survey_values = survey_values
-            else
-                self$survey_values <- list(survey_values)
-            if (is.list(popn_values))
-                self$popn_values = popn_values
-            else
-                self$popn_values <- list(popn_values)
-            if (length(survey_labels) != length(popn_labels)) {
-                stop("Survey and population must have same number of items.",
-                     call. = FALSE)
-            }
-            if (length(survey_labels) == 1) {
-                if (length(survey_values) != length(popn_values)) {
-                    stop("Survey and population must have same number of values.",
-                         call. = FALSE)
-                }
-            } else {
-                for(i in 1: length(self$survey_labels)){
-                    if (length(self$survey_values[i]) != length(self$popn_values[i])) {
-                        stop("Survey and population must have same number of values. ",
-                             "Check values for ", self$survey_labels[i], ".",
-                             call. = FALSE)
-                    }
-                }
-            }
-        },
-        print = function(...) {
-            if (length(self$survey_labels) > 0) {
-                for(i in 1: length(self$survey_labels)){
-                    cat("==============",'\n')
-                    cat(self$survey_labels[i], "=", self$popn_labels[i], '\n')
-                    cat("--------------",'\n')
-                    for(j in 1:length(self$survey_values[[i]])){
-                        cat(self$survey_values[[i]][j], "=", self$popn_values[[i]][j], '\n')
-                    }
-                }
-            } else {
-                cat("==============",'\n')
-                cat("empty mapping",'\n')
-            }
-            invisible(self)
-        },
-        add = function(survey_label,
-                       popn_label,
-                       survey_values,
-                       popn_values) {
-            if (survey_label %in% self$survey_labels) {
-                stop("Survey label: ", survey_label, " already defined.  ",
-                     "Use function 'replace' instead. ", call. = FALSE)
-            }
-            if (popn_label %in% self$popn_labels) {
-                stop("Population label: ", popn_label, " already defined.  ",
-                     "Use function 'replace' instead. ", call. = FALSE)
-            }
-            if (length(survey_values) != length(popn_values)) {
-                stop("Survey and population must have same number of values.",
-                     call. = FALSE)
-            }
-            self$survey_labels[length(self$survey_labels) + 1] = survey_label
-            self$popn_labels[length(self$popn_labels) + 1] = popn_label
-            self$survey_values[[length(self$survey_values) + 1]] = survey_values
-            self$popn_values[[length(self$popn_values) + 1]] = popn_values
-        },
-        delete = function(survey_label) {
-            if (!(survey_label %in% self$survey_labels)) {
-                stop("Survey label: ", survey_label, " not defined.  ",
-                     call. = FALSE)
-            }
-            idx = match(survey_label, self$survey_labels)
-            self$survey_labels = self$survey_labels[-idx]
-            self$popn_labels = self$popn_labels[-idx]
-            self$survey_values = self$survey_values[-idx]
-            self$popn_values = self$popn_values[-idx]
-        },
+# add a method called validate_questions on the survey map
+# need methods that minimize the connection between two them
+# Add sample object
+# Some method that creates the dataframe that will be passed to the modelling function
+# Need to take in weights
+# validate method
+# Add in a named data frame for sample and population
 
-        replace = function(current_survey_label,
-                           new_survey_label,
-                           popn_label,
-                           survey_values,
-                           popn_values) {
-            self$delete(current_survey_label)
-            self$add(new_survey_label,
-                           popn_label,
-                           survey_values,
-                           popn_values)
+SurveyMap_alt <- R6::R6Class(
+  classname  = "survey",
+  list(
+    item_map = list(),
+    samp_obj = SurveyObj,
+    popn_obj = SurveyObj,
+    initialize = function(samp_obj, popn_obj, ...){
+      self$item_map <- list(...)
+      for(i in 1:length(self$item_map)){
+        names(self$item_map)[i] <- self$item_map[[i]]$name
+      }
+      self$samp_obj = samp_obj
+      self$popn_obj = popn_obj
+      invisible(self)
+    },
+    print = function(...) {
+      if (length(self$item_map) > 0) {
+        for(i in 1: length(self$item_map)){
+          cat("==============",'\n')
+          cat(self$item_map[[i]]$col_names[1], "=", self$item_map[[i]]$col_names[2], '\n')
+          cat("--------------",'\n')
+          for(j in 1:nrow(self$item_map[[i]]$values)){
+            cat(as.character(self$item_map[[i]]$values[j,1]), "=", as.character(self$item_map[[i]]$values[j,2]), '\n')
+          }
         }
-    )
+      } else {
+        cat("==============",'\n')
+        cat("empty mapping",'\n')
+      }
+      invisible(self)
+    },
+    add = function(...){
+      for(i in 1:length(list(...))){
+        ll_length <- length(self$item_map)
+        if (list(...)[[i]]$name %in% names(self$item_map)) {
+          stop("Survey label: ", list(...)[[i]]$name, " already defined.  ",
+               "Use function 'replace' instead. ", call. = FALSE)
+        }
+        self$item_map[[ll_length+1]]<- list(...)[[i]]
+        names(self$item_map)[ll_length+1] <- self$item_map[[ll_length+1]]$name
+      }
+      invisible(self)
+    },
+    delete = function(...){
+      tmp_list <- list(...)
+      for(i in length(tmp_list)){
+        if(inherits(tmp_list[[i]], "question")){
+          loc_id <- names(self$item_map) %in% tmp_list[[i]]$name
+          loc_name <- tmp_list$name[[i]]
+        }else {
+          loc_id <- names(self$item_map) %in% tmp_list[[i]]
+          loc_name <- tmp_list[[i]]
+        }
+        if(sum(loc_id)==0){
+          stop("Survey label: ", loc_name, " not defined.  ",
+               call. = FALSE)
+        }else{
+          self$item_map[[which(loc_id)]] = NULL
+        }
+      }
+      invisible(self)
+    },
+    replace = function(old_question, new_question) {
+      self$delete(old_question)
+      self$add(new_question)
+    },
+    validate = function(){
+      samp_dfnames = colnames(self$samp_obj$survey_data)
+      popn_dfnames = colnames(self$popn_obj$survey_data)
+      samp_mapnames = character(length(self$item_map))
+      popn_mapnames = character(length(self$item_map))
+      for(j in 1:length(self$item_map)){
+        samp_mapnames[j] <- self$item_map[[j]]$col_names[1]
+        popn_mapnames[j] <- self$item_map[[j]]$col_names[2]
+        if(!is.factor(self$samp_obj$survey_data[,samp_mapnames[j]])){
+          self$samp_obj$survey_data[,samp_mapnames[j]] <- as.factor(self$samp_obj$survey_data[,samp_mapnames[j]])
+          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$samp_obj$survey_data[,samp_mapnames[j]]), collapse = ", "))
+        }
+        if(!is.factor(self$popn_obj$survey_data[,popn_mapnames[j]])){
+          self$popn_obj$survey_data[,popn_mapnames[j]] <- as.factor(self$popn_obj$survey_data[,popn_mapnames[j]])
+          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$popn_obj$survey_data[,popn_mapnames[j]]), collapse = ", "))
+        }
+        levels_map_samp  <-  levels(self$item_map[[j]]$values[,1])
+        levels_map_popn  <-  levels(self$item_map[[j]]$values[,2])
+        levels_data_samp  <-  levels(self$samp_obj$survey_data[,samp_mapnames[j]])
+        levels_data_popn  <-  levels(self$popn_obj$survey_data[,popn_mapnames[j]])
+        if(!samp_mapnames[j] %in% samp_dfnames){
+          stop("Variable ", samp_mapnames[j], " not in sample",call. = FALSE)
+        }
+        if(!popn_mapnames[j] %in% popn_dfnames){
+          stop("Variable ", popn_mapnames[j], " not in population",call. = FALSE)
+        }
+        if(sum(!levels_map_samp %in% levels_data_samp)>0){
+          stop("Levels in ",samp_mapnames[j]," ",paste(levels_map_samp[!levels_map_samp %in% levels_data_samp], collapse = ", "),
+               " are included in the map but are not in the sample",call. = FALSE)
+        }
+        if(sum(!levels_data_samp %in% levels_map_samp)>0){
+          stop("Levels in ",samp_mapnames[j]," ",paste(levels_data_samp[!levels_data_samp %in% levels_map_samp], collapse = ", "),
+               " are included in the sample but are not in the map",call. = FALSE)
+        }
+        if(sum(!levels_map_popn %in% levels_data_popn)>0){
+          stop("Levels in ",popn_mapnames[j]," ",paste(levels_map_popn[!levels_map_popn %in% levels_data_popn], collapse = ", "),
+               " are included in the map but are not in the population data",call. = FALSE)
+        }
+        if(sum(!levels_data_popn %in% levels_map_popn)>0){
+          stop("Levels in ",popn_mapnames[j]," ",paste(levels_data_popn[!levels_data_popn %in% levels_map_popn], collapse = ", "),
+               " are included in the population data but are not in the map",call. = FALSE)
+        }
+      }
+      if(sum(popn_mapnames %in% popn_dfnames)<length(popn_dfnames)){
+        warning("Variable(s) ", paste(popn_dfnames[!popn_dfnames %in% popn_mapnames], collapse = ", "),
+                " are available in the population but won't be used in the model ",call. = FALSE)
+      }
+      if(sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames))==0){
+        warning("At least one variable in the survey needs to be unknown in the population.",call. = FALSE)
+      }
+    }
+  )
 )
+

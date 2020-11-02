@@ -3,10 +3,11 @@
 \docType{data}
 \name{SurveyMap}
 \alias{SurveyMap}
+\alias{SurveyMap_alt}
 \title{SurveyMap}
 \format{An object of class \code{R6ClassGenerator} of length 25.}
 \usage{
-SurveyMap
+SurveyMap_alt
 }
 \description{
 A `SurveyMap` object holds the mapping
@@ -19,15 +20,36 @@ are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 }
 \examples{
-survey_values <- c('18-25','26-35','36-45','46-55','56-65','66-75','76-90')
-popn_values <- c('18-35','18-35','36-55','36-55','56-65','66+','66+')
-test_map <- SurveyMap$new("age_s", "age_p", survey_values, popn_values)
-
-survey_values2 <- c('M','F')
-popn_values2 <- c('Male','Female')
-test_map$add_item("sex_s", "sex_p", survey_values2, popn_values2)
-
-test2_map$new(c("age_s", "sex_s"), c("age_p", "sex_p"),
-              c(list(survey_values, survey_values2), list(pop_values, pop_values2))
+#' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
+questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
+responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
+weights = feline_survey$wt,
+design = formula("~."))
+popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")]),
+questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
+responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
+weights = approx_popn$wt,
+design = formula("~."))
+q1 <- question$new(name = "age", col_names = c("age1","age2"),
+values_map = list("18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+        "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
+q2 <- question$new(name = "pet", col_names = c("pet_own","pet_pref"),
+values = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog"))
+q3 <- question$new(name = "gender", col_names = c("gender","gender"),
+values = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+tmp_map <- SurveyMap_alt$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+print(tmp_map)
+tmp_map$validate
+tmp_map$add(q3)
+print(tmp_map)
+tmp_map$delete(q3)
+print(tmp_map)
+tmp_map$delete("pet")
+print(tmp_map)
+tmp_map$add(q2)
+print(tmp_map)
+tmp_map$replace(q1,q3)
+print(tmp_map)
+tmp_map$validate
 }
 \keyword{datasets}

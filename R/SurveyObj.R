@@ -1,7 +1,7 @@
 #' SurveyObject
 #'
 #' @name SurveyObject
-#'
+#' @export
 #' @description A `SurveyObject` represents a survey and its metadata.
 #' The survey itself is a dataframe.
 #' The survey metatdata consists of
@@ -86,14 +86,15 @@ SurveyObj <- R6::R6Class(
                 }
             }
             invisible(self)
-        },
-        summary = function(...) {
-            for(i in 1:ncol(self$survey_data)){
-                codes_used = names(table(self$survey_data[i]))
-                cat("Column ",i," label: ",names(self$survey_data)[i],"\n")
-                cat("\t", length(codes_used), " responses, values: ")
-                cat(paste(codes_used, collapse=", "), "\n")
-            }
-        }
+        }#, Can we remove this or does it have a function other than print?
+        # summary = function(...) {
+        #     for(i in 1:ncol(self$survey_data)){
+        #         codes_used = names(table(self$survey_data[,i]))
+        #         cat("Column ",names(self$survey_data)[i]," label: ",names(self$survey_data)[i],"\n")
+        #         cat("\t", length(codes_used), " responses, values: ")
+        #         cat(paste(codes_used, collapse=", "), "\n")
+        #     }
+        #   invisible(self)
+        # }
     )
 )
