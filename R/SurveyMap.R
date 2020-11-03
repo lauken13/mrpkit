@@ -48,7 +48,8 @@
 #' print(tmp_map)
 #' tmp_map$validate()
 #' tmp_map$mapping()
-#' tmp_map$tabulate()
+#' tmp_map$tabulate("age3") #Just use age in the poststrat matrix
+#' tmp_map$tabulate() #Use all variables in the map
 
 SurveyMap <- R6::R6Class(
   classname  = "survey",
@@ -209,9 +210,16 @@ SurveyMap <- R6::R6Class(
       }
     },
     tabulate  = function(...){
+      grouping_vars = c(...)
+      if(length(grouping_vars)==0){
+        grouping_vars = names(self$item_map)
+      }
+      if(sum(!grouping_vars %in% names(self$item_map))>0){
+        stop("At least one poststratification variable doesn't correspond to the map")
+      }
       self$popn_obj$poststrat <- self$popn_obj$survey_data %>%
         mutate(wts = self$popn_obj$weights) %>%
-        group_by_at(vars(names(self$item_map)))%>%
+        group_by_at(all_of(grouping_vars))%>%
         summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
     }
