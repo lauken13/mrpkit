@@ -13,12 +13,12 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' #' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
+#' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
 #' questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
 #' responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #' weights = feline_survey$wt,
 #' design = formula("~."))
-#'popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")]),
+#' popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
 #' questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
 #' responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
 #' weights = approx_popn$wt,
@@ -30,35 +30,32 @@
 #' values = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog"))
 #' q3 <- question$new(name = "gender", col_names = c("gender","gender"),
 #' values = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
-#' tmp_map <- SurveyMap_alt$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+#' tmp_map <- SurveyMap$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
 #' print(tmp_map)
-#' tmp_map$validate
+#' tmp_map$validate()
 #' tmp_map$add(q3)
 #' print(tmp_map)
 #' tmp_map$delete(q3)
 #' print(tmp_map)
-#' tmp_map$delete("pet")
+#' tmp_map$add(q3)
+#' tmp_map$delete("gender")
 #' print(tmp_map)
 #' tmp_map$add(q2)
 #' print(tmp_map)
 #' tmp_map$replace(q1,q3)
 #' print(tmp_map)
-#' tmp_map$validate
+#' tmp_map$add(q1)
+#' print(tmp_map)
+#' tmp_map$validate()
+#' tmp_map$mapping()
+#' tmp_map$tabulate()
 
-# add a method called validate_questions on the survey map
-# need methods that minimize the connection between two them
-# Add sample object
-# Some method that creates the dataframe that will be passed to the modelling function
-# Need to take in weights
-# validate method
-# Add in a named data frame for sample and population
-
-SurveyMap_alt <- R6::R6Class(
+SurveyMap <- R6::R6Class(
   classname  = "survey",
   list(
     item_map = list(),
-    samp_obj = SurveyObj,
-    popn_obj = SurveyObj,
+    samp_obj = list(),#Should this be SurveyObj?
+    popn_obj = list(),
     initialize = function(samp_obj, popn_obj, ...){
       self$item_map <- list(...)
       for(i in 1:length(self$item_map)){
@@ -169,6 +166,54 @@ SurveyMap_alt <- R6::R6Class(
       if(sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames))==0){
         warning("At least one variable in the survey needs to be unknown in the population.",call. = FALSE)
       }
+    },
+    mapping  = function(){
+      for(j in 1:length(self$item_map)){
+        samp_mapnames <- self$item_map[[j]]$col_names[1]
+        popn_mapnames <- self$item_map[[j]]$col_names[2]
+        levels_map_samp  <-  self$item_map[[j]]$values[,1]
+        levels_map_popn  <-  self$item_map[[j]]$values[,2]
+        if(self$item_map[[j]]$name %in% c(samp_mapnames, popn_mapnames,colnames(self$samp_obj$survey_data),colnames(self$popn_obj$survey_data))){
+          warning("New variable name is duplicated, changing to ",paste0(self$item_map[[j]]$name,'_svymap'))
+          self$item_map[[j]]$name <- paste0(self$item_map[[j]]$name,'_svymap')
+          names(self$item_map)[j] <- self$item_map[[j]]$name
+        }
+        new_varname <- self$item_map[[j]]$name
+        self$samp_obj$survey_data[new_varname] <- NA
+        new_levels_samp <- character(length(levels_map_samp))
+        new_levels_popn <- character(length(levels_map_popn))
+        for(k in 1:length(levels_map_samp)){
+          is_samp_unique = sum(levels_map_samp %in% levels_map_samp[k])==1
+          is_popn_unique = sum(levels_map_popn %in% levels_map_popn[k])==1
+          new_levels_samp[k] <- as.character(levels_map_samp[k])
+          new_levels_popn[k] <- as.character(levels_map_popn[k])
+          if(is_samp_unique & !is_popn_unique){
+            names(new_levels_samp)[k] <- as.character(levels_map_popn[k])
+            names(new_levels_popn)[k] <- as.character(levels_map_popn[k])
+          }else if(is_samp_unique & is_popn_unique){
+            names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
+            names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
+            }else if(!is_samp_unique & is_popn_unique){
+              names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
+              names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
+            }else if(!is_samp_unique & !is_popn_unique){
+              stop("Mapping can only handle many to one mappings.")
+            }
+          self$samp_obj$survey_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]],new_levels_samp[k])
+          self$popn_obj$survey_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]],new_levels_popn[k])
+        }
+        self$samp_obj$questions[length(self$samp_obj$questions)+1] <- paste0("Variable mapping '", self$samp_obj$questions[j], "' to '", self$popn_obj$questions[j], "'")
+        self$popn_obj$questions[length(self$popn_obj$questions)+1] <- paste0("Variable mapping '", self$samp_obj$questions[j], "' to '", self$popn_obj$questions[j], "'")
+        self$samp_obj$responses[[length(self$samp_obj$responses)+1]] <- levels(self$samp_obj$survey_data[[new_varname]])
+        self$popn_obj$responses[[length(self$popn_obj$responses)+1]] <- levels(self$popn_obj$survey_data[[new_varname]])
+      }
+    },
+    tabulate  = function(...){
+      self$popn_obj$poststrat <- self$popn_obj$survey_data %>%
+        mutate(wts = self$popn_obj$weights) %>%
+        group_by_at(vars(names(self$item_map)))%>%
+        summarize(N_j = sum(wts), .groups = 'drop')
+      invisible(self)
     }
   )
 )

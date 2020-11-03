@@ -19,17 +19,19 @@
 #' responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #' weights = feline_survey$wt,
 #' design = formula("~."))
-#'
+#' feline_prefs$print()
 #'popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
 #' questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
 #' responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
 #' weights = approx_popn$wt,
 #' design = formula("~."))
+#' popn_obj$print()
 
 SurveyObj <- R6::R6Class(
     classname = "SurveyObj",
     public = list(
         survey_data = data.frame(NULL),
+        poststrat = data.frame(NULL),
         questions = character(0),
         responses = list(),
         weights = numeric(),
