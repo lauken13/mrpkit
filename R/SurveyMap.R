@@ -48,8 +48,11 @@
 #' print(tmp_map)
 #' tmp_map$validate()
 #' tmp_map$mapping()
-#' tmp_map$tabulate("age3") #Just use age in the poststrat matrix
+#' tmp_map$tabulate("age") #Just use age in the poststrat matrix
 #' tmp_map$tabulate() #Use all variables in the map
+#'
+#' tmp_map$model(formula = y~ (1|age) + (1|gender), type = brms,
+#' priors = ...,)
 
 SurveyMap <- R6::R6Class(
   classname  = "survey",
@@ -174,10 +177,15 @@ SurveyMap <- R6::R6Class(
         popn_mapnames <- self$item_map[[j]]$col_names[2]
         levels_map_samp  <-  self$item_map[[j]]$values[,1]
         levels_map_popn  <-  self$item_map[[j]]$values[,2]
-        if(self$item_map[[j]]$name %in% c(samp_mapnames, popn_mapnames,colnames(self$samp_obj$survey_data),colnames(self$popn_obj$survey_data))){
-          warning("New variable name is duplicated, changing to ",paste0(self$item_map[[j]]$name,'_svymap'))
-          self$item_map[[j]]$name <- paste0(self$item_map[[j]]$name,'_svymap')
-          names(self$item_map)[j] <- self$item_map[[j]]$name
+        if(self$item_map[[j]]$name %in% colnames(self$popn_obj$survey_data) & !self$item_map[[j]]$name %in% paste0(self$item_map[[j]]$name,'_exisitingvar')){
+          warning("New variable name is already in the population data, changing variable to ",paste0(self$item_map[[j]]$name,'_exisitingvar'))
+          colnames(self$popn_obj$survey_data)[colnames(self$popn_obj$survey_data) == self$item_map[[j]]$name] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
+          self$item_map[[j]]$col_names[2] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
+        }
+        if(self$item_map[[j]]$name %in% colnames(self$samp_obj$survey_data) & !self$item_map[[j]]$name %in% paste0(self$item_map[[j]]$name,'_exisitingvar')){
+          warning("New variable name is already in the sample data, changing variable to ",paste0(self$item_map[[j]]$name,'_exisitingvar'))
+          colnames(self$samp_obj$survey_data)[colnames(self$samp_obj$survey_data) == self$item_map[[j]]$name] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
+          self$item_map[[j]]$col_names[1]<- paste0(self$item_map[[j]]$name,'_exisitingvar')
         }
         new_varname <- self$item_map[[j]]$name
         self$samp_obj$survey_data[new_varname] <- NA

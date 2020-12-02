@@ -88,15 +88,6 @@ SurveyObj <- R6::R6Class(
                 }
             }
             invisible(self)
-        }#, Can we remove this or does it have a function other than print?
-        # summary = function(...) {
-        #     for(i in 1:ncol(self$survey_data)){
-        #         codes_used = names(table(self$survey_data[,i]))
-        #         cat("Column ",names(self$survey_data)[i]," label: ",names(self$survey_data)[i],"\n")
-        #         cat("\t", length(codes_used), " responses, values: ")
-        #         cat(paste(codes_used, collapse=", "), "\n")
-        #     }
-        #   invisible(self)
-        # }
+        }
     )
 )

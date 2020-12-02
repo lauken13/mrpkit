@@ -15,6 +15,7 @@ Imports:
     readr,
     magrittr,
     tibble,
-    janitor
+    janitor,
+    forcats
 Suggests: 
     testthat
