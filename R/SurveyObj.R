@@ -32,6 +32,7 @@ SurveyObj <- R6::R6Class(
     public = list(
         survey_data = data.frame(NULL),
         poststrat = data.frame(NULL),
+        mapped_data = data.frame(NULL),
         questions = character(0),
         responses = list(),
         weights = numeric(),

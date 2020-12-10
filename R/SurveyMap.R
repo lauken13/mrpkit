@@ -172,23 +172,18 @@ SurveyMap <- R6::R6Class(
       }
     },
     mapping  = function(){
+      ####Set up keys####
+      self$samp_obj$mapped_data <- data.frame(key = 1:nrow(self$samp_obj$survey_data))
+      self$samp_obj$survey_data$key <- 1:nrow(self$samp_obj$survey_data)
+      self$popn_obj$mapped_data <- data.frame(key = 1:nrow(self$popn_obj$survey_data))
+      self$popn_obj$survey_data$key <- 1:nrow(self$popn_obj$survey_data)
       for(j in 1:length(self$item_map)){
+        #### set up names ####
         samp_mapnames <- self$item_map[[j]]$col_names[1]
         popn_mapnames <- self$item_map[[j]]$col_names[2]
         levels_map_samp  <-  self$item_map[[j]]$values[,1]
         levels_map_popn  <-  self$item_map[[j]]$values[,2]
-        if(self$item_map[[j]]$name %in% colnames(self$popn_obj$survey_data) & !self$item_map[[j]]$name %in% paste0(self$item_map[[j]]$name,'_exisitingvar')){
-          warning("New variable name is already in the population data, changing variable to ",paste0(self$item_map[[j]]$name,'_exisitingvar'))
-          colnames(self$popn_obj$survey_data)[colnames(self$popn_obj$survey_data) == self$item_map[[j]]$name] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
-          self$item_map[[j]]$col_names[2] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
-        }
-        if(self$item_map[[j]]$name %in% colnames(self$samp_obj$survey_data) & !self$item_map[[j]]$name %in% paste0(self$item_map[[j]]$name,'_exisitingvar')){
-          warning("New variable name is already in the sample data, changing variable to ",paste0(self$item_map[[j]]$name,'_exisitingvar'))
-          colnames(self$samp_obj$survey_data)[colnames(self$samp_obj$survey_data) == self$item_map[[j]]$name] <- paste0(self$item_map[[j]]$name,'_exisitingvar')
-          self$item_map[[j]]$col_names[1]<- paste0(self$item_map[[j]]$name,'_exisitingvar')
-        }
         new_varname <- self$item_map[[j]]$name
-        self$samp_obj$survey_data[new_varname] <- NA
         new_levels_samp <- character(length(levels_map_samp))
         new_levels_popn <- character(length(levels_map_popn))
         for(k in 1:length(levels_map_samp)){
@@ -208,13 +203,9 @@ SurveyMap <- R6::R6Class(
             }else if(!is_samp_unique & !is_popn_unique){
               stop("Mapping can only handle many to one mappings.")
             }
-          self$samp_obj$survey_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]],new_levels_samp[k])
-          self$popn_obj$survey_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]],new_levels_popn[k])
         }
-        self$samp_obj$questions[length(self$samp_obj$questions)+1] <- paste0("Variable mapping '", self$samp_obj$questions[j], "' to '", self$popn_obj$questions[j], "'")
-        self$popn_obj$questions[length(self$popn_obj$questions)+1] <- paste0("Variable mapping '", self$samp_obj$questions[j], "' to '", self$popn_obj$questions[j], "'")
-        self$samp_obj$responses[[length(self$samp_obj$responses)+1]] <- levels(self$samp_obj$survey_data[[new_varname]])
-        self$popn_obj$responses[[length(self$popn_obj$responses)+1]] <- levels(self$popn_obj$survey_data[[new_varname]])
+        self$samp_obj$mapped_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]],!!!new_levels_samp)
+        self$popn_obj$mapped_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]],!!!new_levels_popn)
       }
     },
     tabulate  = function(...){
@@ -225,7 +216,7 @@ SurveyMap <- R6::R6Class(
       if(sum(!grouping_vars %in% names(self$item_map))>0){
         stop("At least one poststratification variable doesn't correspond to the map")
       }
-      self$popn_obj$poststrat <- self$popn_obj$survey_data %>%
+      self$popn_obj$poststrat <- self$popn_obj$mapped_data %>%
         mutate(wts = self$popn_obj$weights) %>%
         group_by_at(all_of(grouping_vars))%>%
         summarize(N_j = sum(wts), .groups = 'drop')
