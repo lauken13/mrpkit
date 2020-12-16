@@ -53,7 +53,8 @@
 #'
 #' mod_fit <- tmp_map$model(formula = y ~ (1|age) + (1|gender), type = brms,
 #' priors = ...,)
-#' tmp_map$predictify(mod_fit) - predict in postrat matrix
+#' poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
+#' -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
 #' tmp_map$poststratify("age") - get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
 
