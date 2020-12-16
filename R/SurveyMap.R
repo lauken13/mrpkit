@@ -51,8 +51,11 @@
 #' tmp_map$tabulate("age") #Just use age in the poststrat matrix
 #' tmp_map$tabulate() #Use all variables in the map
 #'
-#' tmp_map$model(formula = y~ (1|age) + (1|gender), type = brms,
+#' mod_fit <- tmp_map$model(formula = y ~ (1|age) + (1|gender), type = brms,
 #' priors = ...,)
+#' tmp_map$predictify(mod_fit) - predict in postrat matrix
+#' tmp_map$poststratify("age") - get an estimate for a particular level
+#' plot1 <- tmp_map$visualize()
 
 SurveyMap <- R6::R6Class(
   classname  = "survey",
