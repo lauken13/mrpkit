@@ -12,10 +12,6 @@ LazyData: true
 RoxygenNote: 7.1.1
 Imports: 
     dplyr,
-    readr,
-    magrittr,
-    tibble,
-    janitor,
     forcats
 Suggests: 
     testthat

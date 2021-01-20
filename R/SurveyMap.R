@@ -62,12 +62,13 @@
 #' print(tmp_map)
 #' tmp_map$add(q1)
 #' print(tmp_map)
-#' tmp_map$validate()
+#' tmp_map$validate() # TODO: figure out why this errors
 #' tmp_map$mapping()
 #' tmp_map$tabulate("age") #Just use age in the poststrat matrix
 #' tmp_map$tabulate() #Use all variables in the map
 #'
-#' mod_fit <- tmp_map$fit(
+#'
+#' mod_fit_1 <- tmp_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
@@ -75,26 +76,41 @@
 #'   cores = 2
 #' )
 #'
-#' poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
+#' mod_fit_2 <- tmp_map$fit(
+#'   fun = brms::brm,
+#'   formula = y ~ (1|age) + (1|gender),
+#'   family = "bernoulli",
+#'   refresh = 100,
+#'   cores = 2
+#' )
+#'
+#' poststrat_fit <- tmp_map$predictify(mod_fit) # predict in postrat matrix
 #' -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
-#' tmp_map$poststratify("age") - get an estimate for a particular level
+#' tmp_map$poststratify("age") # get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
 #'
-#' @importFrom dplyr %>% mutate group_by_at summarize all_of
-#' @importFrom forcats fct_recode
+#' @importFrom dplyr %>%
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   public = list(
     item_map = list(),
-    samp_obj = list(),#Should this be SurveyObj?
-    popn_obj = list(),
+    samp_obj = NULL,
+    popn_obj = NULL,
 
     initialize = function(samp_obj, popn_obj, ...) {
+      if (!inherits(samp_obj, "SurveyObj")) {
+        stop("samp_obj must be a SurveyObj object.", call. = FALSE)
+      }
+      if (!inherits(popn_obj, "SurveyObj")) {
+        stop("samp_obj must be a SurveyObj object.", call. = FALSE)
+      }
+
       self$item_map <- list(...)
       for (i in 1:length(self$item_map)) {
         names(self$item_map)[i] <- self$item_map[[i]]$name
       }
+
       self$samp_obj <- samp_obj
       self$popn_obj <- popn_obj
       invisible(self)
@@ -135,7 +151,7 @@ SurveyMap <- R6::R6Class(
     delete = function(...) {
       tmp_list <- list(...)
       for (i in length(tmp_list)) {
-        if (inherits(tmp_list[[i]], "question")) {
+        if (inherits(tmp_list[[i]], "SurveyQuestion")) {
           loc_id <- names(self$item_map) %in% tmp_list[[i]]$name
           loc_name <- tmp_list$name[[i]]
         } else {
@@ -152,6 +168,10 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description Replace one survey question with another
+    #' @param old_question The [SurveyQuestion] object to replace.
+    #' @param new_question The [SurveyQuestion] object to use instead.
+    #'
     replace = function(old_question, new_question) {
       self$delete(old_question)
       self$add(new_question)
@@ -241,8 +261,8 @@ SurveyMap <- R6::R6Class(
             stop("Mapping can only handle many to one mappings.", call. = FALSE)
           }
         }
-        self$samp_obj$mapped_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
-        self$popn_obj$mapped_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
+        self$samp_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
+        self$popn_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
       }
     },
     tabulate  = function(...) {
@@ -254,9 +274,9 @@ SurveyMap <- R6::R6Class(
         stop("At least one poststratification variable doesn't correspond to the map.", call. = FALSE)
       }
       self$popn_obj$poststrat <- self$popn_obj$mapped_data %>%
-        mutate(wts = self$popn_obj$weights) %>%
-        group_by_at(all_of(grouping_vars)) %>%
-        summarize(N_j = sum(wts), .groups = 'drop')
+        dplyr::mutate(wts = self$popn_obj$weights) %>%
+        dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
+        dplyr::summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
     },
 

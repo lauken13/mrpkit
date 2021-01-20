@@ -63,12 +63,13 @@ tmp_map$replace(q1,q3)
 print(tmp_map)
 tmp_map$add(q1)
 print(tmp_map)
-tmp_map$validate()
+tmp_map$validate() # TODO: figure out why this errors
 tmp_map$mapping()
 tmp_map$tabulate("age") #Just use age in the poststrat matrix
 tmp_map$tabulate() #Use all variables in the map
 
-mod_fit <- tmp_map$fit(
+
+mod_fit_1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
@@ -76,9 +77,17 @@ mod_fit <- tmp_map$fit(
   cores = 2
 )
 
-poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
+mod_fit_2 <- tmp_map$fit(
+  fun = brms::brm,
+  formula = y ~ (1|age) + (1|gender),
+  family = "bernoulli",
+  refresh = 100,
+  cores = 2
+)
+
+poststrat_fit <- tmp_map$predictify(mod_fit) # predict in postrat matrix
 -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
-tmp_map$poststratify("age") - get an estimate for a particular level
+tmp_map$poststratify("age") # get an estimate for a particular level
 plot1 <- tmp_map$visualize()
 
 }
@@ -137,10 +146,20 @@ plot1 <- tmp_map$visualize()
 \if{html}{\out{<a id="method-replace"></a>}}
 \if{latex}{\out{\hypertarget{method-replace}{}}}
 \subsection{Method \code{replace()}}{
+Replace one survey question with another
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$replace(old_question, new_question)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{old_question}}{The \link{SurveyQuestion} object to replace.}
+
+\item{\code{new_question}}{The \link{SurveyQuestion} object to use instead.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-validate"></a>}}
