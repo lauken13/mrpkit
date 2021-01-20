@@ -74,6 +74,8 @@
 #' tmp_map$poststratify("age") - get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
 
+#' @importFrom dplyr %>% mutate group_by_at summarize all_of
+#' @importFrom forcats fct_recode
 SurveyMap <- R6::R6Class(
   classname  = "survey",
   list(
