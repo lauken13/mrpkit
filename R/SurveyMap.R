@@ -73,18 +73,19 @@
 #' -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
 #' tmp_map$poststratify("age") - get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
-
+#'
 #' @importFrom dplyr %>% mutate group_by_at summarize all_of
 #' @importFrom forcats fct_recode
+#'
 SurveyMap <- R6::R6Class(
   classname  = "survey",
   list(
     item_map = list(),
     samp_obj = list(),#Should this be SurveyObj?
     popn_obj = list(),
-    initialize = function(samp_obj, popn_obj, ...){
+    initialize = function(samp_obj, popn_obj, ...) {
       self$item_map <- list(...)
-      for(i in 1:length(self$item_map)){
+      for (i in 1:length(self$item_map)) {
         names(self$item_map)[i] <- self$item_map[[i]]$name
       }
       self$samp_obj = samp_obj
@@ -93,11 +94,11 @@ SurveyMap <- R6::R6Class(
     },
     print = function(...) {
       if (length(self$item_map) > 0) {
-        for(i in 1: length(self$item_map)){
+        for (i in 1: length(self$item_map)) {
           cat("==============",'\n')
           cat(self$item_map[[i]]$col_names[1], "=", self$item_map[[i]]$col_names[2], '\n')
           cat("--------------",'\n')
-          for(j in 1:nrow(self$item_map[[i]]$values)){
+          for (j in 1:nrow(self$item_map[[i]]$values)) {
             cat(as.character(self$item_map[[i]]$values[j,1]), "=", as.character(self$item_map[[i]]$values[j,2]), '\n')
           }
         }
@@ -107,8 +108,8 @@ SurveyMap <- R6::R6Class(
       }
       invisible(self)
     },
-    add = function(...){
-      for(i in 1:length(list(...))){
+    add = function(...) {
+      for (i in 1:length(list(...))) {
         ll_length <- length(self$item_map)
         if (list(...)[[i]]$name %in% names(self$item_map)) {
           stop("Survey label: ", list(...)[[i]]$name, " already defined.  ",
@@ -119,20 +120,20 @@ SurveyMap <- R6::R6Class(
       }
       invisible(self)
     },
-    delete = function(...){
+    delete = function(...) {
       tmp_list <- list(...)
-      for(i in length(tmp_list)){
-        if(inherits(tmp_list[[i]], "question")){
+      for (i in length(tmp_list)) {
+        if (inherits(tmp_list[[i]], "question")) {
           loc_id <- names(self$item_map) %in% tmp_list[[i]]$name
           loc_name <- tmp_list$name[[i]]
-        }else {
+        } else {
           loc_id <- names(self$item_map) %in% tmp_list[[i]]
           loc_name <- tmp_list[[i]]
         }
-        if(sum(loc_id)==0){
+        if (sum(loc_id)==0) {
           stop("Survey label: ", loc_name, " not defined.  ",
                call. = FALSE)
-        }else{
+        } else{
           self$item_map[[which(loc_id)]] = NULL
         }
       }
@@ -142,105 +143,105 @@ SurveyMap <- R6::R6Class(
       self$delete(old_question)
       self$add(new_question)
     },
-    validate = function(){
-      samp_dfnames = colnames(self$samp_obj$survey_data)
-      popn_dfnames = colnames(self$popn_obj$survey_data)
-      samp_mapnames = character(length(self$item_map))
-      popn_mapnames = character(length(self$item_map))
-      for(j in 1:length(self$item_map)){
+    validate = function() {
+      samp_dfnames <- colnames(self$samp_obj$survey_data)
+      popn_dfnames <-colnames(self$popn_obj$survey_data)
+      samp_mapnames <- character(length(self$item_map))
+      popn_mapnames <- character(length(self$item_map))
+      for (j in 1:length(self$item_map)) {
         samp_mapnames[j] <- self$item_map[[j]]$col_names[1]
         popn_mapnames[j] <- self$item_map[[j]]$col_names[2]
-        if(!is.factor(self$samp_obj$survey_data[,samp_mapnames[j]])){
+        if (!is.factor(self$samp_obj$survey_data[,samp_mapnames[j]])) {
           self$samp_obj$survey_data[,samp_mapnames[j]] <- as.factor(self$samp_obj$survey_data[,samp_mapnames[j]])
           warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$samp_obj$survey_data[,samp_mapnames[j]]), collapse = ", "))
         }
-        if(!is.factor(self$popn_obj$survey_data[,popn_mapnames[j]])){
+        if (!is.factor(self$popn_obj$survey_data[,popn_mapnames[j]])) {
           self$popn_obj$survey_data[,popn_mapnames[j]] <- as.factor(self$popn_obj$survey_data[,popn_mapnames[j]])
           warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$popn_obj$survey_data[,popn_mapnames[j]]), collapse = ", "))
         }
-        levels_map_samp  <-  levels(self$item_map[[j]]$values[,1])
-        levels_map_popn  <-  levels(self$item_map[[j]]$values[,2])
-        levels_data_samp  <-  levels(self$samp_obj$survey_data[,samp_mapnames[j]])
-        levels_data_popn  <-  levels(self$popn_obj$survey_data[,popn_mapnames[j]])
-        if(!samp_mapnames[j] %in% samp_dfnames){
+        levels_map_samp <- levels(self$item_map[[j]]$values[,1])
+        levels_map_popn <- levels(self$item_map[[j]]$values[,2])
+        levels_data_samp <- levels(self$samp_obj$survey_data[,samp_mapnames[j]])
+        levels_data_popn <- levels(self$popn_obj$survey_data[,popn_mapnames[j]])
+        if (!samp_mapnames[j] %in% samp_dfnames) {
           stop("Variable ", samp_mapnames[j], " not in sample",call. = FALSE)
         }
-        if(!popn_mapnames[j] %in% popn_dfnames){
+        if (!popn_mapnames[j] %in% popn_dfnames) {
           stop("Variable ", popn_mapnames[j], " not in population",call. = FALSE)
         }
-        if(sum(!levels_map_samp %in% levels_data_samp)>0){
+        if (sum(!levels_map_samp %in% levels_data_samp) > 0) {
           stop("Levels in ",samp_mapnames[j]," ",paste(levels_map_samp[!levels_map_samp %in% levels_data_samp], collapse = ", "),
                " are included in the map but are not in the sample",call. = FALSE)
         }
-        if(sum(!levels_data_samp %in% levels_map_samp)>0){
+        if (sum(!levels_data_samp %in% levels_map_samp) > 0) {
           stop("Levels in ",samp_mapnames[j]," ",paste(levels_data_samp[!levels_data_samp %in% levels_map_samp], collapse = ", "),
                " are included in the sample but are not in the map",call. = FALSE)
         }
-        if(sum(!levels_map_popn %in% levels_data_popn)>0){
+        if (sum(!levels_map_popn %in% levels_data_popn) > 0) {
           stop("Levels in ",popn_mapnames[j]," ",paste(levels_map_popn[!levels_map_popn %in% levels_data_popn], collapse = ", "),
                " are included in the map but are not in the population data",call. = FALSE)
         }
-        if(sum(!levels_data_popn %in% levels_map_popn)>0){
+        if (sum(!levels_data_popn %in% levels_map_popn)>0) {
           stop("Levels in ",popn_mapnames[j]," ",paste(levels_data_popn[!levels_data_popn %in% levels_map_popn], collapse = ", "),
                " are included in the population data but are not in the map",call. = FALSE)
         }
       }
-      if(sum(popn_mapnames %in% popn_dfnames)<length(popn_dfnames)){
+      if (sum(popn_mapnames %in% popn_dfnames) < length(popn_dfnames)) {
         warning("Variable(s) ", paste(popn_dfnames[!popn_dfnames %in% popn_mapnames], collapse = ", "),
                 " are available in the population but won't be used in the model ",call. = FALSE)
       }
-      if(sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames))==0){
+      if (sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames)) == 0) {
         warning("At least one variable in the survey needs to be unknown in the population.",call. = FALSE)
       }
     },
-    mapping  = function(){
+    mapping  = function() {
       ####Set up keys####
       self$samp_obj$mapped_data <- data.frame(key = 1:nrow(self$samp_obj$survey_data))
       self$samp_obj$survey_data$key <- 1:nrow(self$samp_obj$survey_data)
       self$popn_obj$mapped_data <- data.frame(key = 1:nrow(self$popn_obj$survey_data))
       self$popn_obj$survey_data$key <- 1:nrow(self$popn_obj$survey_data)
-      for(j in 1:length(self$item_map)){
+      for (j in 1:length(self$item_map)) {
         #### set up names ####
         samp_mapnames <- self$item_map[[j]]$col_names[1]
         popn_mapnames <- self$item_map[[j]]$col_names[2]
-        levels_map_samp  <-  self$item_map[[j]]$values[,1]
-        levels_map_popn  <-  self$item_map[[j]]$values[,2]
+        levels_map_samp <- self$item_map[[j]]$values[,1]
+        levels_map_popn <- self$item_map[[j]]$values[,2]
         new_varname <- self$item_map[[j]]$name
         new_levels_samp <- character(length(levels_map_samp))
         new_levels_popn <- character(length(levels_map_popn))
-        for(k in 1:length(levels_map_samp)){
-          is_samp_unique = sum(levels_map_samp %in% levels_map_samp[k])==1
-          is_popn_unique = sum(levels_map_popn %in% levels_map_popn[k])==1
+        for (k in 1:length(levels_map_samp)) {
+          is_samp_unique <- sum(levels_map_samp %in% levels_map_samp[k]) == 1
+          is_popn_unique <- sum(levels_map_popn %in% levels_map_popn[k]) == 1
           new_levels_samp[k] <- as.character(levels_map_samp[k])
           new_levels_popn[k] <- as.character(levels_map_popn[k])
-          if(is_samp_unique & !is_popn_unique){
+          if (is_samp_unique & !is_popn_unique) {
             names(new_levels_samp)[k] <- as.character(levels_map_popn[k])
             names(new_levels_popn)[k] <- as.character(levels_map_popn[k])
-          }else if(is_samp_unique & is_popn_unique){
+          } else if (is_samp_unique & is_popn_unique) {
             names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
             names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
-            }else if(!is_samp_unique & is_popn_unique){
-              names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
-              names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
-            }else if(!is_samp_unique & !is_popn_unique){
-              stop("Mapping can only handle many to one mappings.")
-            }
+          } else if (!is_samp_unique & is_popn_unique) {
+            names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
+            names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
+          } else if (!is_samp_unique & !is_popn_unique) {
+            stop("Mapping can only handle many to one mappings.")
+          }
         }
-        self$samp_obj$mapped_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]],!!!new_levels_samp)
-        self$popn_obj$mapped_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]],!!!new_levels_popn)
+        self$samp_obj$mapped_data[[new_varname]] <- fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
+        self$popn_obj$mapped_data[[new_varname]] <- fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
       }
     },
-    tabulate  = function(...){
-      grouping_vars = c(...)
-      if(length(grouping_vars)==0){
-        grouping_vars = names(self$item_map)
+    tabulate  = function(...) {
+      grouping_vars <- c(...)
+      if (length(grouping_vars) == 0) {
+        grouping_vars <- names(self$item_map)
       }
-      if(sum(!grouping_vars %in% names(self$item_map))>0){
+      if (sum(!grouping_vars %in% names(self$item_map)) > 0) {
         stop("At least one poststratification variable doesn't correspond to the map")
       }
       self$popn_obj$poststrat <- self$popn_obj$mapped_data %>%
         mutate(wts = self$popn_obj$weights) %>%
-        group_by_at(all_of(grouping_vars))%>%
+        group_by_at(all_of(grouping_vars)) %>%
         summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
     }
