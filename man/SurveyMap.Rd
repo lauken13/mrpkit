@@ -7,30 +7,46 @@
 A \code{SurveyMap} object holds the mapping
 between a set of items in a survey and a population dataset.
 The label is the item label in each dataset and the values
-is a list of all possible values.   The values for the survey
+is a list of all possible values.  The values for the survey
 and population must be aligned, i.e., the lists must have the
 same number of elements and the values at index i in each list
 are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 }
 \examples{
-feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
-questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
-responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
-weights = feline_survey$wt,
-design = formula("~."))
-popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
-questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
-responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
-weights = approx_popn$wt,
-design = formula("~."))
-q1 <- question$new(name = "age", col_names = c("age1","age2"),
-values_map = list("18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
-        "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
-q2 <- question$new(name = "pet", col_names = c("pet_own","pet_pref"),
-values = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog"))
-q3 <- question$new(name = "gender", col_names = c("gender","gender"),
-values = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+feline_prefs = SurveyObj$new(
+  feline_survey[,c("age1","gender","pet_own","y")],
+  questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
+  responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
+  weights = feline_survey$wt,
+  design = formula("~.")
+)
+popn_obj = SurveyObj$new(
+  approx_popn[,c("age2","gender","pet_pref")],
+  questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
+  responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
+  weights = approx_popn$wt,
+  design = formula("~.")
+)
+q1 <- question$new(
+  name = "age",
+  col_names = c("age1","age2"),
+  values_map = list(
+    "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+    "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
+  )
+)
+q2 <- question$new(
+  name = "pet",
+  col_names = c("pet_own","pet_pref"),
+  values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
+)
+q3 <- question$new(
+  name = "gender",
+  col_names = c("gender","gender"),
+  values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
+)
+
 tmp_map <- SurveyMap$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
 print(tmp_map)
 tmp_map$validate()
@@ -52,7 +68,14 @@ tmp_map$mapping()
 tmp_map$tabulate("age") #Just use age in the poststrat matrix
 tmp_map$tabulate() #Use all variables in the map
 
-mod_fit <- tmp_map$fit(formula = y ~ (1|age) + (1|gender), family = "binomial", fun = rstanarm::stan_glmer, refresh = 100)
+mod_fit <- tmp_map$fit(
+  formula = y ~ (1|age) + (1|gender),
+  family = "binomial",
+  refresh = 100,
+  cores = 2,
+  fun = rstanarm::stan_glmer
+)
+
 poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
 -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
 tmp_map$poststratify("age") - get an estimate for a particular level
@@ -160,7 +183,7 @@ Fit a model
 \describe{
 \item{\code{formula}}{The model formula.}
 
-\item{\code{...}}{Other argumets passed to the model fitting function.}
+\item{\code{...}}{Other arguments passed to the model fitting function.}
 
 \item{\code{fun}}{The model fitting function to use. For example,
 \code{fun=rstanarm::stan_glmer}.}
