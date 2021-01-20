@@ -69,11 +69,11 @@ tmp_map$tabulate("age") #Just use age in the poststrat matrix
 tmp_map$tabulate() #Use all variables in the map
 
 mod_fit <- tmp_map$fit(
+  fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
   refresh = 100,
-  cores = 2,
-  fun = rstanarm::stan_glmer
+  cores = 2
 )
 
 poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
@@ -175,18 +175,20 @@ plot1 <- tmp_map$visualize()
 \subsection{Method \code{fit()}}{
 Fit a model
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$fit(formula, ..., fun)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$fit(fun, formula, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{formula}}{The model formula.}
-
-\item{\code{...}}{Other arguments passed to the model fitting function.}
-
 \item{\code{fun}}{The model fitting function to use. For example,
-\code{fun=rstanarm::stan_glmer}.}
+\code{fun=rstanarm::stan_glmer} or \code{fun=brms::brm}.}
+
+\item{\code{formula}}{The model formula. Can be either a string or a formula
+object.}
+
+\item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to the model
+fitting function.}
 }
 \if{html}{\out{</div>}}
 }

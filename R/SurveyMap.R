@@ -68,11 +68,11 @@
 #' tmp_map$tabulate() #Use all variables in the map
 #'
 #' mod_fit <- tmp_map$fit(
+#'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
 #'   refresh = 100,
-#'   cores = 2,
-#'   fun = rstanarm::stan_glmer
+#'   cores = 2
 #' )
 #'
 #' poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
@@ -261,21 +261,34 @@ SurveyMap <- R6::R6Class(
     },
 
     #' @description Fit a model
-    #' @param formula The model formula.
-    #' @param ... Other arguments passed to the model fitting function.
     #' @param fun The model fitting function to use. For example,
-    #'   `fun=rstanarm::stan_glmer`.
+    #'   `fun=rstanarm::stan_glmer` or `fun=brms::brm`.
+    #' @param formula The model formula. Can be either a string or a formula
+    #'   object.
+    #' @param ... Arguments other than `formula` and `data` to pass to the model
+    #'   fitting function.
     #'
-    fit = function(formula, ..., fun) {
+    fit = function(fun, formula, ...) {
       fun <- match.fun(fun)
+      args <- list(...)
+      if (!is.null(args$data)) {
+        stop("The 'data' argument should not be specified.",
+             call. = FALSE)
+      }
+      if (is.null(self$samp_obj$mapped_data)) {
+        stop("Mapped data not found. ",
+             "Please call the mapping() method before fitting a model.",
+             call. = FALSE)
+      }
+
+      # TODO: error if variables in formula aren't in data
+      formula <- as.formula(formula)
       mapped_data <- self$samp_obj$mapped_data
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
       y_and_x <- self$samp_obj$survey_data[, need_vars, drop = FALSE]
 
-      args <- list(...)
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
-
       do.call(fun, args)
     }
   )
