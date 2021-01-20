@@ -85,7 +85,7 @@ mod_fit_2 <- tmp_map$fit(
   cores = 2
 )
 
-poststrat_fit <- tmp_map$predictify(mod_fit) # predict in postrat matrix
+poststrat_fit <- tmp_map$predictify(mod_fit_1) # predict in postrat matrix
 -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
 tmp_map$poststratify("age") # get an estimate for a particular level
 plot1 <- tmp_map$visualize()
