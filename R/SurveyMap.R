@@ -67,8 +67,14 @@
 #' tmp_map$tabulate("age") #Just use age in the poststrat matrix
 #' tmp_map$tabulate() #Use all variables in the map
 #'
-#' mod_fit <- tmp_map$model(formula = y ~ (1|age) + (1|gender), type = brms,
-#' priors = ...,)
+#' mod_fit <- tmp_map$fit(
+#'   formula = y ~ (1|age) + (1|gender),
+#'   family = "binomial",
+#'   refresh = 100,
+#'   cores = 2
+#'   fun = rstanarm::stan_glmer
+#' )
+#'
 #' poststrat_fit <- tmp_map$predictify(mod_fit) - predict in postrat matrix
 #' -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
 #' tmp_map$poststratify("age") - get an estimate for a particular level
@@ -244,6 +250,24 @@ SurveyMap <- R6::R6Class(
         group_by_at(all_of(grouping_vars)) %>%
         summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
+    },
+
+    #' @description Fit a model
+    #' @param formula The model formula.
+    #' @param ... Other arguments passed to the model fitting function.
+    #' @param fun The model fitting function to use. For example,
+    #'   `fun=rstanarm::stan_glmer`.
+    fit = function(formula, ..., fun) {
+      fun <- match.fun(fun)
+      mapped_data <- self$samp_obj$mapped_data
+      need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
+      y_and_x <- self$samp_obj$survey_data[, need_vars, drop = FALSE]
+
+      args <- list(...)
+      args$formula <- formula
+      args$data <- cbind(mapped_data, y_and_x)
+
+      do.call(fun, args)
     }
   )
 )
