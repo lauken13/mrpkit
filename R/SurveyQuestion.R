@@ -1,9 +1,9 @@
 #' SurveyQuestion
 #'
-#' @name QuestionMap
+#' @name SurveyQuestion
 #' @export
 #'
-#' @description A `QuestionMap` holds the mapping for one question
+#' @description A `SurveyQuestion` object holds the mapping for one question
 #' or demographic between the survey and population dataset.
 #' The name is the name of the underlying construct.
 #' The col_names maps the survey column name to the population column name.
@@ -34,7 +34,7 @@
 #' )
 #'
 question <- R6::R6Class(
-  classname = "question",
+  classname = "SurveyQuestion",
   public = list(
     name = character(),
     col_names = character(),
