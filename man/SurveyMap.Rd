@@ -103,6 +103,7 @@ plot1 <- tmp_map$visualize()
 \item \href{#method-mapping}{\code{SurveyMap$mapping()}}
 \item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
 \item \href{#method-fit}{\code{SurveyMap$fit()}}
+\item \href{#method-predictify}{\code{SurveyMap$predictify()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -208,6 +209,26 @@ object.}
 
 \item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to the model
 fitting function.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-predictify"></a>}}
+\if{latex}{\out{\hypertarget{method-predictify}{}}}
+\subsection{Method \code{predictify()}}{
+Use fitted model to add predictions to post-stratification dataset.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$predictify(fitted_model, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{fitted_model}}{The name of the model that was fit. For example, \code{fit1}.}
+
+\item{\code{...}}{Arguments other than \code{fitted_model} to pass to the prediction
+function.}
 }
 \if{html}{\out{</div>}}
 }

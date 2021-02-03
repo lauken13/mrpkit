@@ -84,8 +84,10 @@
 #'   cores = 2
 #' )
 #'
+#' ME:
 #' poststrat_fit <- tmp_map$predictify(mod_fit_1) # predict in postrat matrix
-#' -returns a matrix with rows as poststrat rows, columns as posterior samples, NEED TO DOCUMENT!!!
+#' -returns a matrix with cols as poststrat rows, rows as posterior samples, NEED TO DOCUMENT!!!
+#'
 #' tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
 #'
@@ -310,6 +312,36 @@ SurveyMap <- R6::R6Class(
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
       do.call(fun, args)
+    },
+
+    #' @description Use fitted model to add predictions to post-stratification dataset.
+    #' @param fitted_model The name of the model that was fit. For example, `fit1`.
+    #' @param ... Arguments other than `fitted_model` to pass to the prediction
+    #'   function.
+    #'
+    predictify = function(fitted_model, ...) {
+      args <- list(...)
+      if (!is.null(args$data)) {
+        stop("The 'data' argument should not be specified.",
+             call. = FALSE)
+      }
+      if (is.null(self$samp_obj$poststrat)) {
+        stop("Post-stratification data not found. ",
+             "Please call the tabulate() method before fitting a model.",
+             call. = FALSE)
+      }
+      # if (is.null(self$samp_obj$fit)) {
+      #   stop("Fitted model not found. ",
+      #        "Please call the fit() method before predicting with a model.",
+      #        call. = FALSE)
+      # }
+      poststrat <- self$popn_obj$poststrat
+      # need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
+      # y_and_x <- self$samp_obj$survey_data[, need_vars, drop = FALSE]
+      #
+      # args$formula <- formula
+      # args$data <- cbind(mapped_data, y_and_x)
+      rstanarm::posterior_predict(fitted_model, poststrat)
     }
   )
 )
