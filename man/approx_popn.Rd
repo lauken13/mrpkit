@@ -4,15 +4,13 @@
 \name{approx_popn}
 \alias{approx_popn}
 \title{Example approximate population (modelled after ACS)}
-\format{
-A data frame with columns:
+\format{A data frame with columns:
 \describe{
 \item{age2}{Age group}
 \item{gender}{Gender}
 \item{pet_pref}{Pet preference}
 \item{wt}{Raked and trimmed survey weight}
-}
-}
+}}
 \source{
 Created in CreateTestData.R
 }

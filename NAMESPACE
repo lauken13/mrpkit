@@ -3,4 +3,5 @@
 export(SurveyMap)
 export(SurveyObj)
 export(question)
+export(sim_posterior_epred)
 importFrom(dplyr,"%>%")
