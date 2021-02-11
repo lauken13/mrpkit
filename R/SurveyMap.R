@@ -84,8 +84,11 @@
 #'   cores = 2
 #' )
 #'
-#' poststrat_fit <- tmp_map$predictify(fitted_model = mod_fit_1, fun = rstanarm::posterior_predict) # predict in postrat matrix
-#' -returns a matrix with cols as poststrat rows, rows as posterior samples, NEED TO DOCUMENT!!!
+#' class(mod_fit_1)
+#'
+#' poststrat_fit <- tmp_map$predictify(
+#'   fitted_model = mod_fit_1) # predict in postrat matrix - returns a matrix
+#'   # with cols as poststrat rows, rows as posterior samples.
 #'
 #' tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
@@ -318,10 +321,10 @@ SurveyMap <- R6::R6Class(
     #' @param ... Arguments other than `fitted_model` to pass to the prediction
     #'   function.
     #'
-    predictify = function(fitted_model, fun, ...) {
+    predictify = function(fitted_model, fun = NULL, ...) {
       args <- list(...)
-      if (!is.null(args$data)) {
-        stop("The 'data' argument should not be specified.",
+      if (!is.null(args$newdata)) {
+        stop("The 'newdata' argument should not be specified.",
              call. = FALSE)
       }
       if (is.null(self$samp_obj$poststrat)) {
@@ -330,9 +333,39 @@ SurveyMap <- R6::R6Class(
              call. = FALSE)
       }
       poststrat <- self$popn_obj$poststrat
-      fun <- match.fun(fun)
 
-      fun(fitted_model, poststrat)
+      if (is.null(args$fun)) {
+        if ("stanreg" %in% class(fitted_model)){
+          return(
+            rstanarm::posterior_epred(
+              object = fitted_model,
+              newdata = poststrat
+              )
+            )
+          }
+        if ("brmsfit" %in% class(fitted_model)){
+          return(
+            brms::posterior_epred(
+              object = fitted_model,
+              newdata = poststrat,
+              allow_new_levels = TRUE,
+              sample_new_levels = "gaussian"
+              )
+            )
+          }
+        if ("glmerMod" %in% class(fitted_model)) {
+          return(
+            sim_posterior_epred(
+              object = fitted_model,
+              newdata = poststrat,
+              )
+            )
+          }
+      } else {
+        poststrat <- self$popn_obj$poststrat
+        fun <- match.fun(fun)
+        fun(fitted_model, poststrat)
+        }
     }
   )
 )
