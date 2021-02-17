@@ -87,7 +87,7 @@
 #' class(mod_fit_1)
 #'
 #' # predict in postrat matrix - returns a matrix
-#' # with cols as poststrat rows, rows as posterior samples.
+#' # with rows as poststrat rows, cols as posterior samples.
 #' poststrat_fit <- tmp_map$predictify(mod_fit_1)
 #'
 #' tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
