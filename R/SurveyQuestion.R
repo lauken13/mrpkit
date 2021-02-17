@@ -54,7 +54,8 @@ question <- R6::R6Class(
       }
       self$name <- name
       self$col_names <- col_names
-      self$values <- data.frame(names(values_map), as.character(unlist(values_map)))
+      self$values <- data.frame(names(values_map), as.character(unlist(values_map)),
+                                stringsAsFactors = TRUE)
       if (sum(duplicated(self$values)) > 0) {
         warning("Duplicated mapping in values, removing duplciates", call. = FALSE)
         self$values <- self$values[!duplicated(self$values), ]

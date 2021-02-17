@@ -340,9 +340,9 @@ SurveyMap <- R6::R6Class(
             rstanarm::posterior_epred(
               object = fitted_model,
               newdata = poststrat
-              )
             )
-          }
+          )
+        }
         if ("brmsfit" %in% class(fitted_model)){
           return(
             brms::posterior_epred(
@@ -350,22 +350,22 @@ SurveyMap <- R6::R6Class(
               newdata = poststrat,
               allow_new_levels = TRUE,
               sample_new_levels = "gaussian"
-              )
             )
-          }
+          )
+        }
         if ("glmerMod" %in% class(fitted_model)) {
           return(
             sim_posterior_epred(
               object = fitted_model,
               newdata = poststrat,
-              )
             )
-          }
+          )
+        }
       } else {
         poststrat <- self$popn_obj$poststrat
         fun <- match.fun(fun)
         fun(fitted_model, poststrat)
-        }
+      }
     }
   )
 )
