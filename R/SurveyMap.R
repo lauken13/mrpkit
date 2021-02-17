@@ -107,7 +107,7 @@ SurveyMap <- R6::R6Class(
         stop("samp_obj must be a SurveyObj object.", call. = FALSE)
       }
       if (!inherits(popn_obj, "SurveyObj")) {
-        stop("samp_obj must be a SurveyObj object.", call. = FALSE)
+        stop("popn_obj must be a SurveyObj object.", call. = FALSE)
       }
 
       self$item_map <- list(...)
