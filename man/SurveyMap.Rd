@@ -87,9 +87,9 @@ mod_fit_2 <- tmp_map$fit(
 
 class(mod_fit_1)
 
-poststrat_fit <- tmp_map$predictify(
-  fitted_model = mod_fit_1) # predict in postrat matrix - returns a matrix
-  # with cols as poststrat rows, rows as posterior samples.
+# predict in postrat matrix - returns a matrix
+# with rows as poststrat rows, cols as posterior samples.
+poststrat_fit <- tmp_map$predictify(mod_fit_1)
 
 tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
 plot1 <- tmp_map$visualize()
@@ -234,10 +234,13 @@ Use fitted model to add predicted probabilities to post-stratification dataset.
 \item{\code{fun}}{The function to use to generate the predicted probabilities.
 This should only be specified if using a custom function, otherwise for
 \pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
-automatically used and for \pkg{lme4} models the
-\code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom function then
-the first argument should take in the fitted model object and the
-second argument should take in the poststratification (\code{newdata}) data frame.}
+automatically used (with the result transposed) and for \pkg{lme4}
+models the \code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom
+function then the first argument should take in the fitted model object
+and the second argument should take in the poststratification
+(\code{newdata}) data frame. The function must return a matrix with rows
+corresponding to the columns of the poststrat data and columns
+corresponding to simulations.}
 
 \item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
 to pass to \code{fun}.}
