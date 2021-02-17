@@ -33,7 +33,7 @@ sim_posterior_epred  <- function(object, newdata, nsamples = 4000){
       #Obtain predictive samples
       predicted_results <- plogis(attributes(predict_nd)$sim.results)
 
-      return(predicted_results)
+      return(t(predicted_results))
     }
   }
 }

@@ -86,9 +86,9 @@
 #'
 #' class(mod_fit_1)
 #'
-#' poststrat_fit <- tmp_map$predictify(
-#'   fitted_model = mod_fit_1) # predict in postrat matrix - returns a matrix
-#'   # with cols as poststrat rows, rows as posterior samples.
+#' # predict in postrat matrix - returns a matrix
+#' # with cols as poststrat rows, rows as posterior samples.
+#' poststrat_fit <- tmp_map$predictify(mod_fit_1)
 #'
 #' tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
 #' plot1 <- tmp_map$visualize()
@@ -316,10 +316,20 @@ SurveyMap <- R6::R6Class(
       do.call(fun, args)
     },
 
-    #' @description Use fitted model to add predictions to post-stratification dataset.
+    #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
     #' @param fitted_model The name of the model that was fit. For example, `fit1`.
-    #' @param ... Arguments other than `fitted_model` to pass to the prediction
-    #'   function.
+    #' @param fun The function to use to generate the predicted probabilities.
+    #'   This should only be specified if using a custom function, otherwise for
+    #'   \pkg{rstanarm} and \pkg{brms} models `posterior_epred()` is
+    #'   automatically used (with the result transposed) and for \pkg{lme4}
+    #'   models the [sim_posterior_epred()] is used. If `fun` is a custom
+    #'   function then the first argument should take in the fitted model object
+    #'   and the second argument should take in the poststratification
+    #'   (`newdata`) data frame. The function must return a matrix with rows
+    #'   corresponding to the columns of the poststrat data and columns
+    #'   corresponding to simulations.
+    #' @param ... Arguments other than the fitted model and `newdata` data frame
+    #'   to pass to `fun`.
     #'
     predictify = function(fitted_model, fun = NULL, ...) {
       args <- list(...)
@@ -337,20 +347,24 @@ SurveyMap <- R6::R6Class(
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(fitted_model)){
           return(
-            rstanarm::posterior_epred(
+            t(rstanarm::posterior_epred(
               object = fitted_model,
-              newdata = poststrat
-            )
+              newdata = poststrat,
+              ...
+            ))
           )
         }
         if ("brmsfit" %in% class(fitted_model)){
           return(
-            brms::posterior_epred(
+            t(brms::posterior_epred(
               object = fitted_model,
               newdata = poststrat,
               allow_new_levels = TRUE,
-              sample_new_levels = "gaussian"
-            )
+              sample_new_levels =
+                if (!is.null(args$sample_new_levels)) args$sample_new_levels
+                else "gaussian",
+              ...
+            ))
           )
         }
         if ("glmerMod" %in% class(fitted_model)) {
@@ -358,13 +372,14 @@ SurveyMap <- R6::R6Class(
             sim_posterior_epred(
               object = fitted_model,
               newdata = poststrat,
+              ...
             )
           )
         }
       } else {
         poststrat <- self$popn_obj$poststrat
         fun <- match.fun(fun)
-        fun(fitted_model, poststrat)
+        fun(fitted_model, poststrat, ...)
       }
     }
   )

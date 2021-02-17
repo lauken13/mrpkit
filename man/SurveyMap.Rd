@@ -221,7 +221,7 @@ fitting function.}
 \if{html}{\out{<a id="method-predictify"></a>}}
 \if{latex}{\out{\hypertarget{method-predictify}{}}}
 \subsection{Method \code{predictify()}}{
-Use fitted model to add predictions to post-stratification dataset.
+Use fitted model to add predicted probabilities to post-stratification dataset.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$predictify(fitted_model, fun = NULL, ...)}\if{html}{\out{</div>}}
 }
@@ -231,8 +231,16 @@ Use fitted model to add predictions to post-stratification dataset.
 \describe{
 \item{\code{fitted_model}}{The name of the model that was fit. For example, \code{fit1}.}
 
-\item{\code{...}}{Arguments other than \code{fitted_model} to pass to the prediction
-function.}
+\item{\code{fun}}{The function to use to generate the predicted probabilities.
+This should only be specified if using a custom function, otherwise for
+\pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
+automatically used and for \pkg{lme4} models the
+\code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom function then
+the first argument should take in the fitted model object and the
+second argument should take in the poststratification (\code{newdata}) data frame.}
+
+\item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
+to pass to \code{fun}.}
 }
 \if{html}{\out{</div>}}
 }
