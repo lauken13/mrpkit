@@ -90,7 +90,18 @@
 #' # with rows as poststrat rows, cols as posterior samples.
 #' poststrat_fit <- tmp_map$predictify(mod_fit_1)
 #'
-#' tmp_map$poststratify(poststrat_fit, variable = "age") # get an estimate for a particular level
+#' # get an estimate for a particular variable level or population
+#' # arguments:
+#' # - output of "predictify"
+#' # - (optional) variable name
+#' # body:
+#' # - if no variable name then compute population estimate
+#' # - if variable name specified compute weighted mean (N_j * theta)/sum(N_j)
+#' # return type:
+#' # - data.frame
+#' #   - one column if popn estimate, otherwise one column per level of variable
+#' #   - one row per posterior sample
+#' tmp_map$aggregate(poststrat_fit, variable = "age")
 #' plot1 <- tmp_map$visualize()
 #'
 #' @importFrom dplyr %>%
