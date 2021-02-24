@@ -258,6 +258,10 @@ to pass to \code{fun}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A matrix with rows corresponding to poststrat cells and columns
+corresponding to posterior samples.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

@@ -341,6 +341,8 @@ SurveyMap <- R6::R6Class(
     #'   corresponding to simulations.
     #' @param ... Arguments other than the fitted model and `newdata` data frame
     #'   to pass to `fun`.
+    #' @return A matrix with rows corresponding to poststrat cells and columns
+    #'   corresponding to posterior samples.
     #'
     predictify = function(fitted_model, fun = NULL, ...) {
       args <- list(...)
