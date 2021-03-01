@@ -102,8 +102,11 @@
 #' #   - one column if popn estimate, otherwise one column per level of variable
 #' #   - one row per posterior sample
 #' sae_preds <- tmp_map$collapsify(poststrat_fit, variable_aggr = "age")
-#' plot1 <- tmp_map$visualify(sae_preds)
-#'
+#' popn_preds <- tmp_map$collapsify(poststrat_fit)
+#' plot1 <- tmp_map$visify(sae_preds)
+#' plot1
+#' plot2 <- tmp_map$visify(popn_preds)
+#' plot2
 #' @importFrom dplyr %>%
 #'
 SurveyMap <- R6::R6Class(
@@ -398,33 +401,33 @@ SurveyMap <- R6::R6Class(
   collapsify = function(poststrat_fit, variable_aggr = NULL) {
     poststrat <- self$popn_obj$poststrat
     if(!is.null(variable_aggr)){
-      rotate_levels <- levels(tmp_map$samp_obj$mapped_data[,variable_aggr])
+      rotate_levels <- levels(self$samp_obj$mapped_data[,variable_aggr])
       posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
       colnames(posterior_preds)[1] <- variable_aggr
       for(focus_level in rotate_levels){
         level_loc = poststrat[variable_aggr]==focus_level
         posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
       }
-      return(posterior_preds)
     } else {
-      posterior_preds <- apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j))
+      posterior_preds <- data.frame(value = apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
     }
+    return(posterior_preds)
+
   },
-  collapsify = function(sae_preds) {
-    poststrat <- self$popn_obj$poststrat
-    if(!is.null(variable_aggr)){
-      rotate_levels <- levels(tmp_map$samp_obj$mapped_data[,variable_aggr])
-      posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
-      colnames(posterior_preds)[1] <- variable_aggr
-      for(focus_level in rotate_levels){
-        level_loc = poststrat[variable_aggr]==focus_level
-        posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
-      }
-      return(posterior_preds)
-    } else {
-      posterior_preds <- apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j))
+  visify = function(sae_preds) {
+    if(dim(sae_preds)[2]>1){
+      svy_q <- self$samp_obj$questions[colnames(self$samp_obj$survey_data) == self$item_map[[colnames(sae_preds)[1]]]$col_names[1]]
+      focus_var <- dplyr::sym(colnames(sae_preds)[1])
+      ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
+        ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
+        ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
+        ggplot2::xlab(svy_q)
+    }else {
+      ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
+        ggplot2::geom_density(fill = "darkblue", alpha = .3) +
+        ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))
     }
-  }
+    }
   )
 )
 

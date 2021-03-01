@@ -134,7 +134,7 @@ class(mod_fit_1)
 
 # predict in postrat matrix - returns a matrix
 # with rows as poststrat rows, cols as posterior samples.
-poststrat_fit <- tmp_map$predictify(mod_fit_1)
+poststrat_fit <- tmp_map$predictify(mod_fit_2)
 
 # get an estimate for a particular variable level or population
 # arguments:
@@ -147,8 +147,11 @@ poststrat_fit <- tmp_map$predictify(mod_fit_1)
 # - data.frame
 #   - one column if popn estimate, otherwise one column per level of variable
 #   - one row per posterior sample
-# tmp_map$collapsify(poststrat_fit, variable = "age")
-plot1 <- tmp_map$visualize()
-
+sae_preds <- tmp_map$collapsify(poststrat_fit, variable_aggr = "age")
+popn_preds <- tmp_map$collapsify(poststrat_fit)
+plot1 <- tmp_map$visify(sae_preds)
+plot1
+plot2 <- tmp_map$visify(popn_preds)
+plot2
 }
 \keyword{datasets}

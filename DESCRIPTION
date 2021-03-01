@@ -14,7 +14,8 @@ Imports:
     dplyr,
     forcats,
     merTools,
-    rstanarm
+    rstanarm,
+    ggplot2
 Suggests: 
     testthat
 Roxygen: list(markdown = TRUE)
