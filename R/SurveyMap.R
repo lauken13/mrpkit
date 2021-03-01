@@ -395,7 +395,22 @@ SurveyMap <- R6::R6Class(
         fun(fitted_model, poststrat, ...)
       }
     },
-  collapsify = function(poststrat_fit = poststrat_fit, variable_aggr = NULL) {
+  collapsify = function(poststrat_fit, variable_aggr = NULL) {
+    poststrat <- self$popn_obj$poststrat
+    if(!is.null(variable_aggr)){
+      rotate_levels <- levels(tmp_map$samp_obj$mapped_data[,variable_aggr])
+      posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
+      colnames(posterior_preds)[1] <- variable_aggr
+      for(focus_level in rotate_levels){
+        level_loc = poststrat[variable_aggr]==focus_level
+        posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+      }
+      return(posterior_preds)
+    } else {
+      posterior_preds <- apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j))
+    }
+  },
+  collapsify = function(sae_preds) {
     poststrat <- self$popn_obj$poststrat
     if(!is.null(variable_aggr)){
       rotate_levels <- levels(tmp_map$samp_obj$mapped_data[,variable_aggr])
