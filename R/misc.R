@@ -4,7 +4,7 @@ require_suggested_package <- function(pkg) {
   }
 }
 
-is.family <- function(x) {
+is_family <- function(x) {
   inherits(x, "family")
 }
 
@@ -16,10 +16,10 @@ family_is_binomial <- function(x) {
   if (is.null(x)) {
     return(FALSE)
   }
-  if (!is.character(x) && !is.family(x)) {
+  if (!is.character(x) && !is_family(x)) {
     stop("Model family must be a string or family object", call. = FALSE)
   }
-  if (is.family(x)) {
+  if (is_family(x)) {
     x <- x$family
   }
   x %in% c("binomial", "bernoulli")
