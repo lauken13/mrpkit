@@ -2,21 +2,25 @@
 % Please edit documentation in R/sim_posterior_epred.R
 \name{sim_posterior_epred}
 \alias{sim_posterior_epred}
-\title{sim_posterior_epred}
+\title{Generate approximate samples of predicted probabilities from a binomial
+\code{glmerMod} object.}
 \usage{
 sim_posterior_epred(object, newdata, nsamples = 4000)
 }
 \arguments{
-\item{object}{Model of type glmer class and binomial family}
+\item{object}{A binomial model fit using \code{lme4::glmer()}.}
 
-\item{newdata}{Data to predict for}
+\item{newdata}{The data to use.}
 
-\item{nsamples}{Number of samples}
+\item{nsamples}{Number of samples to generate.}
+}
+\value{
+A matrix with \code{nrow(newdata)} rows and \code{nsamples} columns.
 }
 \description{
-Helper function to create predictive samples from a glmer class model
-Takes in model class and newdata to predict for
-Return a matrix with rows that represent posterior samples and columns that represent
-data that is being predicted for
-Only for binomial family models.
+Generate approximate samples of predicted probabilities from a binomial
+\code{glmerMod} object.
+}
+\examples{
+
 }
