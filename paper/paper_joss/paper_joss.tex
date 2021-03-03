@@ -7,18 +7,20 @@
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \author{
-Lauren Kennedy\\Monash University \And Mitzi Morris\\Columbia University \And Jonah Gabry\\Columbia University \And Rohan Alexander\\University of Toronto
+Lauren Kennedy\\Monash University \And Mitzi Morris\\Columbia
+University \And Jonah Gabry\\Columbia University \And Rohan
+Alexander\\University of Toronto
 }
 \title{\pkg{MRP-Kit} A `grammar' of multilevel regression with
 post-stratification and implementation in \proglang{R}}
 
 \Plainauthor{Lauren Kennedy, Mitzi Morris, Jonah Gabry, Rohan Alexander}
-\Plaintitle{A `grammar' of multilevel regression with post-stratification and
-implementation in R}
-\Shorttitle{\pkg{foo}: A grammar of MRP}
+\Plaintitle{A `grammar' of multilevel regression with
+post-stratification and implementation in R}
+\Shorttitle{\pkg{MRP-Kit}: A grammar of MRP}
 
 \Abstract{
-In this paper we define a grammar for multilevel regression with
+In this paper we define a `grammar' for multilevel regression with
 post-stratification (MRP) and implement this grammar in the R Package
 \pkg{MRPKit}. Our grammar is centered around the following verbs: add,
 remove, delete, and replace. These act on survey objects. Our grammar,
@@ -26,8 +28,11 @@ and its implementation, provides a detailed workflow when conducting MRP
 that will be useful for researchers and in teaching.
 }
 
-\Keywords{multilevel regression with post-stratification, \proglang{R}, reproducibility, statistics, political science}
-\Plainkeywords{multilevel regression with post-stratification, R, reproducibility, statistics, political science}
+\Keywords{multilevel regression with
+post-stratification, \proglang{R}, reproducibility, statistics, political
+science}
+\Plainkeywords{multilevel regression with
+post-stratification, R, reproducibility, statistics, political science}
 
 %% publication information
 %% \Volume{50}
@@ -40,6 +45,7 @@ that will be useful for researchers and in teaching.
 \Address{
         }
 
+% Pandoc citation processing
 
 % Pandoc header
 
@@ -85,8 +91,11 @@ post-stratification object would typically be a larger survey, such as,
 in the case of the US, the (INSERT THE USUAL ONE), or a census.
 
 Our grammar and package complements existing packages such as
-\proglang{survey} (ADD CITATION), X and Y. These packages\ldots{}
-Instead, ours is focused on what is needed for MRP.
+\proglang{survey} \citep[\citet{lumleytwo},
+\citet{lumleythree}]{lumleyone}, and \proglang{DeclareDesign}
+\citep{citeDeclareDesign}. These packages are focused on the designing,
+implementing, and simulating from, surveys. Instead, ours is focused on
+what is needed for MRP.
 
 The remainder of this paper is structured as follows: Section
 \ref{sec:review} reviews similar packages and contributions and places
@@ -102,22 +111,28 @@ and weaknesses, as well as notes about next steps.
 \section{Review of the other packages} \label{sec:review}
 
 The most common alternative at the moment to this package is for users
-to do all aspects themselves. While there is nothing conceptually
+to do all aspects themselves. While there is nothing inherently
 difficult about MRP, the implementation can be difficult. In particular,
 preparing and matching different levels between surveys can be time
-consuming and potentially introduce errors.
+consuming and potentially introduce undocumented errors.
 
-HERE
+The \proglang{survey} package \citep[\citet{lumleytwo},
+\citet{lumleythree}]{lumleyone} \ldots{}
 
-Survey package
+The \proglang{DeclareDesign} package \citep{citeDeclareDesign}\ldots{}
 
-Declare design
+There is also an existing package called \proglang{MRP} available here:
+\url{https://github.com/gelman/mrp}. However it does not appear to have
+been updated in some time.
 
-DIY
-
-MRP package - \url{https://github.com/gelman/mrp}
-
-And how we're different
+The main alternative approach is for MRP to be conducted on a
+case-specific basis. That is a researcher interested in MRP estimates,
+writes the code needed to obtain, clean, prepare, analyze and ultimately
+interpret the estimates. Again, while there is nothing inherently wrong
+with this approach, successfully conducting MRP requires dealing with a
+large number of small issues. Each of these is small in their own right,
+but getting them wrong can have large effects that are potentially
+unnoticed on the estimates.
 
 \section{Components and grammar} \label{sec:components}
 
@@ -143,27 +158,6 @@ post-stratification.
 
 New is when you have a new survey object and you are bringing it in.
 e.g.
-
-\% sampl \textless- surveyStr\(new(...) % pop <- surveyStr
-\)new(\ldots) \% map \textless-
-surveyMap\(new(sampl, pop, ...) % mrp1 <- MRP
-\)new(sampl, pop, map)
-
-\% option 1 \% mod1 \textless-
-mrp1\(fit(y ~ x + (1|group)) % mod1 <- mrp1
-\)fit(y \textasciitilde{} x + (1\textbar group) + (1\textbar group2))
-
-\% mod1\(poststratify() % mod2
-\)poststratify(``model1'')
-
-\% or
-
-\% option 2 \% mrp1\(fit(y ~ x + (1|group), name = "model1") % mrp1
-\)fit(y \textasciitilde{} x + (1\textbar group) + (1\textbar group2),
-name = ``model2'')
-
-\% mrp1\(poststartify("model1") % mrp1
-\)poststartify(``model2'')
 
 What is the difference between add and new? What is replace doing? URGH,
 I just need to look at the repo.
@@ -195,6 +189,8 @@ Many objects on the same class. There are two
 
 \section{Vignette} \label{sec:vignette}
 
+\subsection*{Simulated data}
+
 \subsection*{Using CCES data}
 
 \subsection*{Using your own data}
@@ -205,7 +201,7 @@ Many objects on the same class. There are two
 
 \section*{Acknowledgments}
 
+\bibliography{references.bib}
 
 
 \end{document}
-
