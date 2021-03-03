@@ -14,21 +14,21 @@ are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 }
 \examples{
-feline_prefs = SurveyObj$new(
+feline_prefs = SurveyData$new(
   feline_survey[,c("age1","gender","pet_own","y")],
   questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
   responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
   weights = feline_survey$wt,
   design = formula("~.")
 )
-popn_obj = SurveyObj$new(
+popn_obj = SurveyData$new(
   approx_popn[,c("age2","gender","pet_pref")],
   questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
   responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
   weights = approx_popn$wt,
   design = formula("~.")
 )
-q1 <- question$new(
+q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -36,12 +36,12 @@ q1 <- question$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q2 <- question$new(
+q2 <- SurveyQuestion$new(
   name = "pet",
   col_names = c("pet_own","pet_pref"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 )
-q3 <- question$new(
+q3 <- SurveyQuestion$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")

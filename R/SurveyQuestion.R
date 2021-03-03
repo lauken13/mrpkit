@@ -6,14 +6,14 @@
 #' @description A `SurveyQuestion` object holds the mapping for one question
 #' or demographic between the survey and population dataset.
 #' The name is the name of the underlying construct.
-#' The col_names maps the survey column name to the population column name.
-#' The values map the survey response values to the population values.
+#' The `col_names` map the survey column name to the population column name.
+#' The `values` map the survey response values to the population values.
 #' If there is a meaningful ordering over the values,
 #' they should be listed in that order, either descending or ascending.
 #' The ordering should be sample first and then population
 #'
 #' @examples
-#' q1 <- question$new(
+#' q1 <- SurveyQuestion$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
 #'   values_map = list(
@@ -21,23 +21,37 @@
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
 #'   )
 #' )
-#' q2 <- question$new(
+#' q2 <- SurveyQuestion$new(
 #'   name = "pet",
 #'   col_names = c("pet_pref","pet_own"),
 #'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","dog" = "puppy")
 #' )
-#' q3 <- question$new(
+#' q3 <- SurveyQuestion$new(
 #'   name = "gender",
 #'   col_names = c("gender","gender"),
-#'   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
+#'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
-question <- R6::R6Class(
+SurveyQuestion <- R6::R6Class(
   classname = "SurveyQuestion",
   public = list(
     name = character(),
     col_names = character(),
-    values = data.frame(),
+    values = list(),
+
+    #' @description Create a new `SurveyQuestion`
+    #' @param name The name of the underlying construct. For example if the
+    #'   sample data uses the name `age1` and the population data uses
+    #'   the name `age2` then `name` could be `age`.
+    #' @param col_names A character vector of length two giving the column names
+    #'   of the question in the sample data (first element) and the population
+    #'   data (second element).
+    #' @param values_map A named list where the names correspond to the
+    #'   responses to the question in the sample data and the values correspond
+    #'   to the responses in the population data.
+    #' @return A `SurveyQuestion` object that can be added to a [`SurveyData`]
+    #'   object.
+    #'
     initialize = function(name, col_names, values_map) {
       if (is.na(name)) {
         stop("Please specify a general name for this construct", call. = FALSE)

@@ -2,21 +2,19 @@
 % Please edit documentation in R/SurveyQuestion.R
 \name{SurveyQuestion}
 \alias{SurveyQuestion}
-\alias{question}
 \title{SurveyQuestion}
 \description{
 A \code{SurveyQuestion} object holds the mapping for one question
 or demographic between the survey and population dataset.
 The name is the name of the underlying construct.
-The col_names maps the survey column name to the population column name.
-The values map the survey response values to the population values.
+The \code{col_names} map the survey column name to the population column name.
+The \code{values} map the survey response values to the population values.
 If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 The ordering should be sample first and then population
 }
 \examples{
-
-q1 <- question$new(
+q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -24,41 +22,63 @@ q1 <- question$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q2 <- question$new(
+q2 <- SurveyQuestion$new(
   name = "pet",
   col_names = c("pet_pref","pet_own"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","dog" = "puppy")
 )
-q3 <- question$new(
+q3 <- SurveyQuestion$new(
   name = "gender",
   col_names = c("gender","gender"),
-  values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
+  values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{question$new()}}
-\item \href{#method-print}{\code{question$print()}}
-\item \href{#method-clone}{\code{question$clone()}}
+\item \href{#method-new}{\code{SurveyQuestion$new()}}
+\item \href{#method-print}{\code{SurveyQuestion$print()}}
+\item \href{#method-clone}{\code{SurveyQuestion$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Create a new \code{SurveyQuestion}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{question$new(name, col_names, values_map)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$new(name, col_names, values_map)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{The name of the underlying construct. For example if the
+sample data uses the name \code{age1} and the population data uses
+the name \code{age2} then \code{name} could be \code{age}.}
+
+\item{\code{col_names}}{A character vector of length two giving the column names
+of the question in the sample data (first element) and the population
+data (second element).}
+
+\item{\code{values_map}}{A named list where the names correspond to the
+responses to the question in the sample data and the values correspond
+to the responses in the population data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{SurveyQuestion} object that can be added to a \code{\link{SurveyData}}
+object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{question$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$print(...)}\if{html}{\out{</div>}}
 }
 
 }
@@ -68,7 +88,7 @@ q3 <- question$new(
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{question$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

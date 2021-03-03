@@ -27,7 +27,7 @@
 #'   weights = approx_popn$wt,
 #'   design = formula("~.")
 #' )
-#' q1 <- question$new(
+#' q1 <- SurveyQuestion$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
 #'   values_map = list(
@@ -35,12 +35,12 @@
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
 #'   )
 #' )
-#' q2 <- question$new(
+#' q2 <- SurveyQuestion$new(
 #'   name = "pet",
 #'   col_names = c("pet_own","pet_pref"),
 #'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 #' )
-#' q3 <- question$new(
+#' q3 <- SurveyQuestion$new(
 #'   name = "gender",
 #'   col_names = c("gender","gender"),
 #'   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
