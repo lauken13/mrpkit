@@ -62,7 +62,7 @@
 #' print(tmp_map)
 #' tmp_map$add(q1)
 #' print(tmp_map)
-#' tmp_map$validate() # TODO: figure out why this errors
+#' tmp_map$validate()
 #' tmp_map$mapping()
 #' tmp_map$tabulate("age") #Just use age in the poststrat matrix
 #' tmp_map$tabulate() #Use all variables in the map
@@ -83,8 +83,6 @@
 #'   refresh = 100,
 #'   cores = 2
 #' )
-#'
-#' class(mod_fit_1)
 #'
 #' # predict in postrat matrix - returns a matrix
 #' # with rows as poststrat rows, cols as posterior samples.
