@@ -9,9 +9,7 @@
 #' @examples
 #'
 sim_posterior_epred  <- function(object, newdata, nsamples = 4000) {
-  if (!requireNamespace("merTools", quietly = TRUE)) {
-    stop("Please install the merTools package.", call. = FALSE)
-  }
+  require_suggested_package("merTools")
   if (!inherits(object, "glmerMod")) {
     stop("Object must have class 'glmerMod'.", call. = FALSE)
   }

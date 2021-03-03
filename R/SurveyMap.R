@@ -193,6 +193,7 @@ SurveyMap <- R6::R6Class(
     replace = function(old_question, new_question) {
       self$delete(old_question)
       self$add(new_question)
+      invisible(self)
     },
 
     validate = function() {
@@ -245,6 +246,7 @@ SurveyMap <- R6::R6Class(
       if (sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames)) == 0) {
         warning("At least one variable in the survey needs to be unknown in the population.",call. = FALSE)
       }
+      invisible(self)
     },
     mapping  = function() {
       ####Set up keys####
@@ -282,6 +284,7 @@ SurveyMap <- R6::R6Class(
         self$samp_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
         self$popn_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
       }
+      invisible(self)
     },
     tabulate  = function(...) {
       grouping_vars <- c(...)
@@ -298,13 +301,16 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Fit a model
+    #' @description Fit a model.
     #' @param fun The model fitting function to use. For example,
-    #'   `fun=rstanarm::stan_glmer` or `fun=brms::brm`.
+    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`.
+    #'   If using a custom `fun` it must have a `data` argument that accepts
+    #'   a data frame (like standard R modeling functions).
     #' @param formula The model formula. Can be either a string or a formula
     #'   object.
-    #' @param ... Arguments other than `formula` and `data` to pass to the model
-    #'   fitting function.
+    #' @param ... Arguments other than `formula` and `data` to pass to `fun`.
+    #'   The data argument will be automatically specified internally.
+    #' @return The fitted model object returned by `fun`.
     #'
     fit = function(fun, formula, ...) {
       fun <- match.fun(fun)
@@ -345,7 +351,7 @@ SurveyMap <- R6::R6Class(
     #'   function then the first argument should take in the fitted model object
     #'   and the second argument should take in the poststratification
     #'   (`newdata`) data frame. The function must return a matrix with rows
-    #'   corresponding to the columns of the poststrat data and columns
+    #'   corresponding to the columns of the poststratification data and columns
     #'   corresponding to simulations.
     #' @param ... Arguments other than the fitted model and `newdata` data frame
     #'   to pass to `fun`.
@@ -367,6 +373,7 @@ SurveyMap <- R6::R6Class(
 
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(fitted_model)){
+          require_suggested_package("rstanarm")
           return(
             t(rstanarm::posterior_epred(
               object = fitted_model,
@@ -376,6 +383,7 @@ SurveyMap <- R6::R6Class(
           )
         }
         if ("brmsfit" %in% class(fitted_model)){
+          require_suggested_package("brms")
           return(
             t(brms::posterior_epred(
               object = fitted_model,
@@ -389,6 +397,7 @@ SurveyMap <- R6::R6Class(
           )
         }
         if ("glmerMod" %in% class(fitted_model)) {
+          require_suggested_package("lme4")
           return(
             sim_posterior_epred(
               object = fitted_model,
