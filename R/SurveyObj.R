@@ -2,31 +2,58 @@
 #'
 #' @name SurveyObject
 #' @export
-#' @description A `SurveyObject` represents a survey and its metadata.
-#' The survey itself is a dataframe.
-#' The survey metatdata consists of
-#'  - per-column questions - a list of strings
-#'  - per-column allowed response values - a list of lists
-#'  - per-column survey weights, - a vector of numeric weights
-#'  - a string that specifies the survey design using lmer forumula syntax
+#' @description
+#' A `SurveyObject` represents a survey and its metadata.
+#' The survey itself is a data frame.
+#' The survey metatdata consists of the following:
+#'  - per-column questions: a list of strings
+#'  - per-column allowed response values: a list of character vectors
+#'  - per-column survey weights: a vector of numeric weights
+#'  - survey design: a string that specifies the survey design using \pkg{lme4}
+#'  style forumula syntax.
 #'
-#' Examples of survey design include:
-#' ~. a random sample, ~ (1|cluster), a one stage cluster sample, ~ stratum, a stratified sample
+#' Examples of survey designs include:
+#'   - `~.`: a random sample
+#'   - `~ (1|cluster)`: a one stage cluster sample
+#'   - `~ stratum`: a stratified sample
 #'
 #' @examples
-#' feline_prefs = SurveyObj$new(feline_survey[,c("age1","gender","pet_own","y")],
-#' questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
-#' responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
-#' weights = feline_survey$wt,
-#' design = formula("~."))
+#' feline_prefs2 <- SurveyObj$new(
+#'   feline_survey[,c("age1","gender","pet_own","y")],
+#'   questions = c(
+#'     "Please identify your age group",
+#'     "Please select your gender",
+#'     "Which pet do you own?",
+#'     "Response"
+#'   ),
+#'   responses = list(
+#'     levels(feline_survey$age1),
+#'     levels(feline_survey$gender),
+#'     levels(feline_survey$pet_own),
+#'     c("no","yes")
+#'   ),
+#'   weights = feline_survey$wt,
+#'   design = formula("~.")
+#' )
 #' feline_prefs$print()
-#'popn_obj = SurveyObj$new(approx_popn[,c("age2","gender","pet_pref")],
-#' questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
-#' responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
-#' weights = approx_popn$wt,
-#' design = formula("~."))
+#'
+#' popn_obj <- SurveyObj$new(
+#'   approx_popn[,c("age2","gender","pet_pref")],
+#'   questions = c(
+#'     "Which age group are you?",
+#'     "Gender?",
+#'     "Which pet would you like to own?"
+#'   ),
+#'   responses = list(
+#'     levels(approx_popn$age2),
+#'     levels(approx_popn$gender),
+#'     levels(approx_popn$pet_pref)
+#'   ),
+#'   weights = approx_popn$wt,
+#'   design = formula("~.")
+#' )
 #' popn_obj$print()
-
+#'
 SurveyObj <- R6::R6Class(
     classname = "SurveyObj",
     public = list(
@@ -48,8 +75,8 @@ SurveyObj <- R6::R6Class(
             self$weights <- weights
             self$design <- design
             if (ncol(survey_data) == 0) {
-                    stop("survey_data cannot be empty.",
-                         call. = FALSE)
+                stop("survey_data cannot be empty.",
+                     call. = FALSE)
             }
             # allow no question/response, else require info for all columns
             if (length(questions) != 0 | length(responses) != 0) {
@@ -60,7 +87,7 @@ SurveyObj <- R6::R6Class(
                 }
                 if (length(responses) != length(questions)) {
                     stop("mismatch between number of survey questions and answers.",
-                     call. = FALSE)
+                         call. = FALSE)
                 }
             }
             # allow no weights, else require weights for all columns
@@ -70,22 +97,23 @@ SurveyObj <- R6::R6Class(
             }
         },
         print = function(...) {
-            cat("Survey containing",nrow(self$survey_data),"observations", "\n")
-            if(length(self$design==2)) {
+            cat("Survey containing", nrow(self$survey_data), "observations", "\n")
+            if (length(self$design == 2)) {
                 cat("Random Sampling Design \n")
             } else {
                 cat("Simple")
-                if(is.null(findbars(self$design))){
-                    cat(" stratified sample with strata",all.vars(terms(self$design))[[1]],"\n")
+                if (is.null(findbars(self$design))){
+                    cat(" stratified sample with strata", all.vars(terms(self$design))[[1]], "\n")
                 } else {
-                    cat(" cluster sample with cluster",all.vars(terms(self$design))[[1]],"\n")
+                    cat(" cluster sample with cluster", all.vars(terms(self$design))[[1]], "\n")
                 }
             }
-            for(i in 1:ncol(self$survey_data)){
-                cat("Column ",i," label: ",names(self$survey_data)[i],"\n")
+            for (i in 1:ncol(self$survey_data)) {
+                cat("Column ", i , " label: ", names(self$survey_data)[i], "\n")
                 if (length(self$questions) > 0) {
-                    cat("Question ",i," (",self$questions[i],")","\n")
-                    cat("Allowed answers: ", paste(self$responses[[i]],collapse=", "), "\n")
+                    cat("Question ", i, " (", self$questions[i], ")", "\n")
+                    cat("Allowed answers: ",
+                        paste(self$responses[[i]], collapse = ", "), "\n")
                 }
             }
             invisible(self)

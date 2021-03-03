@@ -13,7 +13,6 @@
 #' The ordering should be sample first and then population
 #'
 #' @examples
-#'
 #' q1 <- question$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
