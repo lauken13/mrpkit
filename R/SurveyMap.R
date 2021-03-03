@@ -13,21 +13,21 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' feline_prefs = SurveyObj$new(
+#' feline_prefs = SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
 #'   questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
 #'   responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #'   weights = feline_survey$wt,
 #'   design = formula("~.")
 #' )
-#' popn_obj = SurveyObj$new(
+#' popn_obj = SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
 #'   questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
 #'   responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
 #'   weights = approx_popn$wt,
 #'   design = formula("~.")
 #' )
-#' q1 <- question$new(
+#' q1 <- SurveyQuestion$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
 #'   values_map = list(
@@ -35,12 +35,12 @@
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
 #'   )
 #' )
-#' q2 <- question$new(
+#' q2 <- SurveyQuestion$new(
 #'   name = "pet",
 #'   col_names = c("pet_own","pet_pref"),
 #'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 #' )
-#' q3 <- question$new(
+#' q3 <- SurveyQuestion$new(
 #'   name = "gender",
 #'   col_names = c("gender","gender"),
 #'   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
@@ -117,11 +117,11 @@ SurveyMap <- R6::R6Class(
     popn_obj = NULL,
 
     initialize = function(samp_obj, popn_obj, ...) {
-      if (!inherits(samp_obj, "SurveyObj")) {
-        stop("samp_obj must be a SurveyObj object.", call. = FALSE)
+      if (!inherits(samp_obj, "SurveyData")) {
+        stop("samp_obj must be a SurveyData object.", call. = FALSE)
       }
-      if (!inherits(popn_obj, "SurveyObj")) {
-        stop("popn_obj must be a SurveyObj object.", call. = FALSE)
+      if (!inherits(popn_obj, "SurveyData")) {
+        stop("popn_obj must be a SurveyData object.", call. = FALSE)
       }
 
       self$item_map <- list(...)
@@ -193,6 +193,7 @@ SurveyMap <- R6::R6Class(
     replace = function(old_question, new_question) {
       self$delete(old_question)
       self$add(new_question)
+      invisible(self)
     },
 
     validate = function() {
@@ -245,6 +246,7 @@ SurveyMap <- R6::R6Class(
       if (sum(!samp_dfnames %in% c(samp_mapnames,popn_dfnames)) == 0) {
         warning("At least one variable in the survey needs to be unknown in the population.",call. = FALSE)
       }
+      invisible(self)
     },
     mapping  = function() {
       ####Set up keys####
@@ -282,6 +284,7 @@ SurveyMap <- R6::R6Class(
         self$samp_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
         self$popn_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
       }
+      invisible(self)
     },
     tabulate  = function(...) {
       grouping_vars <- c(...)
@@ -298,19 +301,27 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Fit a model
+    #' @description Fit a model.
     #' @param fun The model fitting function to use. For example,
-    #'   `fun=rstanarm::stan_glmer` or `fun=brms::brm`.
+    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`.
+    #'   If using a custom `fun` it must have a `data` argument that accepts
+    #'   a data frame (like standard R modeling functions).
     #' @param formula The model formula. Can be either a string or a formula
     #'   object.
-    #' @param ... Arguments other than `formula` and `data` to pass to the model
-    #'   fitting function.
+    #' @param ... Arguments other than `formula` and `data` to pass to `fun`.
+    #'   The data argument will be automatically specified internally.
+    #' @return The fitted model object returned by `fun`.
     #'
     fit = function(fun, formula, ...) {
       fun <- match.fun(fun)
       args <- list(...)
       if (!is.null(args$data)) {
         stop("The 'data' argument should not be specified.",
+             call. = FALSE)
+      }
+      if ("family" %in% names(formals(fun)) &&
+          !family_is_binomial(args$family)) {
+        stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
       if (is.null(self$samp_obj$mapped_data)) {
@@ -340,7 +351,7 @@ SurveyMap <- R6::R6Class(
     #'   function then the first argument should take in the fitted model object
     #'   and the second argument should take in the poststratification
     #'   (`newdata`) data frame. The function must return a matrix with rows
-    #'   corresponding to the columns of the poststrat data and columns
+    #'   corresponding to the columns of the poststratification data and columns
     #'   corresponding to simulations.
     #' @param ... Arguments other than the fitted model and `newdata` data frame
     #'   to pass to `fun`.
@@ -362,6 +373,7 @@ SurveyMap <- R6::R6Class(
 
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(fitted_model)){
+          require_suggested_package("rstanarm")
           return(
             t(rstanarm::posterior_epred(
               object = fitted_model,
@@ -371,6 +383,7 @@ SurveyMap <- R6::R6Class(
           )
         }
         if ("brmsfit" %in% class(fitted_model)){
+          require_suggested_package("brms")
           return(
             t(brms::posterior_epred(
               object = fitted_model,
@@ -384,6 +397,7 @@ SurveyMap <- R6::R6Class(
           )
         }
         if ("glmerMod" %in% class(fitted_model)) {
+          require_suggested_package("lme4")
           return(
             sim_posterior_epred(
               object = fitted_model,
