@@ -4,14 +4,8 @@
 \alias{SurveyQuestion}
 \title{SurveyQuestion}
 \description{
-A \code{SurveyQuestion} object holds the mapping for one question
-or demographic between the survey and population dataset.
-The name is the name of the underlying construct.
-The \code{col_names} map the survey column name to the population column name.
-The \code{values} map the survey response values to the population values.
-If there is a meaningful ordering over the values,
-they should be listed in that order, either descending or ascending.
-The ordering should be sample first and then population
+A \code{SurveyQuestion} object holds the mapping for one question or
+demographic between the survey and population dataset.
 }
 \examples{
 q1 <- SurveyQuestion$new(
@@ -22,6 +16,8 @@ q1 <- SurveyQuestion$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
+print(q1)
+
 q2 <- SurveyQuestion$new(
   name = "pet",
   col_names = c("pet_pref","pet_own"),
@@ -29,7 +25,7 @@ q2 <- SurveyQuestion$new(
 )
 q3 <- SurveyQuestion$new(
   name = "gender",
-  col_names = c("gender","gender"),
+  col_names = c("gender", "gender"),
   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 
@@ -64,7 +60,9 @@ data (second element).}
 
 \item{\code{values_map}}{A named list where the names correspond to the
 responses to the question in the sample data and the values correspond
-to the responses in the population data.}
+to the responses in the population data. If there is a meaningful
+ordering over the values, they should be listed in that order, either
+descending or ascending.}
 }
 \if{html}{\out{</div>}}
 }
@@ -77,10 +75,21 @@ object.
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
+Print a \code{SurveyQuestion}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$print(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Currently ignored.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{SurveyQuestion} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
