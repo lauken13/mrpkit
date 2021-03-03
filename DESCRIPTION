@@ -12,8 +12,11 @@ LazyData: true
 RoxygenNote: 7.1.1
 Imports: 
     dplyr,
-    forcats,
-    merTools
+    forcats
 Suggests: 
-    testthat
+    testthat,
+    rstanarm,
+    brms,
+    lme4,
+    merTools
 Roxygen: list(markdown = TRUE)
