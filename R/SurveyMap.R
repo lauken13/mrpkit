@@ -117,10 +117,10 @@ SurveyMap <- R6::R6Class(
     popn_obj = NULL,
 
     initialize = function(samp_obj, popn_obj, ...) {
-      if (!inherits(samp_obj, "Survey")) {
-        stop("samp_obj must be a Survey object.", call. = FALSE)
+      if (!inherits(samp_obj, "SurveyData")) {
+        stop("samp_obj must be a SurveyData object.", call. = FALSE)
       }
-      if (!inherits(popn_obj, "Survey")) {
+      if (!inherits(popn_obj, "SurveyData")) {
         stop("popn_obj must be a SurveyData object.", call. = FALSE)
       }
 
