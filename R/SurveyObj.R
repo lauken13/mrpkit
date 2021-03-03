@@ -1,16 +1,16 @@
-#' SurveyObject
+#' SurveyData objects
 #'
-#' @name SurveyObject
+#' @name SurveyData
 #' @export
 #' @description
-#' A `SurveyObject` represents a survey and its metadata.
+#' A `SurveyData` object represents a survey and its metadata.
 #' The survey itself is a data frame.
 #' The survey metatdata consists of the following:
 #'  - per-column questions: a list of strings
 #'  - per-column allowed response values: a list of character vectors
 #'  - per-column survey weights: a vector of numeric weights
 #'  - survey design: a string that specifies the survey design using \pkg{lme4}
-#'  style forumula syntax.
+#'  style formula syntax.
 #'
 #' Examples of survey designs include:
 #'   - `~.`: a random sample
@@ -18,7 +18,7 @@
 #'   - `~ stratum`: a stratified sample
 #'
 #' @examples
-#' feline_prefs2 <- SurveyObj$new(
+#' feline_prefs2 <- SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
 #'   questions = c(
 #'     "Please identify your age group",
@@ -37,7 +37,7 @@
 #' )
 #' feline_prefs$print()
 #'
-#' popn_obj <- SurveyObj$new(
+#' popn_obj <- SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
 #'   questions = c(
 #'     "Which age group are you?",
@@ -54,8 +54,8 @@
 #' )
 #' popn_obj$print()
 #'
-SurveyObj <- R6::R6Class(
-    classname = "SurveyObj",
+SurveyData <- R6::R6Class(
+    classname = "SurveyData",
     public = list(
         survey_data = data.frame(NULL),
         poststrat = data.frame(NULL),

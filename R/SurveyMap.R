@@ -13,14 +13,14 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' feline_prefs = SurveyObj$new(
+#' feline_prefs = SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
 #'   questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
 #'   responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #'   weights = feline_survey$wt,
 #'   design = formula("~.")
 #' )
-#' popn_obj = SurveyObj$new(
+#' popn_obj = SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
 #'   questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
 #'   responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
@@ -117,11 +117,11 @@ SurveyMap <- R6::R6Class(
     popn_obj = NULL,
 
     initialize = function(samp_obj, popn_obj, ...) {
-      if (!inherits(samp_obj, "SurveyObj")) {
-        stop("samp_obj must be a SurveyObj object.", call. = FALSE)
+      if (!inherits(samp_obj, "Survey")) {
+        stop("samp_obj must be a Survey object.", call. = FALSE)
       }
-      if (!inherits(popn_obj, "SurveyObj")) {
-        stop("popn_obj must be a SurveyObj object.", call. = FALSE)
+      if (!inherits(popn_obj, "Survey")) {
+        stop("popn_obj must be a SurveyData object.", call. = FALSE)
       }
 
       self$item_map <- list(...)
