@@ -313,6 +313,11 @@ SurveyMap <- R6::R6Class(
         stop("The 'data' argument should not be specified.",
              call. = FALSE)
       }
+      if ("family" %in% names(formals(fun)) &&
+          !family_is_binomial(args$family)) {
+        stop("Currently only binomial and bernoulli models are supported.",
+             call. = FALSE)
+      }
       if (is.null(self$samp_obj$mapped_data)) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
