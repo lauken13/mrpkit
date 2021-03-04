@@ -1,6 +1,9 @@
-require_suggested_package <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    stop("Please install the ", pkg, " package.", call. = FALSE)
+require_suggested_package <- function(pkg, ver = NULL) {
+  if (!requireNamespace(pkg, quietly = TRUE) ||
+      (!is.null(ver) && utils::packageVersion(pkg) < ver)) {
+    stop("Please install ",
+         if (!is.null(ver)) paste("at least version", ver, "of "),
+         "the ", pkg, " package.", call. = FALSE)
   }
 }
 
