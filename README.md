@@ -1,6 +1,24 @@
 # mrp-kit
 Tools and tutorials for multi-level regression and post-stratification of survey data
 
+# March 4, 2021
+What to do next:
+- survey package integration 
+- tests 
+- missing and improve documentation
+- naming conventions
+- structure the objects 
+- vignette 
+- new data (makes sense to the general public)
+- working through more examples
+- visualizations 
+      -> same model adjusted vs unadjusted
+      -> same model adjusted vs weighted
+      -> checking fitted model (compatable with bayesplot already) 
+      -> violin plot vs line plot. 
+      -> takes multiple models and comparing predictions 
+    
+
 # Oct 1, 2020
 
 Issue RE spec : current spec:
