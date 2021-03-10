@@ -9,12 +9,13 @@
 \author{
 Lauren Kennedy\\Monash University \And Mitzi Morris\\Columbia
 University \And Jonah Gabry\\Columbia University \And Rohan
-Alexander\\University of Toronto
+Alexander\\University of Toronto \And Dewi Amaliah\\Monash University
 }
 \title{\pkg{MRP-Kit} A `grammar' of multilevel regression with
 post-stratification and implementation in \proglang{R}}
 
-\Plainauthor{Lauren Kennedy, Mitzi Morris, Jonah Gabry, Rohan Alexander}
+\Plainauthor{Lauren Kennedy, Mitzi Morris, Jonah Gabry, Rohan
+Alexander, Dewi Amaliah}
 \Plaintitle{A `grammar' of multilevel regression with
 post-stratification and implementation in R}
 \Shorttitle{\pkg{MRP-Kit}: A grammar of MRP}
@@ -22,17 +23,17 @@ post-stratification and implementation in R}
 \Abstract{
 In this paper we define a `grammar' for multilevel regression with
 post-stratification (MRP) and implement this grammar in the R Package
-\pkg{MRPKit}. Our grammar is centered around the following verbs: add,
-remove, delete, and replace. These act on survey objects. Our grammar,
-and its implementation, provides a detailed workflow when conducting MRP
-that will be useful for researchers and in teaching.
+\pkg{MRPKit}. Our grammar is centered around the following verbs: new,
+validate, add, delete, replace, mapping, tabulate, fit, predictify,
+collapsify, visify. These act on survey objects. Our grammar, and its
+implementation, provides a detailed workflow when conducting MRP that
+will be useful for researchers and in teaching.
 }
 
 \Keywords{multilevel regression with
-post-stratification, \proglang{R}, reproducibility, statistics, political
-science}
+post-stratification, \proglang{R}, reproducibility, statistics}
 \Plainkeywords{multilevel regression with
-post-stratification, R, reproducibility, statistics, political science}
+post-stratification, R, reproducibility, statistics}
 
 %% publication information
 %% \Volume{50}
@@ -43,7 +44,7 @@ post-stratification, R, reproducibility, statistics, political science}
 %% \Acceptdate{2012-06-04}
 
 \Address{
-        }
+          }
 
 % Pandoc citation processing
 
@@ -57,45 +58,47 @@ post-stratification, R, reproducibility, statistics, political science}
 
 Multilevel regression with post-stratification (MRP) is a statistical
 approach in which surveys are related to each other using a statistical
-model. This is important because known biases in one survey, can be
+model. This is important because known biases in one survey can be
 adjusted for by another in a statistically reasonable way. This enables
 better use of non-representative surveys, additional information, and
-propagation of uncertainty. However it can be difficult to use MRP due
-to this need to related two different datasets. This package defines a
-grammar, or list of underlying rules, of MRP and then describes an R
-package, \proglang{MRPKit}, that implements this grammar.
+propagation of uncertainty. However, it can be difficult to use MRP due
+to this need to relate (at least) two different datasets. This package
+defines a grammar, or list of underlying rules, for MRP and then
+describes an R package, \proglang{MRPKit}, that implements this grammar.
 
 At its core, MRP is a mapping between a survey object and a population
-object. It is from this mapping that the power of MRP exists, but it
-also establishing this mapping that is the difficult part of
-implementing MRP models. Making this implementation easier and more
-reproducible is important as interest in, and the use of, MRP increases.
-It can be difficult even for those experienced with MRP to ensure there
-are no mistakes in this mapping and easing this is an important
-contribution to enhancing the reproducibility of MRP analysis.
+object. It is from this mapping that the power of MRP exists, but it can
+be difficult to establish this mapping in a reproducible way that fits
+into a typical applied statistics workflow. Making this implementation
+easier and more reproducible is important as interest in, and the use
+of, MRP increases. It can be difficult even for those experienced with
+MRP to ensure there are no mistakes in this mapping and creating a
+well-defined workflow for MRP is an important contribution to enhancing
+the reproducibility of MRP analysis.
 
 We first define a grammar of MRP, which we define as the underlying
 rules and principles that are common to every analysis based on MRP.
-This grammar is based around the following verbs: `add', `remove',
-`delete', and `replace'. These verbs are applied to a survey object, a
-post-stratification object, and survey\_map object. These three objects
-come together to create a mapping object, which is what processes such
-as regression act on. Finally, common diagnostics and graphs are
-implemented. In this way, our grammar and package implement an entire
-statistical workflow for conducting MRP.
+This grammar is based around the following verbs: `new', `validate',
+`add', `delete', `replace', `mapping', `tabulate', `fit', `predictify',
+`collapsify', and `visify'. These verbs are applied to a survey object,
+a post-stratification object, and survey-map object. These three objects
+come together to create a mapping object, which is what estimation
+processes such as regression act on. Finally, common diagnostics and
+graphs are implemented. In this way, our grammar and package implement
+an entire statistical workflow for MRP.
 
 The survey object would typically be a regular survey, such as a
 political poll of 1,000 respondents, but it could also be a larger
 survey, such as the Canadian Election Survey, or similar. The
 post-stratification object would typically be a larger survey, such as,
-in the case of the US, the (INSERT THE USUAL ONE), or a census.
+in the case of the US, the American Community Surveys, or a census.
 
 Our grammar and package complements existing packages such as
 \proglang{survey} \citep[\citet{lumleytwo},
 \citet{lumleythree}]{lumleyone}, and \proglang{DeclareDesign}
 \citep{citeDeclareDesign}. These packages are focused on the designing,
 implementing, and simulating from, surveys. Instead, ours is focused on
-what is needed for MRP.
+what is needed for MRP, and we draw on their packages where possible.
 
 The remainder of this paper is structured as follows: Section
 \ref{sec:review} reviews similar packages and contributions and places
@@ -108,82 +111,223 @@ one using SOMETHING, and the other using SOMETHING ELSE. Finally,
 Section \ref{sec:summary} provides a summary discussion, some cautions
 and weaknesses, as well as notes about next steps.
 
-\section{Review of the other packages} \label{sec:review}
+\section{Review of related packages} \label{sec:review}
 
 The most common alternative at the moment to this package is for users
-to do all aspects themselves. While there is nothing inherently
-difficult about MRP, the implementation can be difficult. In particular,
-preparing and matching different levels between surveys can be time
-consuming and potentially introduce undocumented errors.
+to do all aspects of the MRP workflow themselves. While there is nothing
+inherently difficult about MRP, the implementation can be difficult. In
+particular, preparing and matching different levels between surveys can
+be time consuming and potentially introduce undocumented errors.
 
 The \proglang{survey} package \citep[\citet{lumleytwo},
-\citet{lumleythree}]{lumleyone} \ldots{}
-
-The \proglang{DeclareDesign} package \citep{citeDeclareDesign}\ldots{}
-
-There is also an existing package called \proglang{MRP} available here:
-\url{https://github.com/gelman/mrp}. However it does not appear to have
-been updated in some time.
+\citet{lumleythree}]{lumleyone} is well-established and allows a user to
+specify a survey design, such as clustered, stratified, etc, generate
+summary statistics, and conduct sub-population analysis. The
+\proglang{DeclareDesign} package \citep{citeDeclareDesign} is a newer
+package that is based around a grammar of research design aspects
+including: data generation, creating treatment and control groups, and
+sampling. There is also an existing package called \proglang{MRP}
+available here: \url{https://github.com/gelman/mrp}. However, it does
+not appear to have been updated in some time.
 
 The main alternative approach is for MRP to be conducted on a
-case-specific basis. That is a researcher interested in MRP estimates,
-writes the code needed to obtain, clean, prepare, analyze and ultimately
-interpret the estimates. Again, while there is nothing inherently wrong
-with this approach, successfully conducting MRP requires dealing with a
-large number of small issues. Each of these is small in their own right,
-but getting them wrong can have large effects that are potentially
-unnoticed on the estimates.
+case-specific basis. This means that a researcher who is interested in
+MRP estimates writes the code needed to obtain, clean, prepare, analyze
+and ultimately interpret the estimates. Again, while there is nothing
+inherently wrong with this approach, successfully conducting MRP
+requires dealing with a large number of small issues. Each of these is
+small in their own right but getting them wrong can have large effects
+that are potentially unnoticed on the estimates. It is also easy to
+overlook steps, or to not appropriately document them. The
+\proglang{MRPKit} package is prescriptive about the steps that must be
+taken, and ensures that all aspects are documented.
 
 \section{Components and grammar} \label{sec:components}
 
-The \proglang{MRPKit} package has the following key components: survey
-objects, which for most users will be a collection of two surveys where
-one is larger than the other; a survey map, that relates the survey
-objects and then an MRP object, which is created once the survey map is
-applied to the survey objects. Regression acts on the MRP object. These
-objects are subject to the following verbs: `add', `delete', `new', and
-`replace'. For instance: \proglang{SurveyMap\$add},
-\proglang{SurveyOb\$delete}, \proglang{SurveyMap\$new}, and
-\proglang{SurveyMap\$replace}.
+The \proglang{MRPKit} package has the following key components:
+\proglang{SurveyData} objects, which for most users will be a collection
+of two surveys where one is larger than the other; a
+\proglang{SurveyQuestion} object, that holds the mapping for one
+question or demographic between the survey and post-stratification
+dataset; and a \proglang{SurveyMap} object, which holds the mapping
+between a set of items in a survey and a post-stratification dataset.
+These are expanded on in the following sub-sections before being brought
+together.
 
-\subsection*{Survey objects}
+\subsection{SurveyData objects}
 
-Survey objects are the surveys that MRP will bring together. A user can
-\proglang{add} a survey object by providing a CSV file location. The
-user then needs to identify the data types of each column. Typically,
-there will need to be two survey objects, where one will be the survey
-that is of interest for its response variables, such as political
-opinion, and another will be a survey that is to be used for
-post-stratification.
+A \proglang{SurveyData} object represents a survey and its metadata. The
+survey itself is a data frame and importantly has a series of metadata.
+The survey metadata consists of the following:
 
-New is when you have a new survey object and you are bringing it in.
-e.g.
+\begin{itemize}
+\tightlist
+\item
+  per-column questions: a list of strings
+\item
+  per-column allowed response values: a list of character vectors
+\item
+  per-column survey weights: a vector of numeric weights
+\item
+  survey design: a string that specifies the survey design using
+  \proglang{lme4} style formula syntax.
+\end{itemize}
 
-What is the difference between add and new? What is replace doing? URGH,
-I just need to look at the repo.
+Some examples of survey designs include:
 
-\subsection*{Survey map}
+\begin{itemize}
+\tightlist
+\item
+  \texttt{\textasciitilde{}.}: a random sample
+\item
+  \texttt{\textasciitilde{}\ (1\textbar{}cluster)}: a one stage cluster
+  sample
+\item
+  \texttt{\textasciitilde{}\ stratum}: a stratified sample
+\end{itemize}
 
-A \texttt{SurveyMap} object holds the mapping between a set of items in
-a survey and a population dataset. The label is the item label in each
-dataset and the values is a list of all possible values. The values for
-the survey and population must be aligned, i.e., the lists must have the
-same number of elements and the values at index i in each list are
-equivalent. If there is a meaningful ordering over the values, they
-should be listed in that order, either descending or ascending.
+These \proglang{SurveyData} objects are the surveys that MRP will bring
+together. A user can use the verb \texttt{add} to create a survey object
+by providing a CSV file location. The user then needs to identify the
+data types of each column. Typically, there will need to be two survey
+objects, where one will be the survey that is of interest for its
+response variables, such as political opinion, and another will be a
+survey that is to be used for post-stratification.
 
-One of the fundamental issues when conducting MRP is to ensure that
+\subsection{SurveyQuestion objects}
 
-\subsection*{MRP object}
+A \proglang{SurveyQuestion} object holds the mapping for one question or
+demographic between the survey and post-stratification dataset. For
+instance, if both the survey and post-stratification dataset contain a
+question about age, it may be that answers are expressed as a single
+integer representing years and so mapping them is relatively
+straight-forward. This is done with the verb \texttt{new}, for instance:
 
-An MRP object contains survey objects, and a survey map. At the point at
-which the survey objects are put into the MRP object they become
-immutable but the survey map object is.
+\begin{CodeChunk}
+\begin{CodeInput}
+R> SurveyQuestion$new(
++   name = "age",
++   col_names = c("age1","age2"),
++   values_map = list(
++     "18" = "18", 
++     "19" = "19",
++     "20" = "20"
++     )
++ )
+\end{CodeInput}
+\end{CodeChunk}
 
-The MRP object outputs an analysis. There would be a MRP model fit class
-that would
+If ages have been aggregating into age-groups then it may not be the
+case that both the survey and the post-stratification dataset have
+groups that directly correspond. In that case, a user needs to specify
+how the age-groups fit together. This is also done with the verb
+\texttt{new}, for instance:
 
-Many objects on the same class. There are two
+\begin{CodeChunk}
+\begin{CodeInput}
+R> SurveyQuestion$new(
++   name = "age",
++   col_names = c("age1","age2"),
++   values_map = list(
++     "18-25" = "18-35", 
++     "26-35" = "18-35",
++     "36-45" = "36-55",
++     "46-55" = "36-55",
++     "56-65" = "56-65",
++     "66-75" = "66+",
++     "76-90" = "66+"
++     )
++ )
+\end{CodeInput}
+\end{CodeChunk}
+
+In this example, the age-groups do not neatly match, however they can be
+made to match. For instance, the 36-45 and 46-55 age-groups in the
+survey correspond to the 36-55 age-group in the post-stratification
+dataset.
+
+If there is not a clean correspondence between the survey and
+post-stratification datasets, then the user needs to decide which
+age-group to assign to.
+
+\subsection{SurveyMap objects}
+
+A \proglang{SurveyMap} object holds the mapping between a set of items
+in a survey and a population dataset. That is, it draws on two
+\proglang{SurveyData} objects, and a \proglang{SurveyQuestion} object,
+and brings the two \proglang{SurveyData} objects together following the
+correspondences provided in the \proglang{SurveyQuestion} object.
+
+The label is the item label in each dataset and the values is a list of
+all possible values. The values for the survey and post-stratification
+must be aligned, i.e., the lists must have the same number of elements
+and the values at index i in each list are equivalent. If there is a
+meaningful ordering over the values, they should be listed in that
+order, either descending or ascending.
+
+One of the fundamental issues when conducting MRP is to ensure that the
+survey and post-stratification datasets are aligned. This object ensures
+that is the case before a user conducts their analysis.
+
+For instance, if a user decides to use age-group and gender, then the
+map would specify the correspondences in age-group and also in gender.
+If they then also decided to use education, then the map would also
+specify that correspondence. They would then use the verb \texttt{add}
+to include that third question in the map.
+
+The verb \texttt{validate} is used on \proglang{SurveyMap} objects to
+assess whether the proposed map is appropriate. This means that an error
+occurs if there is a mismatch, and a warning occurs if there are
+variables that are available in either the survey or post-stratification
+datasets that have not been mapped and hence would be unavailable to
+model.
+
+After the \proglang{SurveyMap} object has been validated then the verb
+\texttt{mapping} is used to prepare it to be modelled.
+
+A model is fit to a \proglang{SurveyMap} object using the verb
+\texttt{fit}. After a model has been fit it can be used to get MRP-based
+estimates using \texttt{predictify()}. And finally the estimates can be
+visualized using \texttt{visify()}.
+
+\subsection{Putting them together}
+
+We provide examples of implementation in Section \ref{sec:vignette},
+however, we want to explain putting the three objects together here and
+to briefly bring the three objects together.
+
+To begin with, one needs two datasets. These would be created using
+\texttt{SurveyObj\$new}, specifying the questions, responses, weights,
+and design.
+
+Having established both a survey dataset and a post-stratification
+dataset, a user need to specify how the questions in the survey dataset
+correspond to the questions in the post-stratification dataset. This is
+done on a question-by-question basis using \texttt{question\$new}
+assigning a name for that question, the labels that are used in the
+survey and post-stratification datasets, and the values. A user does
+this in such a way that the values are matched between the two datasets.
+
+The user now need to put these questions together and does this using
+\texttt{SurveyMap\$new} and specifying the survey object, the
+post-stratification object, and the questions are to be used. A user can
+validate this map with \texttt{validate}, and potentially add additional
+questions using \texttt{add}, delete some existing ones using
+\texttt{delete}, or potentially replace a question using
+\texttt{replace}. Once a user is happy with the correspondence to be
+used they can establish a mapping using \texttt{mapping}.
+
+The relationship can then be modelled using \texttt{fit}. There are a
+variety of options that are available as built-into the package,
+including \texttt{rstanarm::stan\_glmer}, and \texttt{brms::brm}. A user
+could also specify their own modelling approach if they wanted to. In
+any case, once a model has been fit to the survey dataset, it can be
+used to create estimates based on the post-stratification dataset with
+\texttt{predictify}, which takes a fitted model as an argument.
+Typically a user is interested in some type of high-level estimates, for
+instance on a province/state basis, and \texttt{collapsify} provides the
+functionality to do this. Finally, the estimates on that collapsed basis
+can be visualized with \texttt{visify}
 
 \section{Implementation and technical notes} \label{sec:implementation}
 
