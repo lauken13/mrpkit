@@ -21,3 +21,5 @@ Suggests:
     lme4,
     merTools
 Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 2.10)
