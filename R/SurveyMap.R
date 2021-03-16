@@ -18,7 +18,7 @@
 #'   questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
 #'   responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #'   weights = feline_survey$wt,
-#'   design = list(ids =~1, strata=~stype)
+#'   design = list(ids =~1) #, strata=~stype)
 #' )
 #' popn_obj = SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
@@ -372,18 +372,24 @@ SurveyMap <- R6::R6Class(
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(fitted_model)){
           require_suggested_package("rstanarm")
+          vv <- attr(terms(formula(fitted_model)), which = "variables")
+          lhs_var <- as.character(vv[[2]]) # The response variable name
           return(
-            t(rstanarm::posterior_epred(
+            list(lhs_var = lhs_var,
+                 poststrat_preds = t(rstanarm::posterior_epred(
               object = fitted_model,
               newdata = poststrat,
               ...
-            ))
+            )))
           )
         }
         if ("brmsfit" %in% class(fitted_model)){
           require_suggested_package("brms")
+          vv <- attr(terms(brms::brmsterms(formula(mod_fit_2))$allvars), which = "variables")
+          lhs_var <- as.character(vv[[2]]) # The response variable name
           return(
-            t(brms::posterior_epred(
+            list(lhs_var = lhs_var,
+                 poststrat_preds = t(brms::posterior_epred(
               object = fitted_model,
               newdata = poststrat,
               allow_new_levels = TRUE,
@@ -391,45 +397,57 @@ SurveyMap <- R6::R6Class(
                 if (!is.null(args$sample_new_levels)) args$sample_new_levels
                 else "gaussian",
               ...
-            ))
+            )))
           )
         }
         if ("glmerMod" %in% class(fitted_model)) {
           require_suggested_package("lme4")
+          vv <- attr(terms(formula(fitted_model)), which = "variables")
+          lhs_var <- as.character(vv[[2]]) # The response variable name
           return(
-            sim_posterior_epred(
+            list(lhs_var = lhs_var,
+              poststrat_preds = sim_posterior_epred(
               object = fitted_model,
               newdata = poststrat,
               ...
+              )
             )
           )
         }
       } else {
+        if(is.null(formula(fitted_model)) & is.null(lhs_var)){
+          stop("If the fitted model doesn't have a formula in the lme4 format, specify the lhs_var
+               explicitly as an argument")
+        }
+        vv <- attr(terms(formula(fitted_model)), which = "variables")
+        lhs_var <- as.character(vv[[2]]) # The response variable name
         poststrat <- self$popn_obj$poststrat
         fun <- match.fun(fun)
-        fun(fitted_model, poststrat, ...)
+        list(lhs_var = lhs_var, poststrat_preds = fun(fitted_model, poststrat, ...))
       }
     },
   collapsify = function(poststrat_fit, variable_aggr = NULL) {
     poststrat <- self$popn_obj$poststrat
+    lhs_vars = poststrat_fit$lhs_vars
+    poststrat_preds = poststrat_fit$poststrat_preds
     if(!is.null(variable_aggr)){
       rotate_levels <- levels(self$samp_obj$mapped_data[,variable_aggr])
-      posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
+      posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_preds), value = NA)
       colnames(posterior_preds)[1] <- variable_aggr
       for(focus_level in rotate_levels){
         level_loc = poststrat[variable_aggr]==focus_level
-        posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+        posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_preds[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
       }
     } else {
-      posterior_preds <- data.frame(value = apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
+      posterior_preds <- data.frame(value = apply(poststrat_preds,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
     }
     if(!is.null(self$samp_obj$design) & !is.null(self$samp_obj$weights) ){
-      complex_svy_design <- do.call(svydesign, c(weights = self$samp_obj$weights, params = self$samp_obj$design, data = self$mapped_data))
+      complex_svy_design <- do.call(svydesign, c(self$samp_obj$design, list(weights = self$samp_obj$weights, data = self$mapped_data)))
       if(!is.null(variable_aggr)){
         #svymean() but need to store the outcome variable
       }
     }
-    return(posterior_preds)
+    return(list(posterior_preds = posterior_preds, outcome = lhs_vars)
 
   },
   visify = function(sae_preds) {
