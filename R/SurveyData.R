@@ -9,16 +9,10 @@
 #'  - per-column questions: a list of strings
 #'  - per-column allowed response values: a list of character vectors
 #'  - per-column survey weights: a vector of numeric weights
-#'  - survey design: a string that specifies the survey design using \pkg{lme4}
-#'  style formula syntax.
-#'
-#' Examples of survey designs include:
-#'   - `~.`: a random sample
-#'   - `~ (1|cluster)`: a one stage cluster sample
-#'   - `~ stratum`: a stratified sample
+#'  - survey design: a named list of elements to pass to svydesign in the survey package
 #'
 #' @examples
-#' feline_prefs2 <- SurveyData$new(
+#' feline_prefs <- SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
 #'   questions = c(
 #'     "Please identify your age group",
@@ -33,7 +27,7 @@
 #'     c("no","yes")
 #'   ),
 #'   weights = feline_survey$wt,
-#'   design = formula("~.")
+#'   design = list(ids =~1, strata=~stype)
 #' )
 #' feline_prefs$print()
 #'
@@ -50,7 +44,7 @@
 #'     levels(approx_popn$pet_pref)
 #'   ),
 #'   weights = approx_popn$wt,
-#'   design = formula("~.")
+#'   design = NULL
 #' )
 #' popn_obj$print()
 #'
@@ -63,7 +57,7 @@ SurveyData <- R6::R6Class(
         questions = character(0),
         responses = list(),
         weights = numeric(),
-        design = as.formula("~."),
+        design = list(),
         initialize = function(survey_data,
                               questions = character(0),
                               responses = list(),
@@ -98,16 +92,6 @@ SurveyData <- R6::R6Class(
         },
         print = function(...) {
             cat("Survey containing", nrow(self$survey_data), "observations", "\n")
-            if (length(self$design == 2)) {
-                cat("Random Sampling Design \n")
-            } else {
-                cat("Simple")
-                if (is.null(findbars(self$design))){
-                    cat(" stratified sample with strata", all.vars(terms(self$design))[[1]], "\n")
-                } else {
-                    cat(" cluster sample with cluster", all.vars(terms(self$design))[[1]], "\n")
-                }
-            }
             for (i in 1:ncol(self$survey_data)) {
                 cat("Column ", i , " label: ", names(self$survey_data)[i], "\n")
                 if (length(self$questions) > 0) {

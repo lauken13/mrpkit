@@ -13,19 +13,19 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' feline_prefs <- SurveyData$new(
+#' feline_prefs = SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
 #'   questions = c("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
 #'   responses = list(levels(feline_survey$age1),levels(feline_survey$gender),levels(feline_survey$pet_own),c("no","yes")),
 #'   weights = feline_survey$wt,
-#'   design = formula("~.")
+#'   design = list(ids =~1, strata=~stype)
 #' )
-#' popn_obj <- SurveyData$new(
+#' popn_obj = SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
 #'   questions = c("Which age group are you?","Gender?","Which pet would you like to own?"),
 #'   responses = list(levels(approx_popn$age2),levels(approx_popn$gender),levels(approx_popn$pet_pref)),
 #'   weights = approx_popn$wt,
-#'   design = formula("~.")
+#'   design = NULL
 #' )
 #' q1 <- SurveyQuestion$new(
 #'   name = "age",
@@ -64,8 +64,8 @@
 #' print(tmp_map)
 #' tmp_map$validate()
 #' tmp_map$mapping()
-#' tmp_map$tabulate("age") # Just use age in the poststrat matrix
-#' tmp_map$tabulate() # Use all variables in the map
+#' tmp_map$tabulate("age") #Just use age in the poststrat matrix
+#' tmp_map$tabulate() #Use all variables in the map
 #'
 #'
 #' mod_fit_1 <- tmp_map$fit(
@@ -371,7 +371,7 @@ SurveyMap <- R6::R6Class(
 
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(fitted_model)){
-          require_suggested_package("rstanarm", "2.21.0")
+          require_suggested_package("rstanarm")
           return(
             t(rstanarm::posterior_epred(
               object = fitted_model,
@@ -422,6 +422,12 @@ SurveyMap <- R6::R6Class(
       }
     } else {
       posterior_preds <- data.frame(value = apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
+    }
+    if(!is.null(self$samp_obj$design) & !is.null(self$samp_obj$weights) ){
+      complex_svy_design <- do.call(svydesign, c(weights = self$samp_obj$weights, params = self$samp_obj$design, data = self$mapped_data))
+      if(!is.null(variable_aggr)){
+        #svymean() but need to store the outcome variable
+      }
     }
     return(posterior_preds)
 
