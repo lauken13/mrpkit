@@ -428,7 +428,7 @@ SurveyMap <- R6::R6Class(
     },
   collapsify = function(poststrat_fit, variable_aggr = NULL) {
     poststrat <- self$popn_obj$poststrat
-    lhs_vars = poststrat_fit$lhs_vars
+    lhs_var = poststrat_fit$lhs_var
     poststrat_preds = poststrat_fit$poststrat_preds
     if(!is.null(variable_aggr)){
       rotate_levels <- levels(self$samp_obj$mapped_data[,variable_aggr])
@@ -442,24 +442,29 @@ SurveyMap <- R6::R6Class(
       posterior_preds <- data.frame(value = apply(poststrat_preds,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
     }
     if(!is.null(self$samp_obj$design) & !is.null(self$samp_obj$weights) ){
-      complex_svy_design <- do.call(svydesign, c(self$samp_obj$design, list(weights = self$samp_obj$weights, data = self$mapped_data)))
+      complex_svy_design <- do.call(svydesign, c(self$samp_obj$design, list(weights = self$samp_obj$weights, data = merge(self$samp_obj$mapped_data, self$samp_obj$survey_data[c(lhs_var,"key")], by = "key"))))
       if(!is.null(variable_aggr)){
-        #svymean() but need to store the outcome variable
+        wtd_ests <- svymean(as.formula(paste0(c('~',lhs_var), collapse = "")), design = complex_svy_design)
+      } else {
+        wtd_ests <- svymean(as.formula(paste0(c('y','~',"age"), collapse = "")), design = complex_svy_design)
       }
     }
-    return(list(posterior_preds = posterior_preds, outcome = lhs_vars)
+    return(list(posterior_preds = posterior_preds, outcome = lhs_vars, wtd_ests = wtd_ests))
 
   },
   visify = function(sae_preds) {
-    if(dim(sae_preds)[2]>1){
-      svy_q <- self$samp_obj$questions[colnames(self$samp_obj$survey_data) == self$item_map[[colnames(sae_preds)[1]]]$col_names[1]]
-      focus_var <- dplyr::sym(colnames(sae_preds)[1])
-      ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
+    posterior_preds <- sae_preds$posterior_preds
+    outcome <- sae_preds$outcome
+    wtd_ests <- sae_preds$wtd_ests
+    if(dim(posterior_preds)[2]>1){
+      svy_q <- self$samp_obj$questions[colnames(self$samp_obj$survey_data) == self$item_map[[colnames(posterior_preds)[1]]]$col_names[1]]
+      focus_var <- dplyr::sym(colnames(posterior_preds)[1])
+      ggplot2::ggplot(posterior_preds, ggplot2::aes(x = !!focus_var, y = value))+
         ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
         ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
         ggplot2::xlab(svy_q)
     }else {
-      ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
+      ggplot2::ggplot(posterior_preds, ggplot2::aes(x = value))+
         ggplot2::geom_density(fill = "darkblue", alpha = .3) +
         ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))
     }
