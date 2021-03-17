@@ -443,11 +443,13 @@ SurveyMap <- R6::R6Class(
     }
     if(!is.null(self$samp_obj$design) & !is.null(self$samp_obj$weights) ){
       complex_svy_design <- do.call(svydesign, c(self$samp_obj$design, list(weights = self$samp_obj$weights, data = merge(self$samp_obj$mapped_data, self$samp_obj$survey_data[c(lhs_var,"key")], by = "key"))))
-      if(!is.null(variable_aggr)){
+      if(is.null(variable_aggr)){
         wtd_ests <- svymean(as.formula(paste0(c('~',lhs_var), collapse = "")), design = complex_svy_design)
       } else {
         wtd_ests <- svymean(as.formula(paste0(c('y','~',"age"), collapse = "")), design = complex_svy_design)
       }
+    } else{
+      wtd_ests <- NULL
     }
     return(list(posterior_preds = posterior_preds, outcome = lhs_vars, wtd_ests = wtd_ests))
 
@@ -459,15 +461,33 @@ SurveyMap <- R6::R6Class(
     if(dim(posterior_preds)[2]>1){
       svy_q <- self$samp_obj$questions[colnames(self$samp_obj$survey_data) == self$item_map[[colnames(posterior_preds)[1]]]$col_names[1]]
       focus_var <- dplyr::sym(colnames(posterior_preds)[1])
-      ggplot2::ggplot(posterior_preds, ggplot2::aes(x = !!focus_var, y = value))+
+      pp <- ggplot2::ggplot(posterior_preds, ggplot2::aes(x = !!focus_var, y = value))+
         ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
         ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
         ggplot2::xlab(svy_q)
+      if(!is.null(wtd_ests)){
+        no_rows <- nrow(data.frame(wtd_ests))
+        wtd_df <- data.frame(wtd_ests, x = gsub(focus_var, "", names(wtd_ests)))[3:no_rows,] %>%
+          dplyr::mutate(mean = 1-mean)
+       pp <- pp +
+         ggplot2::geom_point(data = wtd_df, ggplot2::aes(x= x, y = mean)) +
+         ggplot2::geom_errorbar(data = wtd_df, ggplot2::aes(x = x, ymin = mean - 1.96*SE, ymax = mean + 1.96*SE), inherit.aes = FALSE , alpha = .5)+
+         ggplot2::theme_bw()
+      }
     }else {
-      ggplot2::ggplot(posterior_preds, ggplot2::aes(x = value))+
+      pp <- ggplot2::ggplot(posterior_preds, ggplot2::aes(x = value))+
         ggplot2::geom_density(fill = "darkblue", alpha = .3) +
         ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))
+      if(!is.null(wtd_ests)){
+        no_rows <- nrow(data.frame(wtd_ests))
+        wtd_df <- data.frame(wtd_ests, x = gsub(focus_var, "", names(wtd_ests)))[2,]
+        pp <- pp +
+           ggplot2::geom_vline(data = wtd_df, ggplot2::aes(xintercept = mean)) +
+           ggplot2::annotate("rect", xmin = wtd_df$mean - 1.96*wtd_df$SE, xmax = wtd_df$mean + 1.96*wtd_df$SE, ymin = 0, ymax= max(density(posterior_preds$value)$y*1.1),
+                   alpha = .5,fill = "grey") + ggplot2::scale_y_continuous(c(0,max(density(posterior_preds$value)$y*1.1)), expand = c(0,0)) +ggplot2::theme_bw()
+        }
     }
+    return(pp)
     }
   )
 )
