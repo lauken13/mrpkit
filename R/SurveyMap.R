@@ -3,7 +3,7 @@
 #' @name SurveyMap
 #' @export
 #'
-#' @description A `SurveyMap` object holds the mapping
+#' @description An [R6][R6::R6Class] `SurveyMap` object holds the mapping
 #' between a set of items in a survey and a population dataset.
 #' The label is the item label in each dataset and the values
 #' is a list of all possible values.  The values for the survey

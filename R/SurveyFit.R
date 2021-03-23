@@ -2,7 +2,10 @@
 #'
 #' @name SurveyFit
 #' @export
-#' @description TO-DO
+#' @description An [R6][R6::R6Class] SurveyFit object stores a fitted model
+#'   object and provides methods for generating predicted probabilities for all
+#'   poststrat cells, generating population and group estimates, and visualizing
+#'   results.
 #'
 SurveyFit <- R6::R6Class(
   classname = "SurveyFit",

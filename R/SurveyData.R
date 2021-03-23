@@ -3,7 +3,7 @@
 #' @name SurveyData
 #' @export
 #' @description
-#' A `SurveyData` object represents a survey and its metadata.
+#' An [R6][R6::R6Class] `SurveyData` object represents a survey and its metadata.
 #' The survey itself is a data frame.
 #' The survey metatdata consists of the following:
 #'  - per-column questions: a list of strings

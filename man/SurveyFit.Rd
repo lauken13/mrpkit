@@ -4,7 +4,10 @@
 \alias{SurveyFit}
 \title{SurveyFit}
 \description{
-TO-DO
+An \link[R6:R6Class]{R6} SurveyFit object stores a fitted model
+object and provides methods for generating predicted probabilities for all
+poststrat cells, generating population and group estimates, and visualizing
+results.
 }
 \section{Methods}{
 \subsection{Public methods}{
