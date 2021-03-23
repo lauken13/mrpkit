@@ -4,9 +4,7 @@
 \alias{SurveyFit}
 \title{SurveyFit}
 \description{
-SurveyFit
-
-SurveyFit
+TO-DO
 }
 \section{Methods}{
 \subsection{Public methods}{
