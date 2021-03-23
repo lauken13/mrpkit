@@ -37,7 +37,6 @@ SurveyFit <- R6::R6Class(
     },
 
     #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
-    #' @param fitted_model The name of the model that was fit. For example, `fit1`.
     #' @param fun The function to use to generate the predicted probabilities.
     #'   This should only be specified if using a custom function, otherwise for
     #'   \pkg{rstanarm} and \pkg{brms} models `posterior_epred()` is

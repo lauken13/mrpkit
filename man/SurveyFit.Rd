@@ -96,8 +96,6 @@ corresponding to simulations.}
 
 \item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
 to pass to \code{fun}.}
-
-\item{\code{fitted_model}}{The name of the model that was fit. For example, \code{fit1}.}
 }
 \if{html}{\out{</div>}}
 }
