@@ -69,7 +69,9 @@ tmp_map$tabulate("age") # Just use age in the poststrat matrix
 tmp_map$tabulate() # Use all variables in the map
 
 
-mod_fit_1 <- tmp_map$fit(
+#' Example rstanarm usage
+#' Returns a SurveyFit object
+fit_1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
@@ -77,17 +79,22 @@ mod_fit_1 <- tmp_map$fit(
   cores = 2
 )
 
-mod_fit_2 <- tmp_map$fit(
+\dontrun{
+# Example brms usage
+# Returns a SurveyFit object
+# (not run because requires compilation)
+fit_2 <- tmp_map$fit(
   fun = brms::brm,
   formula = y ~ (1|age) + (1|gender),
   family = "bernoulli",
   refresh = 100,
   cores = 2
 )
+}
 
 # predict in postrat matrix - returns a matrix
 # with rows as poststrat rows, cols as posterior samples.
-poststrat_fit <- tmp_map$predictify(mod_fit_2)
+poststrat_fit <- fit_1$predictify()
 
 # get an estimate for a particular variable level or population
 # arguments:
@@ -100,11 +107,11 @@ poststrat_fit <- tmp_map$predictify(mod_fit_2)
 # - data.frame
 #   - one column if popn estimate, otherwise one column per level of variable
 #   - one row per posterior sample
-sae_preds <- tmp_map$collapsify(poststrat_fit, variable_aggr = "age")
-popn_preds <- tmp_map$collapsify(poststrat_fit)
-plot1 <- tmp_map$visify(sae_preds)
+sae_preds <- fit_1$collapsify(poststrat_fit, variable_aggr = "age")
+popn_preds <- fit_1$collapsify(poststrat_fit)
+plot1 <- fit_1$visify(sae_preds)
 plot1
-plot2 <- tmp_map$visify(popn_preds)
+plot2 <- fit_1$visify(popn_preds)
 plot2
 }
 \section{Methods}{
@@ -119,9 +126,6 @@ plot2
 \item \href{#method-mapping}{\code{SurveyMap$mapping()}}
 \item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
 \item \href{#method-fit}{\code{SurveyMap$fit()}}
-\item \href{#method-predictify}{\code{SurveyMap$predictify()}}
-\item \href{#method-collapsify}{\code{SurveyMap$collapsify()}}
-\item \href{#method-visify}{\code{SurveyMap$visify()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -233,61 +237,8 @@ The data argument will be automatically specified internally.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The fitted model object returned by \code{fun}.
+A \link{SurveyFit} object.
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-predictify"></a>}}
-\if{latex}{\out{\hypertarget{method-predictify}{}}}
-\subsection{Method \code{predictify()}}{
-Use fitted model to add predicted probabilities to post-stratification dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$predictify(fitted_model, fun = NULL, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{fitted_model}}{The name of the model that was fit. For example, \code{fit1}.}
-
-\item{\code{fun}}{The function to use to generate the predicted probabilities.
-This should only be specified if using a custom function, otherwise for
-\pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
-automatically used (with the result transposed) and for \pkg{lme4}
-models the \code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom
-function then the first argument should take in the fitted model object
-and the second argument should take in the poststratification
-(\code{newdata}) data frame. The function must return a matrix with rows
-corresponding to the columns of the poststratification data and columns
-corresponding to simulations.}
-
-\item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
-to pass to \code{fun}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A matrix with rows corresponding to poststrat cells and columns
-corresponding to posterior samples.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-collapsify"></a>}}
-\if{latex}{\out{\hypertarget{method-collapsify}{}}}
-\subsection{Method \code{collapsify()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$collapsify(poststrat_fit, variable_aggr = NULL)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-visify"></a>}}
-\if{latex}{\out{\hypertarget{method-visify}{}}}
-\subsection{Method \code{visify()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$visify(sae_preds)}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
