@@ -131,7 +131,7 @@ SurveyMap <- R6::R6Class(
 
       self$item_map <- list(...)
       for (i in 1:length(self$item_map)) {
-        names(self$item_map)[i] <- self$item_map[[i]]$name
+        names(self$item_map)[i] <- self$item_map[[i]]$name()
       }
 
       self$samp_obj <- samp_obj
@@ -143,12 +143,12 @@ SurveyMap <- R6::R6Class(
       if (length(self$item_map) > 0) {
         for (i in 1:length(self$item_map)) {
           cat("==============",'\n')
-          cat(self$item_map[[i]]$col_names[1], "=",
-              self$item_map[[i]]$col_names[2], '\n')
+          cat(self$item_map[[i]]$col_names()[1], "=",
+              self$item_map[[i]]$col_names()[2], '\n')
           cat("--------------",'\n')
-          for (j in 1:nrow(self$item_map[[i]]$values)) {
-            cat(as.character(self$item_map[[i]]$values[j,1]), "=",
-                as.character(self$item_map[[i]]$values[j,2]), '\n')
+          for (j in 1:nrow(self$item_map[[i]]$values())) {
+            cat(as.character(self$item_map[[i]]$values()[j,1]), "=",
+                as.character(self$item_map[[i]]$values()[j,2]), '\n')
           }
         }
       } else {
@@ -159,14 +159,15 @@ SurveyMap <- R6::R6Class(
     },
 
     add = function(...) {
-      for (i in 1:length(list(...))) {
+      dots <- list(...)
+      for (i in 1:length(dots)) {
         ll_length <- length(self$item_map)
-        if (list(...)[[i]]$name %in% names(self$item_map)) {
-          stop("Survey label: ", list(...)[[i]]$name, " already defined.  ",
+        if (dots[[i]]$name() %in% names(self$item_map)) {
+          stop("Survey label: ", dots[[i]]$name(), " already defined.  ",
                "Use function 'replace' instead. ", call. = FALSE)
         }
-        self$item_map[[ll_length + 1]] <- list(...)[[i]]
-        names(self$item_map)[ll_length + 1] <- self$item_map[[ll_length + 1]]$name
+        self$item_map[[ll_length + 1]] <- dots[[i]]
+        names(self$item_map)[ll_length + 1] <- self$item_map[[ll_length + 1]]$name()
       }
       invisible(self)
     },
@@ -175,8 +176,8 @@ SurveyMap <- R6::R6Class(
       tmp_list <- list(...)
       for (i in length(tmp_list)) {
         if (inherits(tmp_list[[i]], "SurveyQuestion")) {
-          loc_id <- names(self$item_map) %in% tmp_list[[i]]$name
-          loc_name <- tmp_list$name[[i]]
+          loc_id <- names(self$item_map) %in% tmp_list[[i]]$name()
+          loc_name <- tmp_list[[i]]$name()
         } else {
           loc_id <- names(self$item_map) %in% tmp_list[[i]]
           loc_name <- tmp_list[[i]]
@@ -184,7 +185,7 @@ SurveyMap <- R6::R6Class(
         if (sum(loc_id) == 0) {
           stop("Survey label: ", loc_name, " not defined.  ",
                call. = FALSE)
-        } else{
+        } else {
           self$item_map[[which(loc_id)]] <- NULL
         }
       }
@@ -207,8 +208,8 @@ SurveyMap <- R6::R6Class(
       samp_mapnames <- character(length(self$item_map))
       popn_mapnames <- character(length(self$item_map))
       for (j in 1:length(self$item_map)) {
-        samp_mapnames[j] <- self$item_map[[j]]$col_names[1]
-        popn_mapnames[j] <- self$item_map[[j]]$col_names[2]
+        samp_mapnames[j] <- self$item_map[[j]]$col_names()[1]
+        popn_mapnames[j] <- self$item_map[[j]]$col_names()[2]
         if (!is.factor(self$samp_obj$survey_data[,samp_mapnames[j]])) {
           self$samp_obj$survey_data[,samp_mapnames[j]] <- as.factor(self$samp_obj$survey_data[,samp_mapnames[j]])
           warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$samp_obj$survey_data[,samp_mapnames[j]]), collapse = ", "))
@@ -217,8 +218,8 @@ SurveyMap <- R6::R6Class(
           self$popn_obj$survey_data[,popn_mapnames[j]] <- as.factor(self$popn_obj$survey_data[,popn_mapnames[j]])
           warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$popn_obj$survey_data[,popn_mapnames[j]]), collapse = ", "))
         }
-        levels_map_samp <- levels(self$item_map[[j]]$values[, 1])
-        levels_map_popn <- levels(self$item_map[[j]]$values[, 2])
+        levels_map_samp <- levels(self$item_map[[j]]$values()[, 1])
+        levels_map_popn <- levels(self$item_map[[j]]$values()[, 2])
         levels_data_samp <- levels(self$samp_obj$survey_data[, samp_mapnames[j]])
         levels_data_popn <- levels(self$popn_obj$survey_data[, popn_mapnames[j]])
         if (!samp_mapnames[j] %in% samp_dfnames) {
@@ -261,11 +262,11 @@ SurveyMap <- R6::R6Class(
       self$popn_obj$survey_data$key <- 1:nrow(self$popn_obj$survey_data)
       for (j in 1:length(self$item_map)) {
         #### set up names ####
-        samp_mapnames <- self$item_map[[j]]$col_names[1]
-        popn_mapnames <- self$item_map[[j]]$col_names[2]
-        levels_map_samp <- self$item_map[[j]]$values[, 1]
-        levels_map_popn <- self$item_map[[j]]$values[, 2]
-        new_varname <- self$item_map[[j]]$name
+        samp_mapnames <- self$item_map[[j]]$col_names()[1]
+        popn_mapnames <- self$item_map[[j]]$col_names()[2]
+        levels_map_samp <- self$item_map[[j]]$values()[, 1]
+        levels_map_popn <- self$item_map[[j]]$values()[, 2]
+        new_varname <- self$item_map[[j]]$name()
         new_levels_samp <- character(length(levels_map_samp))
         new_levels_popn <- character(length(levels_map_popn))
         for (k in 1:length(levels_map_samp)) {
