@@ -203,25 +203,25 @@ SurveyMap <- R6::R6Class(
     },
 
     validate = function() {
-      samp_dfnames <- colnames(self$samp_obj$survey_data)
-      popn_dfnames <-colnames(self$popn_obj$survey_data)
+      samp_dfnames <- colnames(self$samp_obj$survey_data())
+      popn_dfnames <-colnames(self$popn_obj$survey_data())
       samp_mapnames <- character(length(self$item_map))
       popn_mapnames <- character(length(self$item_map))
       for (j in 1:length(self$item_map)) {
         samp_mapnames[j] <- self$item_map[[j]]$col_names()[1]
         popn_mapnames[j] <- self$item_map[[j]]$col_names()[2]
-        if (!is.factor(self$samp_obj$survey_data[,samp_mapnames[j]])) {
-          self$samp_obj$survey_data[,samp_mapnames[j]] <- as.factor(self$samp_obj$survey_data[,samp_mapnames[j]])
-          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$samp_obj$survey_data[,samp_mapnames[j]]), collapse = ", "))
+        if (!is.factor(self$samp_obj$survey_data()[,samp_mapnames[j]])) {
+          self$samp_obj$survey_data()[,samp_mapnames[j]] <- as.factor(self$samp_obj$survey_data()[,samp_mapnames[j]])
+          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$samp_obj$survey_data()[,samp_mapnames[j]]), collapse = ", "))
         }
-        if (!is.factor(self$popn_obj$survey_data[,popn_mapnames[j]])) {
-          self$popn_obj$survey_data[,popn_mapnames[j]] <- as.factor(self$popn_obj$survey_data[,popn_mapnames[j]])
-          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$popn_obj$survey_data[,popn_mapnames[j]]), collapse = ", "))
+        if (!is.factor(self$popn_obj$survey_data()[,popn_mapnames[j]])) {
+          self$popn_obj$survey_data()[,popn_mapnames[j]] <- as.factor(self$popn_obj$survey_data()[,popn_mapnames[j]])
+          warning("Converting ", popn_mapnames[j], "into a factor with levels ", paste(levels(self$popn_obj$survey_data()[,popn_mapnames[j]]), collapse = ", "))
         }
         levels_map_samp <- levels(self$item_map[[j]]$values()[, 1])
         levels_map_popn <- levels(self$item_map[[j]]$values()[, 2])
-        levels_data_samp <- levels(self$samp_obj$survey_data[, samp_mapnames[j]])
-        levels_data_popn <- levels(self$popn_obj$survey_data[, popn_mapnames[j]])
+        levels_data_samp <- levels(self$samp_obj$survey_data()[, samp_mapnames[j]])
+        levels_data_popn <- levels(self$popn_obj$survey_data()[, popn_mapnames[j]])
         if (!samp_mapnames[j] %in% samp_dfnames) {
           stop("Variable ", samp_mapnames[j], " not in sample", call. = FALSE)
         }
@@ -256,10 +256,10 @@ SurveyMap <- R6::R6Class(
     },
     mapping  = function() {
       ####Set up keys####
-      self$samp_obj$mapped_data <- data.frame(key = 1:nrow(self$samp_obj$survey_data))
-      self$samp_obj$survey_data$key <- 1:nrow(self$samp_obj$survey_data)
-      self$popn_obj$mapped_data <- data.frame(key = 1:nrow(self$popn_obj$survey_data))
-      self$popn_obj$survey_data$key <- 1:nrow(self$popn_obj$survey_data)
+      self$samp_obj$add_survey_data_column("key", 1:nrow(self$samp_obj$survey_data()))
+      self$samp_obj$add_mapped_data_column("key", 1:nrow(self$samp_obj$survey_data()))
+      self$popn_obj$add_survey_data_column("key", 1:nrow(self$popn_obj$survey_data()))
+      self$popn_obj$add_mapped_data_column("key", 1:nrow(self$popn_obj$survey_data()))
       for (j in 1:length(self$item_map)) {
         #### set up names ####
         samp_mapnames <- self$item_map[[j]]$col_names()[1]
@@ -287,8 +287,8 @@ SurveyMap <- R6::R6Class(
             stop("Mapping can only handle many to one mappings.", call. = FALSE)
           }
         }
-        self$samp_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$samp_obj$survey_data[[samp_mapnames]], !!!new_levels_samp)
-        self$popn_obj$mapped_data[[new_varname]] <- forcats::fct_recode(self$popn_obj$survey_data[[popn_mapnames]], !!!new_levels_popn)
+        self$samp_obj$add_mapped_data_column(new_varname, forcats::fct_recode(self$samp_obj$survey_data()[[samp_mapnames]], !!!new_levels_samp))
+        self$popn_obj$add_mapped_data_column(new_varname, forcats::fct_recode(self$popn_obj$survey_data()[[popn_mapnames]], !!!new_levels_popn))
       }
       invisible(self)
     },
@@ -300,10 +300,7 @@ SurveyMap <- R6::R6Class(
       if (sum(!grouping_vars %in% names(self$item_map)) > 0) {
         stop("At least one poststratification variable doesn't correspond to the map.", call. = FALSE)
       }
-      self$popn_obj$poststrat <- self$popn_obj$mapped_data %>%
-        dplyr::mutate(wts = self$popn_obj$weights) %>%
-        dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-        dplyr::summarize(N_j = sum(wts), .groups = 'drop')
+      self$popn_obj$generate_poststrat_data(grouping_vars)
       invisible(self)
     },
 
@@ -330,7 +327,7 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (is.null(self$samp_obj$mapped_data)) {
+      if (is.null(self$samp_obj$mapped_data())) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
@@ -338,9 +335,9 @@ SurveyMap <- R6::R6Class(
 
       # TODO: error if variables in formula aren't in data
       formula <- as.formula(formula)
-      mapped_data <- self$samp_obj$mapped_data
+      mapped_data <- self$samp_obj$mapped_data()
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
-      y_and_x <- self$samp_obj$survey_data[, need_vars, drop = FALSE]
+      y_and_x <- self$samp_obj$survey_data()[, need_vars, drop = FALSE]
 
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
