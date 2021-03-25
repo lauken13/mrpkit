@@ -157,6 +157,7 @@ Create a new SurveyMap object
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
+Print a summary of the mapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$print(...)}\if{html}{\out{</div>}}
 }
@@ -166,6 +167,7 @@ Create a new SurveyMap object
 \if{html}{\out{<a id="method-add"></a>}}
 \if{latex}{\out{\hypertarget{method-add}{}}}
 \subsection{Method \code{add()}}{
+Add new \link{SurveyQuestion}s.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$add(...)}\if{html}{\out{</div>}}
 }
@@ -175,16 +177,24 @@ Create a new SurveyMap object
 \if{html}{\out{<a id="method-delete"></a>}}
 \if{latex}{\out{\hypertarget{method-delete}{}}}
 \subsection{Method \code{delete()}}{
+Delete \link{SurveyQuestion}s.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$delete(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{The \link{SurveyQuestion}s to delete.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-replace"></a>}}
 \if{latex}{\out{\hypertarget{method-replace}{}}}
 \subsection{Method \code{replace()}}{
-Replace one survey question with another
+Replace one \link{SurveyQuestion} with another.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$replace(old_question, new_question)}\if{html}{\out{</div>}}
 }
