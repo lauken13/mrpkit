@@ -126,6 +126,9 @@ plot2
 \item \href{#method-mapping}{\code{SurveyMap$mapping()}}
 \item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
 \item \href{#method-fit}{\code{SurveyMap$fit()}}
+\item \href{#method-item_map}{\code{SurveyMap$item_map()}}
+\item \href{#method-samp_obj}{\code{SurveyMap$samp_obj()}}
+\item \href{#method-popn_obj}{\code{SurveyMap$popn_obj()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -133,10 +136,22 @@ plot2
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Create a new SurveyMap object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$new(samp_obj, popn_obj, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{samp_obj}}{The \link{SurveyData} object corresponding to the sample data.}
+
+\item{\code{popn_obj}}{The \link{SurveyData} object corresponding to the population data.}
+
+\item{\code{...}}{\link{SurveyQuestion} objects.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
@@ -188,6 +203,7 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-validate"></a>}}
 \if{latex}{\out{\hypertarget{method-validate}{}}}
 \subsection{Method \code{validate()}}{
+Validate the mapping
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$validate()}\if{html}{\out{</div>}}
 }
@@ -197,6 +213,7 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-mapping}{}}}
 \subsection{Method \code{mapping()}}{
+Prepare the mapped data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapping()}\if{html}{\out{</div>}}
 }
@@ -206,10 +223,18 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-tabulate"></a>}}
 \if{latex}{\out{\hypertarget{method-tabulate}{}}}
 \subsection{Method \code{tabulate()}}{
+Prepare the poststratification table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$tabulate(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{The variables to include.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-fit"></a>}}
@@ -239,6 +264,36 @@ The data argument will be automatically specified internally.}
 \subsection{Returns}{
 A \link{SurveyFit} object.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-item_map"></a>}}
+\if{latex}{\out{\hypertarget{method-item_map}{}}}
+\subsection{Method \code{item_map()}}{
+Access the \code{item_map}
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$item_map()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-samp_obj"></a>}}
+\if{latex}{\out{\hypertarget{method-samp_obj}{}}}
+\subsection{Method \code{samp_obj()}}{
+Access the \link{SurveyData} object containing the sample data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$samp_obj()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-popn_obj"></a>}}
+\if{latex}{\out{\hypertarget{method-popn_obj}{}}}
+\subsection{Method \code{popn_obj()}}{
+Access the \link{SurveyData} object containing the population data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$popn_obj()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

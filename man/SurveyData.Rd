@@ -23,7 +23,7 @@ Examples of survey designs include:
 }
 }
 \examples{
-feline_prefs2 <- SurveyData$new(
+feline_prefs <- SurveyData$new(
   feline_survey[,c("age1","gender","pet_own","y")],
   questions = c(
     "Please identify your age group",
@@ -65,6 +65,16 @@ popn_obj$print()
 \itemize{
 \item \href{#method-new}{\code{SurveyData$new()}}
 \item \href{#method-print}{\code{SurveyData$print()}}
+\item \href{#method-add_survey_data_column}{\code{SurveyData$add_survey_data_column()}}
+\item \href{#method-add_mapped_data_column}{\code{SurveyData$add_mapped_data_column()}}
+\item \href{#method-generate_poststrat_data}{\code{SurveyData$generate_poststrat_data()}}
+\item \href{#method-survey_data}{\code{SurveyData$survey_data()}}
+\item \href{#method-poststrat}{\code{SurveyData$poststrat()}}
+\item \href{#method-mapped_data}{\code{SurveyData$mapped_data()}}
+\item \href{#method-questions}{\code{SurveyData$questions()}}
+\item \href{#method-responses}{\code{SurveyData$responses()}}
+\item \href{#method-weights}{\code{SurveyData$weights()}}
+\item \href{#method-design}{\code{SurveyData$design()}}
 \item \href{#method-clone}{\code{SurveyData$clone()}}
 }
 }
@@ -89,6 +99,96 @@ popn_obj$print()
 \subsection{Method \code{print()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$print(...)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-add_survey_data_column"></a>}}
+\if{latex}{\out{\hypertarget{method-add_survey_data_column}{}}}
+\subsection{Method \code{add_survey_data_column()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$add_survey_data_column(name, value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-add_mapped_data_column"></a>}}
+\if{latex}{\out{\hypertarget{method-add_mapped_data_column}{}}}
+\subsection{Method \code{add_mapped_data_column()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$add_mapped_data_column(name, value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-generate_poststrat_data"></a>}}
+\if{latex}{\out{\hypertarget{method-generate_poststrat_data}{}}}
+\subsection{Method \code{generate_poststrat_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$generate_poststrat_data(grouping_vars)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-survey_data"></a>}}
+\if{latex}{\out{\hypertarget{method-survey_data}{}}}
+\subsection{Method \code{survey_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$survey_data()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-poststrat"></a>}}
+\if{latex}{\out{\hypertarget{method-poststrat}{}}}
+\subsection{Method \code{poststrat()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$poststrat()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-mapped_data"></a>}}
+\if{latex}{\out{\hypertarget{method-mapped_data}{}}}
+\subsection{Method \code{mapped_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$mapped_data()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-questions"></a>}}
+\if{latex}{\out{\hypertarget{method-questions}{}}}
+\subsection{Method \code{questions()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$questions()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-responses"></a>}}
+\if{latex}{\out{\hypertarget{method-responses}{}}}
+\subsection{Method \code{responses()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$responses()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-weights"></a>}}
+\if{latex}{\out{\hypertarget{method-weights}{}}}
+\subsection{Method \code{weights()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$weights()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-design"></a>}}
+\if{latex}{\out{\hypertarget{method-design}{}}}
+\subsection{Method \code{design()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$design()}\if{html}{\out{</div>}}
 }
 
 }
