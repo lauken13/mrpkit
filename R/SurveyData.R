@@ -106,7 +106,7 @@ SurveyData <- R6::R6Class(
             } else {
                 cat("Simple")
                 require_suggested_package("lme4") # for findbars()
-                if (is.null(findbars(private$design_))){
+                if (is.null(lme4::findbars(private$design_))){
                     cat(" stratified sample with strata", all.vars(terms(private$design_))[[1]], "\n")
                 } else {
                     cat(" cluster sample with cluster", all.vars(terms(private$design_))[[1]], "\n")
