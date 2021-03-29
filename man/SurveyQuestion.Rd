@@ -4,8 +4,8 @@
 \alias{SurveyQuestion}
 \title{SurveyQuestion}
 \description{
-A \code{SurveyQuestion} object holds the mapping for one question or
-demographic between the survey and population dataset.
+An \link[R6:R6Class]{R6} \code{SurveyQuestion} object holds the mapping
+for one question or demographic between the survey and population dataset.
 }
 \examples{
 q1 <- SurveyQuestion$new(

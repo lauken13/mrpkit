@@ -3,8 +3,8 @@
 #' @name SurveyQuestion
 #' @export
 #'
-#' @description A `SurveyQuestion` object holds the mapping for one question or
-#'   demographic between the survey and population dataset.
+#' @description An [R6][R6::R6Class] `SurveyQuestion` object holds the mapping
+#'   for one question or demographic between the survey and population dataset.
 #'
 #' @examples
 #' q1 <- SurveyQuestion$new(

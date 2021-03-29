@@ -4,7 +4,7 @@
 \alias{SurveyData}
 \title{SurveyData objects}
 \description{
-A \code{SurveyData} object represents a survey and its metadata.
+An \link[R6:R6Class]{R6} \code{SurveyData} object represents a survey and its metadata.
 The survey itself is a data frame.
 The survey metatdata consists of the following:
 \itemize{
