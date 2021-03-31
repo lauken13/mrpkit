@@ -58,7 +58,6 @@ SurveyData <- R6::R6Class(
     classname = "SurveyData",
     private = list(
         survey_data_ = data.frame(NULL),
-        poststrat_ = data.frame(NULL),
         mapped_data_ = data.frame(NULL),
         questions_ = character(0),
         responses_ = list(),
@@ -148,14 +147,6 @@ SurveyData <- R6::R6Class(
             }
             invisible(self)
         },
-        generate_poststrat_data = function(grouping_vars) {
-            private$poststrat_ <-
-                private$mapped_data_ %>%
-                dplyr::mutate(wts = private$weights_) %>%
-                dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-                dplyr::summarize(N_j = sum(wts), .groups = 'drop')
-            invisible(self)
-        },
         survey_data = function(key = TRUE) {
             if (key) {
                 private$survey_data_
@@ -170,7 +161,6 @@ SurveyData <- R6::R6Class(
                 private$mapped_data_[, colnames(private$mapped_data_) != "key"]
             }
         },
-        poststrat = function() private$poststrat_,
         questions = function() private$questions_,
         responses = function() private$responses_,
         weights = function() private$weights_,

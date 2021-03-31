@@ -117,9 +117,10 @@
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
-    item_map_ = list(),
     samp_obj_ = NULL,
-    popn_obj_ = NULL
+    popn_obj_ = NULL,
+    item_map_ = list(),
+    poststrat_data_ = data.frame(NULL)
   ),
   public = list(
 
@@ -214,8 +215,8 @@ SurveyMap <- R6::R6Class(
 
     #' @description Validate the mapping
     validate = function() {
-      samp_dfnames <- colnames(private$samp_obj_$survey_data())
-      popn_dfnames <- colnames(private$popn_obj_$survey_data())
+      samp_dfnames <- colnames(private$samp_obj_$survey_data(key = FALSE))
+      popn_dfnames <- colnames(private$popn_obj_$survey_data(key = FALSE))
       samp_mapnames <- character(length(private$item_map_))
       popn_mapnames <- character(length(private$item_map_))
       for (j in 1:length(private$item_map_)) {
@@ -331,7 +332,11 @@ SurveyMap <- R6::R6Class(
       if (sum(!grouping_vars %in% names(private$item_map_)) > 0) {
         stop("At least one poststratification variable doesn't correspond to the map.", call. = FALSE)
       }
-      private$popn_obj_$generate_poststrat_data(grouping_vars)
+      private$poststrat_data_ <-
+          private$popn_obj_$mapped_data() %>%
+          dplyr::mutate(wts = private$popn_obj_$weights()) %>%
+          dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
+          dplyr::summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
     },
 
@@ -383,6 +388,15 @@ SurveyMap <- R6::R6Class(
     samp_obj = function() private$samp_obj_,
 
     #' @description Access the [SurveyData] object containing the population data
-    popn_obj = function() private$popn_obj_
+    popn_obj = function() private$popn_obj_,
+
+    #' @description Access the poststratification data frame
+    poststrat_data = function() {
+      if (is.null(private$poststrat_data_)) {
+        stop("Please call the tabulate() method before accessing the poststrat data.",
+             call. = FALSE)
+      }
+      private$poststrat_data_
+    }
 )
 )
