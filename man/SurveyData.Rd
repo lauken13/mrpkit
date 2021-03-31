@@ -64,6 +64,8 @@ popn_obj$print()
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{SurveyData$new()}}
+\item \href{#method-n_obs}{\code{SurveyData$n_obs()}}
+\item \href{#method-n_questions}{\code{SurveyData$n_questions()}}
 \item \href{#method-print}{\code{SurveyData$print()}}
 \item \href{#method-add_survey_data_column}{\code{SurveyData$add_survey_data_column()}}
 \item \href{#method-add_mapped_data_column}{\code{SurveyData$add_mapped_data_column()}}
@@ -94,9 +96,30 @@ popn_obj$print()
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-n_obs"></a>}}
+\if{latex}{\out{\hypertarget{method-n_obs}{}}}
+\subsection{Method \code{n_obs()}}{
+Number of observations in the survey data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$n_obs()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-n_questions"></a>}}
+\if{latex}{\out{\hypertarget{method-n_questions}{}}}
+\subsection{Method \code{n_questions()}}{
+Number of survey questions
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$n_questions()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
+Print a summary of the survey data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$print(...)}\if{html}{\out{</div>}}
 }

@@ -289,10 +289,6 @@ SurveyMap <- R6::R6Class(
 
     #' @description Prepare the mapped data
     mapping  = function() {
-      private$samp_obj_$add_survey_data_column("key", 1:nrow(private$samp_obj_$survey_data()))
-      private$samp_obj_$add_mapped_data_column("key", 1:nrow(private$samp_obj_$survey_data()))
-      private$popn_obj_$add_survey_data_column("key", 1:nrow(private$popn_obj_$survey_data()))
-      private$popn_obj_$add_mapped_data_column("key", 1:nrow(private$popn_obj_$survey_data()))
       for (j in 1:length(private$item_map_)) {
         samp_mapnames <- private$item_map_[[j]]$col_names()[1]
         popn_mapnames <- private$item_map_[[j]]$col_names()[2]
