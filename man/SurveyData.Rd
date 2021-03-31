@@ -69,9 +69,7 @@ popn_obj$print()
 \item \href{#method-print}{\code{SurveyData$print()}}
 \item \href{#method-add_survey_data_column}{\code{SurveyData$add_survey_data_column()}}
 \item \href{#method-add_mapped_data_column}{\code{SurveyData$add_mapped_data_column()}}
-\item \href{#method-generate_poststrat_data}{\code{SurveyData$generate_poststrat_data()}}
 \item \href{#method-survey_data}{\code{SurveyData$survey_data()}}
-\item \href{#method-poststrat}{\code{SurveyData$poststrat()}}
 \item \href{#method-mapped_data}{\code{SurveyData$mapped_data()}}
 \item \href{#method-questions}{\code{SurveyData$questions()}}
 \item \href{#method-responses}{\code{SurveyData$responses()}}
@@ -144,29 +142,11 @@ Print a summary of the survey data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-generate_poststrat_data"></a>}}
-\if{latex}{\out{\hypertarget{method-generate_poststrat_data}{}}}
-\subsection{Method \code{generate_poststrat_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyData$generate_poststrat_data(grouping_vars)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-survey_data"></a>}}
 \if{latex}{\out{\hypertarget{method-survey_data}{}}}
 \subsection{Method \code{survey_data()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyData$survey_data()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-poststrat"></a>}}
-\if{latex}{\out{\hypertarget{method-poststrat}{}}}
-\subsection{Method \code{poststrat()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyData$poststrat()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$survey_data(key = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
@@ -175,7 +155,7 @@ Print a summary of the survey data
 \if{latex}{\out{\hypertarget{method-mapped_data}{}}}
 \subsection{Method \code{mapped_data()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyData$mapped_data()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyData$mapped_data(key = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
