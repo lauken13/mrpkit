@@ -8,10 +8,10 @@
 #' @format A data frame with columns:
 #'
 #' \describe{
-#'  \item{age2}{Age group}
+#'  \item{age_group}{Age group}
 #'  \item{gender}{Gender}
-#'  \item{vote_for}{The voted party in the 2016 election}
-#'  \item{y}{Preference to NLP}
+#'  \item{vote_for}{The party that being voted in the 2016 election}
+#'  \item{y}{Preference to NLP in 2020 election}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
 #' @examples

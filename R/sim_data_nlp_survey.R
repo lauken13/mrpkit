@@ -9,10 +9,10 @@
 #' @format A data frame with columns:
 #'
 #' \describe{
-#'  \item{age1}{Age group}
+#'  \item{age}{Age group}
 #'  \item{gender}{Gender}
 #'  \item{vote_for}{The party that the respondent vote for in the 2016 election}
-#'  \item{y}{Preference to NLP}
+#'  \item{y}{Preference to NLP in 2020 election}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
 #' @examples

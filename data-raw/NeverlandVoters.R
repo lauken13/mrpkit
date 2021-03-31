@@ -75,19 +75,19 @@ nlp_survey$wt <- weights(wts_trim_nlp_survey)
 nlp_survey <- nlp_survey %>%
   select(-S_inclusion_prob) %>%
   mutate_at(c("age_group","gender","vote_for","y"), as.factor) %>%
-  mutate(age1 =fct_recode(age_group, `18-25` = "1", `26-35` = "2", `36-45` = "3",`46-55` = "4", `56-65` = "5", `66-75` = "6", `76-90` = "7"),
+  mutate(age =fct_recode(age_group, `18-25` = "1", `26-35` = "2", `36-45` = "3",`46-55` = "4", `56-65` = "5", `66-75` = "6", `76-90` = "7"),
          gender = fct_recode(gender, "male" = "1", "female" = "2", "nonbinary" = "3"),
          vote_for = fct_recode(vote_for, "Neverland Labor Party" = "1", "NLP" = "2", "Neverland Democrats" = "3", "The Democrats" = "4"),
          y = fct_recode(y,"no" = "0", "yes" = "1")) %>%
-  select(c(age1, gender, vote_for, y, wt))
+  select(c(age, gender, vote_for, y, wt))
 
 
 approx_voters_popn <- approx_voters_popn %>%
   select(-S_inclusion_prob) %>%
   mutate_at(c("age_group","gender","vote_for"), as.factor) %>%
-  mutate(age2 =fct_recode(age_group, `18-35` = "1", `18-35` = "2", `36-55` = "3",`36-55` = "4", `56-65` = "5", `66+` = "6", `66+` = "7"),
+  mutate(age_group =fct_recode(age_group, `18-35` = "1", `18-35` = "2", `36-55` = "3",`36-55` = "4", `56-65` = "5", `66+` = "6", `66+` = "7"),
          gender = fct_recode(gender, "m" = "1", "f" = "2", "nb" = "3"),
          vote_pref = fct_recode(vote_for, "NLP" = "1", "NLP" = "2", "The Democrats" = "3", "The Democrats" = "4")) %>%
-  select(c(age2, gender, vote_pref, wt))
+  select(c(age_group, gender, vote_pref, wt))
 
 usethis::use_data(nlp_survey, approx_voters_popn, overwrite = TRUE)

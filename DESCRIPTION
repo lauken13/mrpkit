@@ -19,7 +19,10 @@ Suggests:
     rstanarm (>= 2.21.0),
     brms,
     lme4,
-    merTools
+    merTools,
+    knitr,
+    rmarkdown
 Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 2.10)
+VignetteBuilder: knitr

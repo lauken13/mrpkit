@@ -1,0 +1,207 @@
+---
+title: "Getting Started with MRP-Kit"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with MRP-Kit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(mrpkit)
+```
+
+## Introduction
+
+The aim of MRP-Kit is to create a set of grammar to perform the Multilevel Regression with Poststratification (MRP). By using this package, we will get the workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping it, building the model, get the prediction and aggregate value, and visualize it. Hence, it will create a more reproducible and accountable environment for conducting an MRP analysis. 
+
+Unlike most of R packages, the MRP-kit implements the usage of [Object Oriented Programming (R6 objects)](https://adv-r.hadley.nz/r6.html). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. This package create three objects, which are `SurveyData`, `SurveyQuestion`, and `SurveyMap`. There are several methods in each of these objects that will be explained later on in this vignette.   
+
+
+## Create the SurveyData Objects 
+
+A `SurveyData` objects is an object represents the data, both of the survey and population data, along with its metadata. The survey metadata consists of the survey's variables, question in the questionnaire, level of response, the survey's weight, and its design formula (random sample, one stage cluster sample, and stratified sample).
+
+This object also has three methods, which are `SurveyData$new`, `SurveyData$print`, and `SurveyData$clone`. The `SurveyData$new` is used to transform a survey data frame to a `SurveyData` object, whereas `SurveyData$print` and `SurveyData$clone` are used to print and clone the created `SurveyData` object. 
+
+```{r}
+nlp_pref <- SurveyData$new(
+  nlp_survey[,c("age","gender","vote_for","y")],
+  questions = c("Please identify your age group",
+                "Please select your gender",
+                "Which party did you vote for in the 2018 election?",
+                "If today is the election day, will you vote for the NLP party?"),
+  responses = list(levels(nlp_survey$age),
+                   levels(nlp_survey$gender),
+                   levels(nlp_survey$vote_for),
+                   c("no","yes")),
+  weights = nlp_survey$wt,
+  design = formula("~."))
+
+
+popn_obj <- SurveyData$new(
+  approx_voters_popn[,c("age_group","gender","vote_pref")],
+  questions = c("Which age group are you?",
+                "Which gender are you identified?",
+                "Which party do you prefer to vote?"),
+  responses = list(levels(approx_voters_popn$age_group),
+                   levels(approx_voters_popn$gender),
+                   levels(approx_voters_popn$vote_pref)),
+  weights = approx_voters_popn$wt,
+  design = formula("~."))
+
+
+feline_prefs <- SurveyData$new(
+  feline_survey[,c("age1","gender","pet_own","y")],
+  questions = c(
+    "Please identify your age group",
+    "Please select your gender",
+    "Which pet do you own?",
+    "Response"
+  ),
+  responses = list(
+    levels(feline_survey$age1),
+    levels(feline_survey$gender),
+    levels(feline_survey$pet_own),
+    c("no","yes")
+  ),
+  weights = feline_survey$wt,
+  design = formula("~.")
+)
+
+feline_prefs$print()
+
+
+nlp_pref$print()
+popn_obj$print() #put this issue to github
+```
+
+
+## Match the Value in Survey's Questions with SurveyQuestion
+
+```{r}
+q1 <- SurveyQuestion$new(
+  name = "age",
+  col_names = c("age","age_group"),
+  values_map = list(
+    "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+    "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
+
+q2 <- SurveyQuestion$new(
+ name = "party_pref",
+ col_names = c("vote_for","vote_pref"),
+ values_map = list("Neverland Labor Party" = "NLP", "NLP" = "NLP","Neverland Democrats" = "The Democrats","The Democrats" = "The Democrats"))
+
+q3 <- SurveyQuestion$new(
+  name = "gender",
+  col_names = c("gender","gender"),
+  values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+```
+
+
+## Using the Handy SurveyMap
+
+```{r}
+tmp_map <- SurveyMap$new(samp_obj = nlp_pref, popn_obj = popn_obj, q1)
+print(tmp_map)
+tmp_map$validate()
+tmp_map$add(q3)
+print(tmp_map)
+tmp_map$delete(q3)
+print(tmp_map)
+tmp_map$add(q3)
+tmp_map$delete("gender")
+print(tmp_map)
+tmp_map$add(q2)
+print(tmp_map)
+tmp_map$replace(q1,q3)
+print(tmp_map)
+tmp_map$add(q1)
+print(tmp_map)
+tmp_map$validate()
+tmp_map$mapping()
+tmp_map$tabulate("age") # Just use age in the poststrat matrix
+tmp_map$tabulate() # Use all variables in the map
+```
+
+
+
+## Fit the Model
+
+```{r}
+# the example of using stan_glmer
+mod_fit_1 <- tmp_map$fit(
+  fun = rstanarm::stan_glmer,
+  formula = y ~ (1|age) + (1|gender),
+  family = "binomial",
+  refresh = 100,
+  cores = 2)
+
+# the example of using brm
+mod_fit_2 <- tmp_map$fit(
+  fun = brms::brm,
+  formula = y ~ (1|age) + (1|gender),
+  family = "bernoulli",
+  refresh = 100,
+  cores = 2)
+```
+
+
+## Get the Prediction
+
+```{r}
+# predict in postrat matrix - returns a matrix
+# with rows as poststrat rows, cols as posterior samples.
+
+
+poststrat_fit <- tmp_map$predictify(mod_fit_1)
+
+# get an estimate for a particular variable level or population
+# arguments:
+# - output of "predictify"
+# - (optional) variable name
+##### in order to make it the same pattern as other, predict? instead of predictify?
+
+```
+
+
+## Make the Aggregate
+
+```{r}
+# body:
+# - if no variable name then compute population estimate
+# - if variable name specified compute weighted mean (N_j * theta)/sum(N_j)
+# return type:
+# - data.frame
+# - one column if popn estimate, otherwise one column per level of variable
+# - one row per posterior sample
+
+# other alternative name : collapse?
+
+sae_preds <- tmp_map$collapsify(poststrat_fit, variable_aggr = "age")
+popn_preds <- tmp_map$collapsify(poststrat_fit)
+
+```
+
+
+## Visualise It
+
+```{r}
+plot1 <- tmp_map$visify(sae_preds)
+plot1
+```
+
+
+```{r}
+plot2 <- tmp_map$visify(popn_preds)
+plot2
+```
+
