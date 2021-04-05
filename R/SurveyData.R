@@ -151,14 +151,14 @@ SurveyData <- R6::R6Class(
             if (key) {
                 private$survey_data_
             } else {
-                private$survey_data_[, colnames(private$survey_data_) != "key"]
+                private$survey_data_[, colnames(private$survey_data_) != "key", drop = FALSE]
             }
         },
         mapped_data = function(key = TRUE) {
             if (key) {
                 private$mapped_data_
             } else {
-                private$mapped_data_[, colnames(private$mapped_data_) != "key"]
+                private$mapped_data_[, colnames(private$mapped_data_) != "key", drop = FALSE]
             }
         },
         questions = function() private$questions_,
