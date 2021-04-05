@@ -4,7 +4,7 @@
 \alias{SurveyMap}
 \title{SurveyMap}
 \description{
-A \code{SurveyMap} object holds the mapping
+An \link[R6:R6Class]{R6} \code{SurveyMap} object holds the mapping
 between a set of items in a survey and a population dataset.
 The label is the item label in each dataset and the values
 is a list of all possible values.  The values for the survey
@@ -69,7 +69,9 @@ tmp_map$tabulate("age") # Just use age in the poststrat matrix
 tmp_map$tabulate() # Use all variables in the map
 
 
-mod_fit_1 <- tmp_map$fit(
+#' Example rstanarm usage
+#' Returns a SurveyFit object
+fit_1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
@@ -77,17 +79,22 @@ mod_fit_1 <- tmp_map$fit(
   cores = 2
 )
 
-mod_fit_2 <- tmp_map$fit(
+\dontrun{
+# Example brms usage
+# Returns a SurveyFit object
+# (not run because requires compilation)
+fit_2 <- tmp_map$fit(
   fun = brms::brm,
   formula = y ~ (1|age) + (1|gender),
   family = "bernoulli",
   refresh = 100,
   cores = 2
 )
+}
 
 # predict in postrat matrix - returns a matrix
 # with rows as poststrat rows, cols as posterior samples.
-poststrat_fit <- tmp_map$predictify(mod_fit_2)
+poststrat_fit <- fit_1$predictify()
 
 # get an estimate for a particular variable level or population
 # arguments:
@@ -100,11 +107,11 @@ poststrat_fit <- tmp_map$predictify(mod_fit_2)
 # - data.frame
 #   - one column if popn estimate, otherwise one column per level of variable
 #   - one row per posterior sample
-sae_preds <- tmp_map$collapsify(poststrat_fit, variable_aggr = "age")
-popn_preds <- tmp_map$collapsify(poststrat_fit)
-plot1 <- tmp_map$visify(sae_preds)
+sae_preds <- fit_1$collapsify(poststrat_fit, variable_aggr = "age")
+popn_preds <- fit_1$collapsify(poststrat_fit)
+plot1 <- fit_1$visify(sae_preds)
 plot1
-plot2 <- tmp_map$visify(popn_preds)
+plot2 <- fit_1$visify(popn_preds)
 plot2
 }
 \section{Methods}{
@@ -119,9 +126,9 @@ plot2
 \item \href{#method-mapping}{\code{SurveyMap$mapping()}}
 \item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
 \item \href{#method-fit}{\code{SurveyMap$fit()}}
-\item \href{#method-predictify}{\code{SurveyMap$predictify()}}
-\item \href{#method-collapsify}{\code{SurveyMap$collapsify()}}
-\item \href{#method-visify}{\code{SurveyMap$visify()}}
+\item \href{#method-item_map}{\code{SurveyMap$item_map()}}
+\item \href{#method-samp_obj}{\code{SurveyMap$samp_obj()}}
+\item \href{#method-popn_obj}{\code{SurveyMap$popn_obj()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -129,15 +136,28 @@ plot2
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Create a new SurveyMap object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$new(samp_obj, popn_obj, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{samp_obj}}{The \link{SurveyData} object corresponding to the sample data.}
+
+\item{\code{popn_obj}}{The \link{SurveyData} object corresponding to the population data.}
+
+\item{\code{...}}{\link{SurveyQuestion} objects.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
+Print a summary of the mapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$print(...)}\if{html}{\out{</div>}}
 }
@@ -147,6 +167,7 @@ plot2
 \if{html}{\out{<a id="method-add"></a>}}
 \if{latex}{\out{\hypertarget{method-add}{}}}
 \subsection{Method \code{add()}}{
+Add new \link{SurveyQuestion}s.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$add(...)}\if{html}{\out{</div>}}
 }
@@ -156,16 +177,24 @@ plot2
 \if{html}{\out{<a id="method-delete"></a>}}
 \if{latex}{\out{\hypertarget{method-delete}{}}}
 \subsection{Method \code{delete()}}{
+Delete \link{SurveyQuestion}s.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$delete(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{The \link{SurveyQuestion}s to delete.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-replace"></a>}}
 \if{latex}{\out{\hypertarget{method-replace}{}}}
 \subsection{Method \code{replace()}}{
-Replace one survey question with another
+Replace one \link{SurveyQuestion} with another.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$replace(old_question, new_question)}\if{html}{\out{</div>}}
 }
@@ -184,6 +213,7 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-validate"></a>}}
 \if{latex}{\out{\hypertarget{method-validate}{}}}
 \subsection{Method \code{validate()}}{
+Validate the mapping
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$validate()}\if{html}{\out{</div>}}
 }
@@ -193,6 +223,7 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-mapping}{}}}
 \subsection{Method \code{mapping()}}{
+Prepare the mapped data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapping()}\if{html}{\out{</div>}}
 }
@@ -202,10 +233,18 @@ Replace one survey question with another
 \if{html}{\out{<a id="method-tabulate"></a>}}
 \if{latex}{\out{\hypertarget{method-tabulate}{}}}
 \subsection{Method \code{tabulate()}}{
+Prepare the poststratification table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$tabulate(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{The variables to include.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-fit"></a>}}
@@ -233,59 +272,36 @@ The data argument will be automatically specified internally.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The fitted model object returned by \code{fun}.
+A \link{SurveyFit} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-predictify"></a>}}
-\if{latex}{\out{\hypertarget{method-predictify}{}}}
-\subsection{Method \code{predictify()}}{
-Use fitted model to add predicted probabilities to post-stratification dataset.
+\if{html}{\out{<a id="method-item_map"></a>}}
+\if{latex}{\out{\hypertarget{method-item_map}{}}}
+\subsection{Method \code{item_map()}}{
+Access the \code{item_map}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$predictify(fitted_model, fun = NULL, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{fitted_model}}{The name of the model that was fit. For example, \code{fit1}.}
-
-\item{\code{fun}}{The function to use to generate the predicted probabilities.
-This should only be specified if using a custom function, otherwise for
-\pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
-automatically used (with the result transposed) and for \pkg{lme4}
-models the \code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom
-function then the first argument should take in the fitted model object
-and the second argument should take in the poststratification
-(\code{newdata}) data frame. The function must return a matrix with rows
-corresponding to the columns of the poststratification data and columns
-corresponding to simulations.}
-
-\item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
-to pass to \code{fun}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A matrix with rows corresponding to poststrat cells and columns
-corresponding to posterior samples.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-collapsify"></a>}}
-\if{latex}{\out{\hypertarget{method-collapsify}{}}}
-\subsection{Method \code{collapsify()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$collapsify(poststrat_fit, variable_aggr = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$item_map()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-visify"></a>}}
-\if{latex}{\out{\hypertarget{method-visify}{}}}
-\subsection{Method \code{visify()}}{
+\if{html}{\out{<a id="method-samp_obj"></a>}}
+\if{latex}{\out{\hypertarget{method-samp_obj}{}}}
+\subsection{Method \code{samp_obj()}}{
+Access the \link{SurveyData} object containing the sample data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$visify(sae_preds)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$samp_obj()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-popn_obj"></a>}}
+\if{latex}{\out{\hypertarget{method-popn_obj}{}}}
+\subsection{Method \code{popn_obj()}}{
+Access the \link{SurveyData} object containing the population data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$popn_obj()}\if{html}{\out{</div>}}
 }
 
 }
