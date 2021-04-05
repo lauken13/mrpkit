@@ -129,6 +129,7 @@ plot2
 \item \href{#method-item_map}{\code{SurveyMap$item_map()}}
 \item \href{#method-samp_obj}{\code{SurveyMap$samp_obj()}}
 \item \href{#method-popn_obj}{\code{SurveyMap$popn_obj()}}
+\item \href{#method-poststrat_data}{\code{SurveyMap$poststrat_data()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -302,6 +303,16 @@ Access the \link{SurveyData} object containing the sample data
 Access the \link{SurveyData} object containing the population data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$popn_obj()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-poststrat_data"></a>}}
+\if{latex}{\out{\hypertarget{method-poststrat_data}{}}}
+\subsection{Method \code{poststrat_data()}}{
+Access the poststratification data frame
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$poststrat_data()}\if{html}{\out{</div>}}
 }
 
 }
