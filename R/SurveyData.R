@@ -95,8 +95,8 @@ SurveyData <- R6::R6Class(
             private$responses_ <- responses
             private$weights_ <- weights
             private$design_ <- design
-            private$survey_data_ <- data.frame(key_ = 1:nrow(survey_data), survey_data)
-            private$mapped_data_ <- data.frame(key_ = 1:nrow(survey_data))
+            private$survey_data_ <- data.frame(.key = 1:nrow(survey_data), survey_data)
+            private$mapped_data_ <- data.frame(.key = 1:nrow(survey_data))
             invisible(self)
         },
 
@@ -151,14 +151,14 @@ SurveyData <- R6::R6Class(
             if (key) {
                 private$survey_data_
             } else {
-                private$survey_data_[, colnames(private$survey_data_) != "key_", drop = FALSE]
+                private$survey_data_[, colnames(private$survey_data_) != ".key", drop = FALSE]
             }
         },
         mapped_data = function(key = TRUE) {
             if (key) {
                 private$mapped_data_
             } else {
-                private$mapped_data_[, colnames(private$mapped_data_) != "key_", drop = FALSE]
+                private$mapped_data_[, colnames(private$mapped_data_) != ".key", drop = FALSE]
             }
         },
         questions = function() private$questions_,
