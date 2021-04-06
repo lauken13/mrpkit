@@ -75,15 +75,20 @@ SurveyData <- R6::R6Class(
                      call. = FALSE)
             }
             # allow no question/response, else require info for all columns
-            if (length(questions) != 0 || length(responses) != 0) {
+            if (length(questions) != 0) {
                 if (ncol(survey_data) != length(questions) &
                     length(questions) == sum(stats::complete.cases(survey_data))) {
                     stop("mismatch between number of survey_data columns and questions.",
                          call. = FALSE)
                 }
-                if (length(responses) != length(questions)) {
-                    stop("mismatch between number of survey questions and answers.",
-                         call. = FALSE)
+                if (length(responses) == 0) {
+                    responses <- unname(questions)
+                    questions <- as.list(names(questions))
+                } else {
+                    if (length(responses) != length(questions)) {
+                        stop("mismatch between number of survey questions and answers.",
+                             call. = FALSE)
+                    }
                 }
             }
             # allow no weights, else require weights for all columns
