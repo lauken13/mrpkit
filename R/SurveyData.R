@@ -20,7 +20,7 @@
 #' @examples
 #' feline_prefs <- SurveyData$new(
 #'   feline_survey[,c("age1","gender","pet_own","y")],
-#'   questions = c(
+#'   questions = list(
 #'     "Please identify your age group",
 #'     "Please select your gender",
 #'     "Which pet do you own?",
@@ -39,7 +39,7 @@
 #'
 #' popn_obj <- SurveyData$new(
 #'   approx_popn[,c("age2","gender","pet_pref")],
-#'   questions = c(
+#'   questions = list(
 #'     "Which age group are you?",
 #'     "Gender?",
 #'     "Which pet would you like to own?"
@@ -59,14 +59,14 @@ SurveyData <- R6::R6Class(
     private = list(
         survey_data_ = data.frame(NULL),
         mapped_data_ = data.frame(NULL),
-        questions_ = character(0),
+        questions_ = list(),
         responses_ = list(),
         weights_ = numeric(),
         design_ = as.formula("~.")
     ),
     public = list(
         initialize = function(survey_data,
-                              questions = character(0),
+                              questions = list(),
                               responses = list(),
                               weights = numeric(),
                               design = as.formula("~.")) {
@@ -77,7 +77,7 @@ SurveyData <- R6::R6Class(
             # allow no question/response, else require info for all columns
             if (length(questions) != 0 || length(responses) != 0) {
                 if (ncol(survey_data) != length(questions) &
-                    length(questions) == sum(stats::complete.cases(questions))) {
+                    length(questions) == sum(stats::complete.cases(survey_data))) {
                     stop("mismatch between number of survey_data columns and questions.",
                          call. = FALSE)
                 }
@@ -126,7 +126,7 @@ SurveyData <- R6::R6Class(
             for (i in 1:ncol(self$survey_data(key = FALSE))) {
                 cat("\nColumn label:", names(self$survey_data(key = FALSE))[i], "\n")
                 if (length(private$questions_) > 0) {
-                    cat("Question:", private$questions_[i], "\n")
+                    cat("Question:", private$questions_[[i]], "\n")
                     cat("Allowed answers:",
                         paste(private$responses_[[i]], collapse = ", "), "\n")
                 }
