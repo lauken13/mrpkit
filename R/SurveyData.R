@@ -58,7 +58,6 @@ SurveyData <- R6::R6Class(
     classname = "SurveyData",
     private = list(
         survey_data_ = data.frame(NULL),
-        poststrat_ = data.frame(NULL),
         mapped_data_ = data.frame(NULL),
         questions_ = character(0),
         responses_ = list(),
@@ -92,31 +91,43 @@ SurveyData <- R6::R6Class(
                 stop("mismatch between number of survey_data columns and weights.",
                      call. = FALSE)
             }
-            private$survey_data_ <- survey_data
             private$questions_ <- questions
             private$responses_ <- responses
             private$weights_ <- weights
             private$design_ <- design
+            private$survey_data_ <- data.frame(key = 1:nrow(survey_data), survey_data)
+            private$mapped_data_ <- data.frame(key = 1:nrow(survey_data))
             invisible(self)
         },
+
+        #' @description Number of observations in the survey data
+        n_obs = function() nrow(private$survey_data_),
+
+        #' @description Number of survey questions
+        n_questions = function() length(private$questions_),
+
+        #' @description Print a summary of the survey data
         print = function(...) {
-            cat("Survey containing", nrow(private$survey_data_), "observations", "\n")
+            cat("Survey with",
+                self$n_obs(), "observations,",
+                self$n_questions(), "questions",
+                "\n")
             if (length(private$design_ == 2)) {
                 cat("Random Sampling Design \n")
             } else {
                 cat("Simple")
-                require_suggested_package("lme4") # for findbars()
+                require_suggested_package("lme4")
                 if (is.null(lme4::findbars(private$design_))){
                     cat(" stratified sample with strata", all.vars(terms(private$design_))[[1]], "\n")
                 } else {
                     cat(" cluster sample with cluster", all.vars(terms(private$design_))[[1]], "\n")
                 }
             }
-            for (i in 1:ncol(private$survey_data_)) {
-                cat("Column ", i , " label: ", names(private$survey_data_)[i], "\n")
+            for (i in 1:ncol(self$survey_data(key = FALSE))) {
+                cat("\nColumn label:", names(self$survey_data(key = FALSE))[i], "\n")
                 if (length(private$questions_) > 0) {
-                    cat("Question ", i, " (", private$questions_[i], ")", "\n")
-                    cat("Allowed answers: ",
+                    cat("Question:", private$questions_[i], "\n")
+                    cat("Allowed answers:",
                         paste(private$responses_[[i]], collapse = ", "), "\n")
                 }
             }
@@ -136,17 +147,20 @@ SurveyData <- R6::R6Class(
             }
             invisible(self)
         },
-        generate_poststrat_data = function(grouping_vars) {
-            private$poststrat_ <-
-                private$mapped_data_ %>%
-                dplyr::mutate(wts = private$weights_) %>%
-                dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-                dplyr::summarize(N_j = sum(wts), .groups = 'drop')
-            invisible(self)
+        survey_data = function(key = TRUE) {
+            if (key) {
+                private$survey_data_
+            } else {
+                private$survey_data_[, colnames(private$survey_data_) != "key", drop = FALSE]
+            }
         },
-        survey_data = function() private$survey_data_,
-        poststrat = function() private$poststrat_,
-        mapped_data = function() private$mapped_data_,
+        mapped_data = function(key = TRUE) {
+            if (key) {
+                private$mapped_data_
+            } else {
+                private$mapped_data_[, colnames(private$mapped_data_) != "key", drop = FALSE]
+            }
+        },
         questions = function() private$questions_,
         responses = function() private$responses_,
         weights = function() private$weights_,

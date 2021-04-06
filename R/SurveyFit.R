@@ -61,12 +61,12 @@ SurveyFit <- R6::R6Class(
         stop("The 'newdata' argument should not be specified.",
              call. = FALSE)
       }
-      if (is.null(private$map_$samp_obj()$poststrat())) {
+      if (is.null(private$map_$poststrat_data())) {
         stop("Post-stratification data not found. ",
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
       }
-      poststrat <- private$map_$popn_obj()$poststrat()
+      poststrat <- private$map_$poststrat_data()
 
       if (is.null(args$fun)) {
         if ("stanreg" %in% class(private$fit_)){
@@ -104,20 +104,19 @@ SurveyFit <- R6::R6Class(
           )
         }
       } else {
-        poststrat <- private$map_$popn_obj()$poststrat()
         fun <- match.fun(fun)
         fun(fitted_model, poststrat, ...)
       }
     },
     collapsify = function(poststrat_fit, variable_aggr = NULL) {
-      poststrat <- private$map_$popn_obj()$poststrat()
-      if(!is.null(variable_aggr)){
-        rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[,variable_aggr])
+      poststrat <- private$map_$poststrat_data()
+      if (!is.null(variable_aggr)){
+        rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, variable_aggr])
         posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
         colnames(posterior_preds)[1] <- variable_aggr
-        for(focus_level in rotate_levels){
+        for (focus_level in rotate_levels){
           level_loc = poststrat[variable_aggr]==focus_level
-          posterior_preds[posterior_preds[variable_aggr] == focus_level,"value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+          posterior_preds[posterior_preds[variable_aggr] == focus_level, "value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
         }
       } else {
         posterior_preds <- data.frame(value = apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
