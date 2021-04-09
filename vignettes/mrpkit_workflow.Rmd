@@ -19,11 +19,35 @@ knitr::opts_chunk$set(
 library(mrpkit)
 ```
 
-## Introduction
+This vignette presents the typical workflow of MRP-kit usage, an R package for implementing a "grammar" for multilevel regression with post-stratification. 
 
-The aim of MRP-Kit is to create a set of grammar to perform the Multilevel Regression with Poststratification (MRP). By using this package, we will get the workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping it, building the model, get the prediction and aggregate value, and visualize it. Hence, it will create a more reproducible and accountable environment for conducting an MRP analysis. 
 
-Unlike most of R packages, the MRP-kit implements the usage of [Object Oriented Programming (R6 objects)](https://adv-r.hadley.nz/r6.html). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. This package create three objects, which are `SurveyData`, `SurveyQuestion`, and `SurveyMap`. There are several methods in each of these objects that will be explained later on in this vignette.   
+# Introduction
+
+The aim of MRP-Kit is to create a set of grammar to perform the Multilevel Regression with Poststratification (MRP). By using this package, we will get the workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping it, fitting the model, getting the prediction and aggregating the value, and visualizing it. Hence, it will create a more reproducible and accountable environment for conducting an MRP analysis. 
+
+Unlike most of R packages, the MRP-kit implements the usage of [Object Oriented Programming (R6 objects)](https://adv-r.hadley.nz/r6.html) (Chang, 2019). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. This package create four objects, which are `SurveyData`, `SurveyQuestion`, `SurveyMap`, and `SurveyFit`. There are several methods in each of these objects that will be explained later on in this vignette.   
+
+
+# Prerequisites
+
+
+# Workflow
+
+The workflow of using MRP-Kit to perform an MRP analysis is listed as follows:
+
+1. Prepare the data.
+2. Create the SurveyData objects.
+3. Match the value in the survey and population questions with SurveyQuestion object.
+4. Map the question between survey and population data with SurveyMap object.
+5. Fit the model using SurveyFit object.
+6. Get the estimate value based on post-stratification dataset.
+7. Aggregate the prediction value to a higher level for example for state/province basis. 
+8. Visualize the estimated data. 
+
+The detailed example of this workflow would be explained as follows:
+
+## Prepare the data
 
 
 ## Create the SurveyData Objects 
@@ -67,7 +91,7 @@ popn_obj <- SurveyData$new(
 
 
 
-popn_obj$print() 
+#popn_obj$print() 
 ```
 
 
@@ -124,11 +148,7 @@ tmp_map$tabulate() # Use all variables in the map
 
 
 ```{r}
-mod_fit_1 <- SurveyFit$new(fun = rstanarm::stan_glmer,
-  formula = y ~ (1|age) + (1|gender),
-  family = "binomial",
-  refresh = 100,
-  cores = 2,
+mod_fit_1 <- SurveyFit$new(mod_fit_1,
   tmp_map)
 ```
 
