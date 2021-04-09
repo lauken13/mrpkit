@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(mrpkit)
 ```
 
-This vignette presents the typical workflow of MRP-kit usage, an R package for implementing a "grammar" for multilevel regression with post-stratification. 
+This vignette presents the typical workflow of MRP-kit usage, an R package for implementing a "grammar" for multilevel regression with post-stratification. This method is  
 
 
 # Introduction
@@ -31,6 +31,11 @@ Unlike most of R packages, the MRP-kit implements the usage of [Object Oriented 
 
 # Prerequisites
 
+Some of the methods in MRP-kit use external packages to be able to function i.e. `forcats` (Wickham, 2020) `SurveyMapping$mapping`, `dplyr` (Wickham, François, Henry & Müller, 2020) in  `SurveyMapping$tabulate`, and `ggplot2` (Wickham, 2016) in `SurveyFit$visify`. In fitting the MPR model, you might also need these packages:
+
+- rstanarm (Goodrich, Gabry, Ali, & Brilleman, 2020), at least 2.21.0 version
+- brms (Bürkner, 2017)
+- lme4 (Bates, Maechler, Bolker, Walker, 2015) and merTools (Knowles & Frederick, 2020)
 
 # Workflow
 
@@ -148,17 +153,8 @@ tmp_map$tabulate() # Use all variables in the map
 
 
 ```{r}
-mod_fit_1 <- SurveyFit$new(mod_fit_1,
-  tmp_map)
-```
-
-
-
-
-
-```{r}
 # the example of using stan_glmer
-mod_fit_1 <- tmp_map$fit(
+tmp_fit_1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
@@ -171,6 +167,12 @@ mod_fit_2 <- tmp_map$fit(
   family = "binomial")
 ```
 
+```{r}
+mod_fit_1 <- SurveyFit$new(tmp_fit_1,
+  tmp_map)
+```
+
+
 
 ## Get the Prediction 
 
@@ -179,7 +181,7 @@ mod_fit_2 <- tmp_map$fit(
 # with rows as poststrat rows, cols as posterior samples.
 
 
-poststrat_fit1 <- tmp_map$predictify(mod_fit_1)
+poststrat_fit1 <- mod_fit_1$predictify
 
 poststrat_fit2 <- tmp_map$predictify(mod_fit_2, sim_posterior_epred)
 
@@ -206,7 +208,7 @@ poststrat_fit2 <- tmp_map$predictify(mod_fit_2, sim_posterior_epred)
 
 # other alternative name : collapse?
 
-sae_preds2 <- tmp_map$collapsify(poststrat_fit2, variable_aggr = "age")
+sae_preds<- poststrat_fit1$collapsify(variable_aggr = "age")
 popn_preds2 <- tmp_map$collapsify(poststrat_fit2)
 
 ```
@@ -215,8 +217,6 @@ popn_preds2 <- tmp_map$collapsify(poststrat_fit2)
 ## Visualise It
 
 ```{r}
-plot2 <- tmp_map$visify(sae_preds2)
-plot2
 ```
 
 
