@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(mrpkit)
 ```
 
-This vignette presents the typical workflow of MRP-kit usage, an R package for implementing a "grammar" for multilevel regression with post-stratification. This method is  
+This vignette presents the typical workflow of MRP-kit usage, an R package for implementing a "grammar" for multilevel regression with post-stratification. 
 
 
 # Introduction
@@ -37,15 +37,16 @@ Some of the methods in MRP-kit use external packages to be able to function i.e.
 - brms (Bürkner, 2017)
 - lme4 (Bates, Maechler, Bolker, Walker, 2015) and merTools (Knowles & Frederick, 2020)
 
+
 # Workflow
 
 The workflow of using MRP-Kit to perform an MRP analysis is listed as follows:
 
 1. Prepare the data.
-2. Create the SurveyData objects.
-3. Match the value in the survey and population questions with SurveyQuestion object.
-4. Map the question between survey and population data with SurveyMap object.
-5. Fit the model using SurveyFit object.
+2. Create the `SurveyData` objects.
+3. Match the value in the survey and population questions with `SurveyQuestion` object.
+4. Map the question between survey and population data with `SurveyMap` object.
+5. Fit the model using `SurveyFit` object.
 6. Get the estimate value based on post-stratification dataset.
 7. Aggregate the prediction value to a higher level for example for state/province basis. 
 8. Visualize the estimated data. 
@@ -53,6 +54,22 @@ The workflow of using MRP-Kit to perform an MRP analysis is listed as follows:
 The detailed example of this workflow would be explained as follows:
 
 ## Prepare the data
+
+In this vignette we used a simulated data sets as the example of survey data and approximate population/post-stratification data. These data sets display the preference of voters to Neverland Labor Party (NLP), a political party in a fake country, Neverland, along with demographic variables, age and gender. The population is designed using `declare_population` function from `DeclareDesign` (Blair, Cooper, Coppock & Humphreys, 2019) to set the features in the population.
+
+We can see every variables in the survey data as follows:
+
+```{r}
+head(nlp_survey)
+```
+
+Additionally, the approximate population could be seen as follows:
+
+```{r}
+head(approx_voters_popn)
+```
+From the tables above we can see that the survey and post-stratification data have a different value of age and gender. This is one of the main uses of MRP-kit which to align the value between the survey and post-stratification data. 
+
 
 
 ## Create the SurveyData Objects 
@@ -119,6 +136,7 @@ q3 <- SurveyQuestion$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb"))
+
 ```
 
 
@@ -152,7 +170,7 @@ tmp_map$tabulate() # Use all variables in the map
 ## Fit the Model <-<- incorporated the new method 
 
 
-```{r}
+```{r, eval = FALSE}
 # the example of using stan_glmer
 tmp_fit_1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
@@ -167,7 +185,7 @@ mod_fit_2 <- tmp_map$fit(
   family = "binomial")
 ```
 
-```{r}
+```{r eval = FALSE}
 mod_fit_1 <- SurveyFit$new(tmp_fit_1,
   tmp_map)
 ```
@@ -176,7 +194,7 @@ mod_fit_1 <- SurveyFit$new(tmp_fit_1,
 
 ## Get the Prediction 
 
-```{r}
+```{r eval=FALSE}
 # predict in postrat matrix - returns a matrix
 # with rows as poststrat rows, cols as posterior samples.
 
@@ -197,7 +215,7 @@ poststrat_fit2 <- tmp_map$predictify(mod_fit_2, sim_posterior_epred)
 
 ## Make the Aggregate
 
-```{r}
+```{r eval = FALSE}
 # body:
 # - if no variable name then compute population estimate
 # - if variable name specified compute weighted mean (N_j * theta)/sum(N_j)
@@ -216,11 +234,11 @@ popn_preds2 <- tmp_map$collapsify(poststrat_fit2)
 
 ## Visualise It
 
-```{r}
+```{r eval =FALSE}
 ```
 
 
-```{r}
+```{r eval=FALSE}
 plot1 <- tmp_map$visify(popn_preds)
 plot1
 ```
