@@ -44,9 +44,9 @@ The workflow of using MRP-Kit to perform an MRP analysis is listed as follows:
 
 1. Prepare the data.
 2. Create the `SurveyData` objects.
-3. Match the value in the survey and population questions with `SurveyQuestion` object.
-4. Map the question between survey and population data with `SurveyMap` object.
-5. Fit the model using `SurveyFit` object.
+3. Match the value between survey and post-stratification object for each questions with `SurveyQuestion$new`.
+4. Map the question between survey and population data with `SurveyMap`.
+5. Fit the model using `SurveyFit`.
 6. Get the estimate value based on post-stratification dataset.
 7. Aggregate the prediction value to a higher level for example for state/province basis. 
 8. Visualize the estimated data. 
@@ -68,25 +68,37 @@ Additionally, the approximate population could be seen as follows:
 ```{r}
 head(approx_voters_popn)
 ```
-From the tables above we can see that the survey and post-stratification data have a different value of age and gender. This is one of the main uses of MRP-kit which to align the value between the survey and post-stratification data. 
+ 
 
+## Create the SurveyData objects 
 
+A `SurveyData` objects is an object represents the data, both of the survey and the post-stratification data, along with its metadata. The survey metadata consists of the survey's variables, question in the questionnaire, level of response, the survey's weight, and its design formula (random sample, one stage cluster sample, and stratified sample).
 
-## Create the SurveyData Objects 
+This object has three methods, which are `SurveyData$new`, `SurveyData$print`, and `SurveyData$clone`. The `SurveyData$new` is used to transform a regular data frame to a `SurveyData` object, whereas `SurveyData$print` and `SurveyData$clone` are used to print and clone the created `SurveyData` object. 
 
-A `SurveyData` objects is an object represents the data, both of the survey and population data, along with its metadata. The survey metadata consists of the survey's variables, question in the questionnaire, level of response, the survey's weight, and its design formula (random sample, one stage cluster sample, and stratified sample).
+In this example, we will show the steps to create the `SurveyData` object using `SurveyData$new` method. This method takes five arguments, which are the metadata of the survey and post-stratification data, listed as follows: 
 
-This object has three methods, which are `SurveyData$new`, `SurveyData$print`, and `SurveyData$clone`. The `SurveyData$new` is used to transform a survey data frame to a `SurveyData` object, whereas `SurveyData$print` and `SurveyData$clone` are used to print and clone the created `SurveyData` object. 
+1. List of column/variable labels/names.
+2. `questions`: The question asked in the questionnaire for each of those columns.
+3. `responses`: Allowed response for each question.
+4. `weights`: The survey weights. 
+5. `design`: The design formula of the survey, include:
+   - `~.` for a random sample
+   - `~ (1|cluster)` for one stage cluster sample
+   - `~ stratum:` for a stratified sample
+   
+After the `SurveyData` initialized, we can print it using `print` method as is shown in the code below:
 
-Here is the example code of how to create `SurveyData` from the survey and approximate population data frame. 
-
+**Create the `SurveyData` object for the survey data set**
+   
 ```{r}
+# create the SurveyData object for survey data
 nlp_pref <- SurveyData$new(
   nlp_survey[,c("age","gender","vote_for","y")],
   questions = c("Please identify your age group",
                 "Please select your gender",
                 "Which party did you vote for in the 2018 election?",
-                "If today is election day, which party will you vote for?"),
+                "If today is election day, will you vote for the NLP?"),
   responses = list(levels(nlp_survey$age),
                    levels(nlp_survey$gender),
                    levels(nlp_survey$vote_for),
@@ -94,11 +106,16 @@ nlp_pref <- SurveyData$new(
   weights = nlp_survey$wt,
   design = formula("~."))
 
+# print it
 nlp_pref$print()
 ```
 
+**Create the `SurveyData` object for the post-stratification data set**
+
 
 ```{r}
+
+# create SurveyData object for post-stratification data
 popn_obj <- SurveyData$new(
   approx_voters_popn[,c("age_group","gender","vote_pref")],
   questions = c("Which age group are you?",
@@ -110,16 +127,26 @@ popn_obj <- SurveyData$new(
   weights = approx_voters_popn$wt,
   design = formula("~."))
 
-
-
-
-#popn_obj$print() 
+# print it
+popn_obj$print() 
 ```
 
 
-## Match the Value in Survey's Questions with SurveyQuestion
+## Match the value between survey and post-stratification object using `SurveyQuestion$new`
+
+From the metadata above, we can see that the survey and post-stratification data have a different 
+label of columns, so do the level/categorization of age, gender, and party preference. For example in `nlp_pref`, the column label for age is `age`, whereas in `popn_obj`, the column label for this variable is `age_group`. This variable also has different level, `nlp_pref` has 7 levels of age, whereas `popn_obj` has only 4 levels of age. 
+
+These column labels and levels should be aligned to be able to perform MRP. With `SurveyQuestion$new` method, we are able to define the same name of column label and mapping its value into the same of categorization. This method takes three arguments, which are:
+
+1. `name` : the same name for the variable. This would be used in the modeling stage. 
+2. `col_names`: the column labels in the survey and post-stratification object where the variable refers to. 
+3. `values_map`: mapping the values between the survey and post-stratification object. 
+
+Here is the example of how this method works:
 
 ```{r}
+# create SurveyQuestion$object for question related to age
 q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age","age_group"),
@@ -127,11 +154,13 @@ q1 <- SurveyQuestion$new(
     "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
 
+# create SurveyQuestion$object for question related to party preference
 q2 <- SurveyQuestion$new(
  name = "party_pref",
  col_names = c("vote_for","vote_pref"),
  values_map = list("Neverland Labor Party" = "NLP", "NLP" = "NLP","Neverland Democrats" = "The Democrats","The Democrats" = "The Democrats"))
 
+# create SurveyQuestion$object for question related to gender
 q3 <- SurveyQuestion$new(
   name = "gender",
   col_names = c("gender","gender"),
@@ -140,7 +169,11 @@ q3 <- SurveyQuestion$new(
 ```
 
 
-## Using the Handy SurveyMap
+## Using the handy SurveyMap
+
+
+The `SurveyMap` has seven methods as listed as follows:
+
 
 ```{r}
 tmp_map <- SurveyMap$new(samp_obj = nlp_pref, popn_obj = popn_obj, q1)
@@ -163,6 +196,8 @@ tmp_map$validate()
 tmp_map$mapping()
 tmp_map$tabulate("age") # Just use age in the poststrat matrix
 tmp_map$tabulate() # Use all variables in the map
+
+print(tmp_map)
 ```
 
 
@@ -172,24 +207,30 @@ tmp_map$tabulate() # Use all variables in the map
 
 ```{r, eval = FALSE}
 # the example of using stan_glmer
-tmp_fit_1 <- tmp_map$fit(
+fit1 <- tmp_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
   refresh = 100,
   cores = 2)
 
-mod_fit_2 <- tmp_map$fit(
+fit2 <- tmp_map$fit(
   fun = lme4::glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial")
 ```
 
 ```{r eval = FALSE}
-mod_fit_1 <- SurveyFit$new(tmp_fit_1,
-  tmp_map)
+mod_fit_1 <- SurveyFit$new(fit1, tmp_map)
+mod_fit_2 <- SurveyFit$new(fit2, tmp_map)
 ```
 
+```{r}
+print(mod_fit_1)
+```
+```{r}
+print(mod_fit_2)
+```
 
 
 ## Get the Prediction 
@@ -199,9 +240,10 @@ mod_fit_1 <- SurveyFit$new(tmp_fit_1,
 # with rows as poststrat rows, cols as posterior samples.
 
 
-poststrat_fit1 <- mod_fit_1$predictify
+poststrat_fit1 <- mod_fit_1$predictify()
 
-poststrat_fit2 <- tmp_map$predictify(mod_fit_2, sim_posterior_epred)
+
+poststrat_fit2 <- mod_fit_2$predictify()
 
 
 # get an estimate for a particular variable level or population
@@ -226,7 +268,8 @@ poststrat_fit2 <- tmp_map$predictify(mod_fit_2, sim_posterior_epred)
 
 # other alternative name : collapse?
 
-sae_preds<- poststrat_fit1$collapsify(variable_aggr = "age")
+sae_preds<- mod_fit_1$collapsify(poststrat_fit1)
+
 popn_preds2 <- tmp_map$collapsify(poststrat_fit2)
 
 ```
