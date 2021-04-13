@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' library(dplyr)
-#' 
+#'
 #' head(feline_survey)
 #' feline_prefs <- SurveyData$new(
 #'   data = feline_survey,
@@ -138,7 +138,7 @@
 #' # population estimate
 #' preds_popn <- fit_1$aggregate(poststrat_fit)
 #' mean(preds_popn$value)
-#' (plot2 <- fit_1$visify(popn_preds))
+#' (plot2 <- fit_1$visify(preds_popn))
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",

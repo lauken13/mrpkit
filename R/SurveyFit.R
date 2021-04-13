@@ -6,7 +6,7 @@
 #'   object and provides methods for generating predicted probabilities for all
 #'   poststrat cells, generating population and group estimates, and visualizing
 #'   results.
-#'
+#' @inherit SurveyMap examples
 SurveyFit <- R6::R6Class(
   classname = "SurveyFit",
   private = list(
