@@ -14,6 +14,8 @@ are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 }
 \examples{
+library(dplyr)
+
 feline_prefs <- SurveyData$new(
   feline_survey[,c("age1","gender","pet_own","y")],
   questions = list("Please identify your age group","Please select your gender","Which pet do you own?", "Response"),
@@ -92,27 +94,24 @@ fit_2 <- tmp_map$fit(
 )
 }
 
-# predict in postrat matrix - returns a matrix
-# with rows as poststrat rows, cols as posterior samples.
+# predicted probabilities
+# returns matrix with rows for poststrat cells, cols for posterior draws
 poststrat_fit <- fit_1$predictify()
 
-# get an estimate for a particular variable level or population
-# arguments:
-# - output of "predictify"
-# - (optional) variable name
-# body:
-# - if no variable name then compute population estimate
-# - if variable name specified compute weighted mean (N_j * theta)/sum(N_j)
-# return type:
-# - data.frame
-#   - one column if popn estimate, otherwise one column per level of variable
-#   - one row per posterior sample
-sae_preds <- fit_1$collapsify(poststrat_fit, variable_aggr = "age")
-popn_preds <- fit_1$collapsify(poststrat_fit)
-plot1 <- fit_1$visify(sae_preds)
-plot1
-plot2 <- fit_1$visify(popn_preds)
-plot2
+# estimates by age level
+preds_by_age <- fit_1$aggregate(poststrat_fit, by = "age")
+head(preds_by_age)
+preds_by_age \%>\%
+  group_by(age) \%>\%
+  summarize(mean = mean(value), sd = sd(value))
+
+(plot1 <- fit_1$visify(preds_by_age))
+
+# population estimate
+preds_popn <- fit_1$aggregate(poststrat_fit)
+mean(preds_popn$value)
+(plot2 <- fit_1$visify(popn_preds))
+
 }
 \section{Methods}{
 \subsection{Public methods}{
