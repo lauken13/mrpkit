@@ -108,31 +108,32 @@ SurveyFit <- R6::R6Class(
         fun(fitted_model, poststrat, ...)
       }
     },
-    collapsify = function(poststrat_fit, variable_aggr = NULL) {
+    aggregate = function(poststrat_fit, by = NULL) {
       poststrat <- private$map_$poststrat_data()
-      if (!is.null(variable_aggr)){
-        rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, variable_aggr])
-        posterior_preds <- expand.grid(variable_aggr = rotate_levels, iter = 1:ncol(poststrat_fit), value = NA)
-        colnames(posterior_preds)[1] <- variable_aggr
+      if (!is.null(by)){
+        rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, by])
+        posterior_preds <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_fit), value = NA)
+        colnames(posterior_preds)[1] <- by
         for (focus_level in rotate_levels){
-          level_loc = poststrat[variable_aggr]==focus_level
-          posterior_preds[posterior_preds[variable_aggr] == focus_level, "value"] <- apply(poststrat_fit[level_loc,],2,function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+          level_loc <- poststrat[by] == focus_level
+          posterior_preds[posterior_preds[by] == focus_level, "value"] <-
+            apply(poststrat_fit[level_loc, ], 2, function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
         }
       } else {
-        posterior_preds <- data.frame(value = apply(poststrat_fit,2,function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
+        posterior_preds <-
+          data.frame(value = apply(poststrat_fit, 2, function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
       }
       return(posterior_preds)
-
     },
     visify = function(sae_preds) {
-      if(dim(sae_preds)[2]>1){
+      if (dim(sae_preds)[2]>1){
         svy_q <- private$map_$samp_obj()$questions()[colnames(private$map_$samp_obj()$survey_data()) == private$map_$item_map()[[colnames(sae_preds)[1]]]$col_names()[1]]
         focus_var <- dplyr::sym(colnames(sae_preds)[1])
         ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
           ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
           ggplot2::xlab(svy_q)
-      }else {
+      } else {
         ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
           ggplot2::geom_density(fill = "darkblue", alpha = .3) +
           ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))
