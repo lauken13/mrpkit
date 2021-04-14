@@ -137,7 +137,7 @@ popn_obj$print()
 From the metadata above, we can see that the survey and post-stratification data have a different 
 label of columns, so do the level/categorization of age, gender, and party preference. For example in `nlp_pref`, the column label for age is `age`, whereas in `popn_obj`, the column label for this variable is `age_group`. This variable also has different level, `nlp_pref` has 7 levels of age, whereas `popn_obj` has only 4 levels of age. 
 
-These column labels and levels should be aligned to be able to perform MRP. With `SurveyQuestion$new` method, we are able to define the same name of column label and mapping its value into the same of categorization. Further, if there is a meaningful ordering over the values, they should be sorted over that order, either descending or ascending. 
+These column labels and levels should be aligned to be able to perform MRP. With `SurveyQuestion$new` method, we are able to define the same name of column label and mapping its value into the same level. Further, if there is a meaningful ordering over the values, they should be sorted over that order, either descending or ascending. 
 
 This method takes three arguments, which are:
 
@@ -188,6 +188,8 @@ The `SurveyMap` has eight methods as listed as follows:
     Below is the example of `new` and `validate` methods usage:
 
 ```{r}
+
+##### change the name of tmp_map to be ex_map
 # create a new SurveyMap object
 tmp_map <- SurveyMap$new(samp_obj = nlp_pref, popn_obj = popn_obj, q1)
 
@@ -273,37 +275,17 @@ fit2 <- tmp_map$fit(
 
 ## Playing with the fitted model with `SurveyFit`
 
-In this stage, we already have the fitted model i.e. `fit1` and `fit2`. We can store these fitted model objects into an object called `SurveyFit`. Further, using this object, we can generate the predicted probabilities for all post-stratification cell, aggregate the estimate to a higher level, for example to state or province estimate, and visualize the aggregated estimates. 
-
-### Create `SurveyFit` object
-
-To create the `SurveyFit` object, we could use `SurveyFit$new` method. This method takes two arguments, which are the fitted model object and the mapping object. Since we have two fitted model, we will create two `SurveyFit` objects. 
-
-```{r eval = FALSE}
-# SurveyFit object for fit1
-mod_fit_1 <- SurveyFit$new(fit1, tmp_map)
-
-# SurveyFit object for fit2
-mod_fit_2 <- SurveyFit$new(fit2, tmp_map)
-```
+In this stage, we already have the fitted model object i.e. `fit1` and `fit2`. These objects has been automatically stored as a `SurveyFit` objects. Further, using this object, we can generate the predicted probabilities for all post-stratification cell, aggregate the estimate to a higher level, for example to state or province estimate, and visualize the aggregated estimates. 
 
 
 ### Get the prediction value of each post-stratification cell
 
 After creating the `SurveyFit` object, we are able to generate the predicted probability of each post-stratification cell using a method called `predictify`. It return a matrix with rows correspond to the columns of post-stratification data and columns correspond to the posterior samples. 
 
-Furthermore, if the model fitting done with one of the built-in function (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes two argument. The first is the fitted model object, and the second is the post-stratification data frame. 
-
-In this example, we will show how to use this method for `mod_fit_1` object. Additionally, if you only want to only predict the probability of certain variable, then you could specify that variable in the method. 
+Furthermore, if the model fitting done with one of the built-in function (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes two argument. The first is the fitted model object, and the second is the post-stratification data frame. In this example, we will show how to use this method for `mod_fit_1` object. 
 
 ```{r eval=FALSE}
-
-# predict all variable
-poststrat_fit1 <- mod_fit_1$predictify()
-
-# predict only age 
-poststrat_fit1_age <- mod_fit_1$predictify("age")
-
+poststrat_fit1 <- fit1$predictify()
 
 ```
 
@@ -314,11 +296,12 @@ The next step is to generate the population estimate or group estimate using `co
 
 ```{r eval = FALSE}
 
+##### the name of this method would be changed
 # aggregate the predicted value by age
-sae_preds <- mod_fit_1$collapsify(poststrat_fit1, variable_aggr = "age")
+sae_preds <- fit1$collapsify(poststrat_fit1, variable_aggr = "age")
 
 # generate the population estimate
-popn_preds <- mod_fit_1$collapsify(poststrat_fit1)
+popn_preds <- fit1$collapsify(poststrat_fit1)
 
 ```
 
@@ -328,9 +311,10 @@ popn_preds <- mod_fit_1$collapsify(poststrat_fit1)
 Once we have the collapsed value of the estimates, we are able to visualize it using `visify` method. This method takes in the aggregated data frame as the argument. It generate a violin plot of the estimate aggregated variable or the population prediction. In the example below, we show the example of the estimate of `age` variable. 
 
 ```{r eval=FALSE}
-plot1 <- tmp_map$visify(sae_preds)
+plot1 <- fit1$visify(sae_preds)
 plot1
 ```
+
 
 
 
