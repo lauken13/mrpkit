@@ -189,12 +189,11 @@ The `SurveyMap` has eight methods as listed as follows:
 
 ```{r}
 
-##### change the name of tmp_map to be ex_map
 # create a new SurveyMap object
-tmp_map <- SurveyMap$new(samp_obj = nlp_pref, popn_obj = popn_obj, q1)
+ex_map <- SurveyMap$new(samp_obj = nlp_pref, popn_obj = popn_obj, q1)
 
 # validate the map
-tmp_map$validate()
+ex_map$validate()
 
 ```
 
@@ -204,8 +203,8 @@ tmp_map$validate()
     
 ```{r}
 # add party_pref and gender to the map.
-tmp_map$add(q2, q3)
-print(tmp_map)
+ex_map$add(q2, q3)
+print(ex_map)
 ```
 
 4. `delete`
@@ -214,8 +213,8 @@ print(tmp_map)
 
 ```{r}
 # we can also use the label instead of the object name
-tmp_map$delete("gender")
-print(tmp_map)
+ex_map$delete("gender")
+print(ex_map)
 ```
 
 5. `replace`
@@ -223,8 +222,8 @@ print(tmp_map)
     Suppose that you changed your mind and want to use `gender` in the model instead of `party_pref`. The `replace` method can perform this task with the `old question` as the first argument and the `new question` as the second argument. The example of this method could be seen as follows:
     
 ```{r}
-tmp_map$replace(q2, q3)
-print(tmp_map)
+ex_map$replace(q2, q3)
+print(ex_map)
 ```
     
 6. `mapping`
@@ -232,7 +231,7 @@ print(tmp_map)
     Once you are happy with your map object, you can prepare the mapped data for the model fitting with `mapping` method. 
 
 ```{r}
-tmp_map$mapping()
+ex_map$mapping()
 ```
 
 
@@ -241,14 +240,14 @@ tmp_map$mapping()
     The next step is to prepare the post-stratification table using `tabulate` method. If you want to only use certain variable in the post-stratification matrix, then you should put that variable as the argument. For instance, here, we only use `age` in the post-stratification matrix.
 
 ```{r}
-tmp_map$tabulate("age")
+ex_map$tabulate("age")
 ```
 
 If you want to include all of the variable in the post-stratification matrix, then the method should not take any argument.
     
     
 ```{r}
-tmp_map$tabulate()
+ex_map$tabulate()
 ```
 
 
@@ -258,14 +257,14 @@ tmp_map$tabulate()
 
 ```{r eval = FALSE}
 # the example of using stan_glmer
-fit1 <- tmp_map$fit(
+fit1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
   refresh = 100,
   cores = 2)
 
-fit2 <- tmp_map$fit(
+fit2 <- ex_map$fit(
   fun = lme4::glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial")
@@ -292,16 +291,16 @@ poststrat_fit1 <- fit1$predictify()
 
 ### Aggregate the prediction to a higher level of estimate
 
-The next step is to generate the population estimate or group estimate using `collapsify` method. This method takes two arguments, namely the post-stratification fit data and the variable that is aggregated, in this example we want to aggregate `age` variable. If the variable is not specified, then this method would generate a population estimate. 
+The next step is to generate the population estimate or group estimate using `aggregate` method. This method takes two arguments, namely the post-stratification estimate data and the variable that is aggregated, in this example we want to aggregate `age` variable. If the variable is not specified, then this method would generate a population estimate. 
 
 ```{r eval = FALSE}
 
 ##### the name of this method would be changed
 # aggregate the predicted value by age
-sae_preds <- fit1$collapsify(poststrat_fit1, variable_aggr = "age")
+age_preds <- fit1$aggregate(poststrat_fit1, by = "age")
 
 # generate the population estimate
-popn_preds <- fit1$collapsify(poststrat_fit1)
+popn_preds <- fit1$aggregate(poststrat_fit1)
 
 ```
 
@@ -311,7 +310,7 @@ popn_preds <- fit1$collapsify(poststrat_fit1)
 Once we have the collapsed value of the estimates, we are able to visualize it using `visify` method. This method takes in the aggregated data frame as the argument. It generate a violin plot of the estimate aggregated variable or the population prediction. In the example below, we show the example of the estimate of `age` variable. 
 
 ```{r eval=FALSE}
-plot1 <- fit1$visify(sae_preds)
+plot1 <- fit1$visify(age_preds)
 plot1
 ```
 
