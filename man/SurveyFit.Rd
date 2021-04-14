@@ -17,7 +17,7 @@ results.
 \item \href{#method-map}{\code{SurveyFit$map()}}
 \item \href{#method-print}{\code{SurveyFit$print()}}
 \item \href{#method-predictify}{\code{SurveyFit$predictify()}}
-\item \href{#method-collapsify}{\code{SurveyFit$collapsify()}}
+\item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
 \item \href{#method-visify}{\code{SurveyFit$visify()}}
 \item \href{#method-clone}{\code{SurveyFit$clone()}}
 }
@@ -108,11 +108,11 @@ corresponding to posterior samples.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-collapsify"></a>}}
-\if{latex}{\out{\hypertarget{method-collapsify}{}}}
-\subsection{Method \code{collapsify()}}{
+\if{html}{\out{<a id="method-aggregate"></a>}}
+\if{latex}{\out{\hypertarget{method-aggregate}{}}}
+\subsection{Method \code{aggregate()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$collapsify(poststrat_fit, variable_aggr = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_fit, by = NULL)}\if{html}{\out{</div>}}
 }
 
 }
