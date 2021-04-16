@@ -3,8 +3,8 @@
 #' @name SurveyQuestion
 #' @export
 #'
-#' @description An [R6][R6::R6Class] `SurveyQuestion` object holds the mapping
-#'   for one question or demographic between the survey and population dataset.
+#' @description A `SurveyQuestion` object holds the mapping for one question or
+#'   demographic between the survey and population dataset.
 #'
 #' @examples
 #' q1 <- SurveyQuestion$new(
@@ -30,12 +30,11 @@
 #'
 SurveyQuestion <- R6::R6Class(
   classname = "SurveyQuestion",
-  private = list(
-    name_ = character(),
-    col_names_ = character(),
-    values_ = list()
-  ),
   public = list(
+    name = character(),
+    col_names = character(),
+    values = list(),
+
     #' @description Create a new `SurveyQuestion`
     #' @param name The name of the underlying construct. For example if the
     #'   sample data uses the name `age1` and the population data uses
@@ -68,38 +67,38 @@ SurveyQuestion <- R6::R6Class(
         stop("Missing population levels", call. = FALSE)
       }
 
-      private$name_ <- name
-      private$col_names_ <- col_names
-      private$values_ <- data.frame(names(values_map), as.character(unlist(values_map)),
+      self$name <- name
+      self$col_names <- col_names
+      self$values <- data.frame(names(values_map), as.character(unlist(values_map)),
                                 stringsAsFactors = TRUE)
-      if (sum(duplicated(private$values_)) > 0) {
+      if (sum(duplicated(self$values)) > 0) {
         warning("Duplicated mapping in values, removing duplciates", call. = FALSE)
-        private$values_ <- private$values_[!duplicated(private$values_), ]
+        self$values <- self$values[!duplicated(self$values), ]
       }
-      if (sum(duplicated(private$values_[, 2])) > 0 ||
-          sum(duplicated(private$values_[, 1])) > 0) {
-        dup_labels_pop <- which(duplicated(private$values_[, 2]))
-        dup_labels_samp <- which(duplicated(private$values_[, 1]))
+      if (sum(duplicated(self$values[, 2])) > 0 ||
+          sum(duplicated(self$values[, 1])) > 0) {
+        dup_labels_pop <- which(duplicated(self$values[, 2]))
+        dup_labels_samp <- which(duplicated(self$values[, 1]))
         for (d in dup_labels_pop) {
-          pop_loc_duplicates <- private$values_[, 2] %in% private$values_[d, 2]
+          pop_loc_duplicates <- self$values[, 2] %in% self$values[d, 2]
           for (b in dup_labels_samp) {
-            samp_loc_duplicates <- private$values_[, 1] %in% private$values_[b, 1]
+            samp_loc_duplicates <- self$values[, 1] %in% self$values[b, 1]
             if (sum(pop_loc_duplicates & samp_loc_duplicates) > 0) {
               stop("Package can only handle many to one mappings", call. = FALSE)
             }
           }
         }
         for (b in dup_labels_samp) {
-          samp_loc_duplicates <- private$values_[, 1] %in% private$values_[b, 1]
+          samp_loc_duplicates <- self$values[, 1] %in% self$values[b, 1]
           for (d in dup_labels_pop) {
-            pop_loc_duplicates <- private$values_[, 2] %in% private$values_[d, 2]
+            pop_loc_duplicates <- self$values[, 2] %in% self$values[d, 2]
             if (sum(pop_loc_duplicates & samp_loc_duplicates) > 0) {
               stop("Package can only handle many to one mappings", call. = FALSE)
             }
           }
         }
       }
-      names(private$values_) <- col_names
+      names(self$values) <- col_names
       invisible(self)
     },
 
@@ -108,23 +107,14 @@ SurveyQuestion <- R6::R6Class(
     #' @return The `SurveyQuestion` object, invisibly.
     print = function(...) {
       cat("--------------",'\n')
-      cat(private$name_,'\n')
-      cat(private$col_names_[1], "=", private$col_names_[2], '\n')
+      cat(self$name,'\n')
+      cat(self$col_names[1], "=", self$col_names[2], '\n')
       cat("--------------",'\n')
-      for (j in 1:nrow(private$values_)) {
-        cat(as.character(private$values_[j, 1]), "=",
-            as.character(private$values_[j, 2]), '\n')
+      for (j in 1:nrow(self$values)) {
+        cat(as.character(self$values[j, 1]), "=",
+            as.character(self$values[j, 2]), '\n')
       }
       invisible(self)
-    },
-
-    #' @description Access `name`
-    name = function() private$name_,
-
-    #' @description Access `col_names`
-    col_names = function() private$col_names_,
-
-    #' @description Access `values`
-    values = function() private$values_
+    }
   )
 )
