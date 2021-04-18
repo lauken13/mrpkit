@@ -11,6 +11,8 @@ A data frame with columns:
 \item{age}{Age group}
 \item{gender}{Gender}
 \item{vote_for}{The party that the respondent vote for in the 2016 election}
+\item{highest_educ}{Highest grade of education that is completed}
+\item{state}{State}
 \item{y}{Preference to NLP in 2020 election}
 \item{wt}{Raked and trimmed survey weight}
 }

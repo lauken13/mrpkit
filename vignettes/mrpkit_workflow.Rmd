@@ -53,7 +53,7 @@ The workflow of using MRP-Kit to perform an MRP analysis is listed as follows:
 
 The detailed example of this workflow would be explained as follows:
 
-## Prepare the data
+## Prepare the data  - Add education in the data and state (5-10 states) in the data
 
 In this vignette we used a simulated data sets as the example of survey data and approximate population/post-stratification data. These data sets display the preference of voters to Neverland Labor Party (NLP), a political party in a fake country, Neverland, along with demographic variables, age and gender. The population is designed using `declare_population` function from `DeclareDesign` (Blair, Cooper, Coppock & Humphreys, 2019) to set the features in the population.
 
@@ -209,7 +209,7 @@ print(ex_map)
 
 4. `delete`
 
-    Now we already have all of the variables in the post-stratification data mapped. Sometimes, you do not want including all of the variables in the model, for example, in this example, we want to exclude `gender` from the model. 
+    Now we already have all of the variables in the post-stratification data mapped. Sometimes, you do not want including all of the variables in the model, for example, in this example, we want to exclude `gender` from the model. **Note:Not including in the model, but in post-stratification matrix**
 
 ```{r}
 # we can also use the label instead of the object name
@@ -219,6 +219,8 @@ print(ex_map)
 
 5. `replace`
 
+    - replace is used to replace the matching level in one question, not between different question.
+    
     Suppose that you changed your mind and want to use `gender` in the model instead of `party_pref`. The `replace` method can perform this task with the `old question` as the first argument and the `new question` as the second argument. The example of this method could be seen as follows:
     
 ```{r}
