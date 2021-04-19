@@ -78,7 +78,7 @@ This object has three methods, which are `SurveyData$new`, `SurveyData$print`, a
 
 In this example, we will show the steps to create the `SurveyData` object using `SurveyData$new` method. This method takes five arguments, which are the metadata of the survey and post-stratification data, listed as follows: 
 
-1. List of column/variable labels/names.
+1. `data` : Data frame i.e. survey or post-stratifcation data that would be transformed to a `SurveyData` object. 
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
 4. `weights`: The survey weights. 
@@ -94,19 +94,19 @@ After the `SurveyData` initialized, we can print it using `print` method as is s
 ```{r survey-object}
 # create the SurveyData object for survey data
 nlp_pref <- SurveyData$new(
-  nlp_survey[,c("age","gender","vote_for", "highest_educ", "state", "y")],
-  questions = c("Please identify your age group",
-                "Please select your gender",
-                "Which party did you vote for in the 2018 election?",
-                "Please identify your completed highest education",
-                "Which State do you live in?",
-                "If today is election day, will you vote for the NLP?"),
-  responses = list(levels(nlp_survey$age),
-                   levels(nlp_survey$gender),
-                   levels(nlp_survey$vote_for),
-                   levels(nlp_survey$highest_educ),
-                   levels(nlp_survey$state),
-                   c("no","yes")),
+  data = nlp_survey,
+  questions = list(age = "Please identify your age group",
+                gender = "Please select your gender",
+                vote_for = "Which party did you vote for in the 2018 election?",
+                highest_educ = "Please identify your completed highest education",
+                state = "Which State do you live in?",
+                y = "If today is election day, will you vote for the NLP?"),
+  responses = list(age = levels(nlp_survey$age),
+                   gender = levels(nlp_survey$gender),
+                   vote_for = levels(nlp_survey$vote_for),
+                   highest_educ = levels(nlp_survey$highest_educ),
+                   state = levels(nlp_survey$state),
+                   y = c("no","yes")),
   weights = nlp_survey$wt,
   design = formula("~."))
 
@@ -121,17 +121,17 @@ nlp_pref$print()
 
 # create SurveyData object for post-stratification data
 popn_obj <- SurveyData$new(
-  approx_voters_popn[,c("age_group","gender","vote_pref", "education", "state")],
-  questions = c("Which age group are you?",
-                "Which gender are you identified?",
-                "Which party do you prefer to vote?",
-                "What is the highest grade or level of school you have completed",
-                "Please identify the state where you live in"),
-  responses = list(levels(approx_voters_popn$age_group),
-                   levels(approx_voters_popn$gender),
-                   levels(approx_voters_popn$vote_pref),
-                   levels(approx_voters_popn$education),
-                   levels(approx_voters_popn$state)),
+  data = approx_voters_popn,
+  questions = c(age_group = "Which age group are you?",
+                gender = "Which gender are you identified?",
+                vote_pref = "Which party do you prefer to vote?",
+                education = "What is the highest grade or level of school you have completed",
+                state = "Please identify the state where you live in"),
+  responses = list(age_group = levels(approx_voters_popn$age_group),
+                   gender = levels(approx_voters_popn$gender),
+                   vote_pref = levels(approx_voters_popn$vote_pref),
+                   education = levels(approx_voters_popn$education),
+                   state = levels(approx_voters_popn$state)),
   weights = approx_voters_popn$wt,
   design = formula("~."))
 
