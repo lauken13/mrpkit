@@ -128,23 +128,26 @@ SurveyFit <- R6::R6Class(
       }
       return(posterior_preds)
     },
-    visify = function(sae_preds, wts = TRUE) {
-      if (dim(sae_preds)[2]>2){
+    visify = function(sae_preds, weights = TRUE) {
+      browser()
+      if (dim(sae_preds)[2] > 2){
         focus_var <- colnames(sae_preds)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$samp_obj()$questions()[[which_q]]
-        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = .data[[focus_var]], y = value))+
+        gg <- ggplot2::ggplot(sae_preds) +
+          ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
-          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
+          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)
       } else {
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
         svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
-        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
-          ggplot2::geom_density(fill = "darkblue", alpha = .3) +
-          ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))+
-          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
+        gg <- ggplot2::ggplot(sae_preds) +
+          ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
+          ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
+          ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
+          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)
       }
 
