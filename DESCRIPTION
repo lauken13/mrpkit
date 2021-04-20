@@ -20,6 +20,5 @@ Suggests:
     brms,
     lme4,
     merTools,
-    survey,
-    R.utils
+    survey
 Roxygen: list(markdown = TRUE)

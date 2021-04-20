@@ -105,7 +105,6 @@ SurveyData <- R6::R6Class(
                 questions <- questions[nms_q]
                 responses <- responses[nms_q]
             }
-            data <- data[, nms_q, drop = FALSE]
 
             private$questions_ <- questions
             private$responses_ <- responses
@@ -128,9 +127,8 @@ SurveyData <- R6::R6Class(
                 self$n_obs(), "observations,",
                 self$n_questions(), "questions",
                 "\n")
-            complex_svy_design <- do.call(svydesign, c(private$design_, list(weights = private$weights_, data = private$survey_data_)))
-            design_out <- R.utils::captureOutput(print(complex_svy_design))
-            cat(design_out[1])
+
+            print_survey_design(private$design_, private$weights_, private$survey_data_)
 
             for (i in 1:ncol(self$survey_data(key = FALSE))) {
                 cat("\nColumn label:", names(self$survey_data(key = FALSE))[i], "\n")
@@ -176,3 +174,15 @@ SurveyData <- R6::R6Class(
         design = function() private$design_
     )
 )
+
+
+# internal ----------------------------------------------------------------
+
+# print 1-line summary of survey design
+print_survey_design <- function(design, weights, data) {
+  svy_design <- do.call(survey::svydesign, c(design, list(weights = weights, data = data)))
+  svy_design$call <- NULL
+  cat(utils::capture.output(print(svy_design))[1], "\n")
+}
+
+
