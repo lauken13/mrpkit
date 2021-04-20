@@ -3,13 +3,10 @@
 #' @name SurveyData
 #' @export
 #' @description
-#' A `SurveyData` object represents a survey and its metadata.
-#' The survey itself is a data frame.
-#' The survey metatdata consists of the following:
-#'  - per-column questions: a list of strings
-#'  - per-column allowed response values: a list of character vectors
-#'  - per-column survey weights: a vector of numeric weights
-#'  - survey design: a named list of elements to pass to svydesign in the survey package
+#' A `SurveyData` object represents a survey and its metadata. The survey itself
+#' is a data frame. The survey metadata consists of the text of the survey
+#' questions, the allowed response values, and optionally survey weights and a
+#' survey design specification.
 #'
 #' @examples
 #'
@@ -70,8 +67,7 @@ SurveyData <- R6::R6Class(
         #'   must correspond to the names of variables in `data`. See
         #'   **Examples**.
         #' @param weights Optionally, a vector of survey weights.
-        #' @param design Optionally, a string that specifies the survey design
-        #'   using \pkg{lme4} style formula syntax.
+        #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
         initialize = function(data,
                               questions = list(),
                               responses = list(),

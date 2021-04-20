@@ -4,15 +4,10 @@
 \alias{SurveyData}
 \title{SurveyData objects}
 \description{
-A \code{SurveyData} object represents a survey and its metadata.
-The survey itself is a data frame.
-The survey metatdata consists of the following:
-\itemize{
-\item per-column questions: a list of strings
-\item per-column allowed response values: a list of character vectors
-\item per-column survey weights: a vector of numeric weights
-\item survey design: a named list of elements to pass to svydesign in the survey package
-}
+A \code{SurveyData} object represents a survey and its metadata. The survey itself
+is a data frame. The survey metadata consists of the text of the survey
+questions, the allowed response values, and optionally survey weights and a
+survey design specification.
 }
 \examples{
 
@@ -85,7 +80,7 @@ Create a new SurveyData object
   questions = list(),
   responses = list(),
   weights = numeric(),
-  design = list(ids = ~1)
+  design = ~1
 )}\if{html}{\out{</div>}}
 }
 
@@ -101,8 +96,7 @@ must correspond to the names of variables in \code{data}. See
 
 \item{\code{weights}}{Optionally, a vector of survey weights.}
 
-\item{\code{design}}{Optionally, a string that specifies the survey design
-using \pkg{lme4} style formula syntax.}
+\item{\code{design}}{Optionally, a named list of arguments to pass to \code{survey::svydesign()}.}
 }
 \if{html}{\out{</div>}}
 }
