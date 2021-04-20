@@ -99,11 +99,17 @@ SurveyData <- R6::R6Class(
                          call. = FALSE)
                 }
             }
-            # allow no weights, else require weights for all columns
-            if (length(weights) != 0 & nrow(data) != length(weights)) {
-                stop("Mismatch between number of data columns and weights.",
-                     call. = FALSE)
+
+            if (length(weights) != 0) {
+                if (length(weights) != nrow(data)) {
+                    stop("Mismatch between number of data rows and number of weights.",
+                         call. = FALSE)
+                }
+                if (anyNA(weights)) {
+                    stop("NAs not allowed in weights.", call. = FALSE)
+                }
             }
+
             nms_q <- sort(names(questions))
             nms_r <- sort(names(responses))
             if (is.null(nms_q) || sum(nzchar(nms_q)) != length(nms_q)) {
