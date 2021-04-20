@@ -13,12 +13,12 @@ RoxygenNote: 7.1.1
 Imports:
     dplyr,
     forcats,
-    ggplot2
+    ggplot2,
+    survey
 Suggests:
     testthat,
     rstanarm (>= 2.21.0),
     brms,
     lme4,
-    merTools,
-    survey
+    merTools
 Roxygen: list(markdown = TRUE)
