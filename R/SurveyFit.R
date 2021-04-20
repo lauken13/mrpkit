@@ -129,7 +129,6 @@ SurveyFit <- R6::R6Class(
       return(posterior_preds)
     },
     visify = function(sae_preds, weights = TRUE) {
-      browser()
       if (dim(sae_preds)[2] > 2){
         focus_var <- colnames(sae_preds)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
@@ -151,22 +150,30 @@ SurveyFit <- R6::R6Class(
           ggplot2::xlab(svy_q)
       }
 
-      if(wts){
+      if (weights) {
         model_fit <- private$fit_
-        vv <- attr(terms(formula(model_fit)), which = "variables")
-        lhs_var <- as.character(vv[[2]]) # The response variable name
-        if(dim(sae_preds)[2]>2){
+        lhs_var <- as.character(formula(model_fit))[[2]]
+        if (dim(sae_preds)[2] > 2) {
           by_var <- colnames(sae_preds)[1]
           wtd_ests <- create_wtd_ests(private, lhs_var, by=by_var)
           gg <- gg +
-            ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= get(by_var), y = mean)) +
-            ggplot2::geom_errorbar(data = wtd_ests, ggplot2::aes(x = get(by_var), ymin = mean - 1.96*std, ymax = mean + 1.96*std), inherit.aes = FALSE , alpha = .5)
+            ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
+            ggplot2::geom_errorbar(
+              data = wtd_ests,
+              ggplot2::aes(x = .data[[by_var]],
+                           ymin = .data[["mean"]] - 1.96*.data[["std"]],
+                           ymax = .data[["mean"]] + 1.96*.data[["std"]]),
+              inherit.aes = FALSE, alpha = .5)
         } else {
           wtd_ests <- create_wtd_ests(private, lhs_var)
           gg <- gg +
-            ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = mean)) +
-            ggplot2::annotate("rect", xmin = wtd_ests$mean - 1.96*wtd_ests$std, xmax = wtd_ests$mean + 1.96*wtd_ests$std, ymin = 0, ymax= max(density(sae_preds$value)$y*1.1),
-                              alpha = .5,fill = "grey") + ggplot2::scale_y_continuous(c(0,max(density(sae_preds$value)$y*1.1)), expand = c(0,0))s
+            ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = .data[["mean"]])) +
+            ggplot2::annotate("rect",
+              xmin = wtd_ests$mean - 1.96*wtd_ests$std, xmax = wtd_ests$mean + 1.96*wtd_ests$std,
+              ymin = 0, ymax= max(density(sae_preds$value)$y*1.1),
+              alpha = .5, fill = "grey"
+            ) +
+            ggplot2::scale_y_continuous(c(0,max(density(sae_preds$value)$y*1.1)), expand = c(0,0))
         }
       }
       return(gg)
