@@ -127,13 +127,17 @@ preds_by_age \%>\%
   group_by(age) \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
-plot1 <- fit_1$visify(preds_by_age)
-plot1
+# plot estimates by age
+plot_by_age <- fit_1$visify(preds_by_age)
+plot_by_age
+
 # population estimate
 preds_popn <- fit_1$aggregate(poststrat_fit)
 mean(preds_popn$value)
-plot2 <- fit_1$visify(preds_popn)
-plot2
+
+# plot population estimate
+plot_popn <- fit_1$visify(preds_popn)
+plot_popn
 
 }
 \section{Methods}{
@@ -248,7 +252,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-visify}{}}}
 \subsection{Method \code{visify()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(sae_preds, wts = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(sae_preds, weights = TRUE)}\if{html}{\out{</div>}}
 }
 
 }

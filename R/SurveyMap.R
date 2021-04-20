@@ -130,13 +130,17 @@
 #'   group_by(age) %>%
 #'   summarize(mean = mean(value), sd = sd(value))
 #'
-#' plot1 <- fit_1$visify(preds_by_age)
-#'plot1
+#' # plot estimates by age
+#' plot_by_age <- fit_1$visify(preds_by_age)
+#' plot_by_age
+#'
 #' # population estimate
 #' preds_popn <- fit_1$aggregate(poststrat_fit)
 #' mean(preds_popn$value)
-#' plot2 <- fit_1$visify(preds_popn)
-#' plot2
+#'
+#' # plot population estimate
+#' plot_popn <- fit_1$visify(preds_popn)
+#' plot_popn
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
