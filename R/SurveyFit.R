@@ -110,7 +110,10 @@ SurveyFit <- R6::R6Class(
     },
     aggregate = function(poststrat_fit, by = NULL) {
       poststrat <- private$map_$poststrat_data()
-      if (!is.null(by)){
+      if (!is.null(by)) {
+        if (length(by) != 1) {
+          stop("Currently only one variable can be named in 'by'.", call. = FALSE)
+        }
         rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, by])
         posterior_preds <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_fit), value = NA)
         colnames(posterior_preds)[1] <- by
