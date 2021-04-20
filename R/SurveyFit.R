@@ -130,10 +130,10 @@ SurveyFit <- R6::R6Class(
     },
     visify = function(sae_preds, wts = TRUE) {
       if (dim(sae_preds)[2]>2){
-        which_q <- private$map_$item_map()[[colnames(sae_preds)[1]]]$col_names()[1]
+        focus_var <- colnames(sae_preds)[1]
+        which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$samp_obj()$questions()[[which_q]]
-        focus_var <- dplyr::sym(colnames(sae_preds)[1])
-        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
+        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = .data[[focus_var]], y = value))+
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
           ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
           ggplot2::xlab(svy_q)
