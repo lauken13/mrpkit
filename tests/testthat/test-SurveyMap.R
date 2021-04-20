@@ -68,6 +68,10 @@ test_that("initializing with 0 questions doesn't error", {
   expect_silent(SurveyMap$new(samp_obj, popn_obj))
 })
 
+test_that("initializing with >0 questions doesn't error", {
+  expect_silent(SurveyMap$new(samp_obj, popn_obj, q1, q2))
+})
+
 test_that("add() errors if name already exists", {
   x <- SurveyMap$new(samp_obj, popn_obj, q1)
   expect_error(
