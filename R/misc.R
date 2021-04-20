@@ -27,3 +27,31 @@ family_is_binomial <- function(x) {
   }
   x %in% c("binomial", "bernoulli")
 }
+
+#' Create weighted estimates using the survey package
+#' @param fit  An [R6][R6::R6Class] SurveyFit object
+#' @param outcome The variable we are estimating
+#' @param by The grouping variables
+#' @return A table of size nlevels by 3 (level, estimate, sd).
+create_wtd_ests <- function(fit_obj, outcome, by=NULL) {
+  weights <- fit_obj$map_$samp_obj()$weights()
+  design <- fit_obj$map_$samp_obj()$design()
+  merged_data <- merge(fit_obj$map_$samp_obj()$mapped_data(), fit_obj$map_$samp_obj()$survey_data()[c(outcome,".key")], by = ".key")
+  svy_dsn <- do.call(svydesign, c(design, list(weights = weights, data = merged_data)))
+  if (is.null(weights)) {
+    stop("Sample weights must be present", call. = FALSE)
+  }
+  if(is.null(by)){
+      wtd_ests <- data.frame(svymean(as.formula(paste0(c('~',outcome), collapse = "")), design = svy_dsn))
+      rownames(wtd_ests) <- levels(merged_data[[outcome]])
+      wtd_ests <- wtd_ests[seq(2,dim(wtd_ests)[1],2),]
+      colnames(wtd_ests) <- c("mean", "std")
+    } else {
+      wtd_ests <- data.frame(svyby(as.formula(paste0("~",outcome)),
+                        as.formula(paste0("~",by)),
+                        svy_dsn, svymean))
+      wtd_ests <- wtd_ests[,c(1,3,5)]
+      colnames(wtd_ests) <- c(by,"mean", "std")
+    }
+  return(data.frame(wtd_ests))
+  }

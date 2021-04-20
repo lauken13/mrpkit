@@ -19,5 +19,7 @@ Suggests:
     rstanarm (>= 2.21.0),
     brms,
     lme4,
-    merTools
+    merTools,
+    survey,
+    R.utils
 Roxygen: list(markdown = TRUE)

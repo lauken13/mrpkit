@@ -4,8 +4,8 @@
 \alias{SurveyQuestion}
 \title{SurveyQuestion}
 \description{
-A \code{SurveyQuestion} object holds the mapping for one question or
-demographic between the survey and population dataset.
+An \link[R6:R6Class]{R6} \code{SurveyQuestion} object holds the mapping
+for one question or demographic between the survey and population dataset.
 }
 \examples{
 q1 <- SurveyQuestion$new(
@@ -35,6 +35,9 @@ q3 <- SurveyQuestion$new(
 \itemize{
 \item \href{#method-new}{\code{SurveyQuestion$new()}}
 \item \href{#method-print}{\code{SurveyQuestion$print()}}
+\item \href{#method-name}{\code{SurveyQuestion$name()}}
+\item \href{#method-col_names}{\code{SurveyQuestion$col_names()}}
+\item \href{#method-values}{\code{SurveyQuestion$values()}}
 \item \href{#method-clone}{\code{SurveyQuestion$clone()}}
 }
 }
@@ -90,6 +93,36 @@ Print a \code{SurveyQuestion}.
 \subsection{Returns}{
 The \code{SurveyQuestion} object, invisibly.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-name"></a>}}
+\if{latex}{\out{\hypertarget{method-name}{}}}
+\subsection{Method \code{name()}}{
+Access \code{name}
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$name()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-col_names"></a>}}
+\if{latex}{\out{\hypertarget{method-col_names}{}}}
+\subsection{Method \code{col_names()}}{
+Access \code{col_names}
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$col_names()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-values"></a>}}
+\if{latex}{\out{\hypertarget{method-values}{}}}
+\subsection{Method \code{values()}}{
+Access \code{values}
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyQuestion$values()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

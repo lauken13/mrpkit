@@ -51,8 +51,6 @@ popn_obj <- SurveyData$new(
   design = formula("~.")
 )
 popn_obj$print()
-
-# mapping between the two surveys
 q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
@@ -130,12 +128,13 @@ preds_by_age \%>\%
   group_by(age) \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
-(plot1 <- fit_1$visify(preds_by_age))
-
+plot1 <- fit_1$visify(preds_by_age)
+plot1
 # population estimate
 preds_popn <- fit_1$aggregate(poststrat_fit)
 mean(preds_popn$value)
-(plot2 <- fit_1$visify(preds_popn))
+plot2 <- fit_1$visify(preds_popn)
+plot2
 
 }
 \section{Methods}{
@@ -250,7 +249,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-visify}{}}}
 \subsection{Method \code{visify()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(sae_preds)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(sae_preds, wts = TRUE)}\if{html}{\out{</div>}}
 }
 
 }

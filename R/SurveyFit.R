@@ -125,19 +125,46 @@ SurveyFit <- R6::R6Class(
       }
       return(posterior_preds)
     },
-    visify = function(sae_preds) {
-      if (dim(sae_preds)[2]>1){
-        svy_q <- private$map_$samp_obj()$questions()[colnames(private$map_$samp_obj()$survey_data()) == private$map_$item_map()[[colnames(sae_preds)[1]]]$col_names()[1]]
+    visify = function(sae_preds, wts = TRUE) {
+      if (dim(sae_preds)[2]>2){
+        which_q <- private$map_$item_map()[[colnames(sae_preds)[1]]]$col_names()[1]
+        svy_q <- private$map_$samp_obj()$questions()[[which_q]]
         focus_var <- dplyr::sym(colnames(sae_preds)[1])
-        ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
+        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = !!focus_var, y = value))+
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
           ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
           ggplot2::xlab(svy_q)
       } else {
-        ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
+        model_fit <- private$fit_
+        vv <- attr(terms(formula(model_fit)), which = "variables")
+        lhs_var <- as.character(vv[[2]])
+        svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
+        gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
           ggplot2::geom_density(fill = "darkblue", alpha = .3) +
-          ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))
+          ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0))+
+          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0))+
+          ggplot2::xlab(svy_q)
       }
+
+      if(wts){
+        model_fit <- private$fit_
+        vv <- attr(terms(formula(model_fit)), which = "variables")
+        lhs_var <- as.character(vv[[2]]) # The response variable name
+        if(dim(sae_preds)[2]>2){
+          by_var <- colnames(sae_preds)[1]
+          wtd_ests <- create_wtd_ests(private, lhs_var, by=by_var)
+          gg <- gg + ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= get(by_var), y = mean)) +
+            ggplot2::geom_errorbar(data = wtd_ests, ggplot2::aes(x = get(by_var), ymin = mean - 1.96*std, ymax = mean + 1.96*std), inherit.aes = FALSE , alpha = .5)+
+            ggplot2::theme_bw()
+        }else{
+          wtd_ests <- create_wtd_ests(private, lhs_var)
+          gg <- gg +
+            ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = mean)) +
+            ggplot2::annotate("rect", xmin = wtd_ests$mean - 1.96*wtd_ests$std, xmax = wtd_ests$mean + 1.96*wtd_ests$std, ymin = 0, ymax= max(density(sae_preds$value)$y*1.1),
+                              alpha = .5,fill = "grey") + ggplot2::scale_y_continuous(c(0,max(density(sae_preds$value)$y*1.1)), expand = c(0,0)) +ggplot2::theme_bw()
+        }
+      }
+      return(gg)
     }
   )
 )
