@@ -88,11 +88,12 @@ SurveyData <- R6::R6Class(
                          call. = FALSE)
                 }
             }
-            # allow no weights, else require weights for all columns
-            if (length(weights) != 0 & nrow(data) != length(weights)) {
+            # allow no weights, else require weights for all rows
+            if (length(weights) != 0 && nrow(data) != length(weights)) {
                 stop("Mismatch between number of data columns and weights.",
                      call. = FALSE)
             }
+
             nms_q <- sort(names(questions))
             nms_r <- sort(names(responses))
             if (is.null(nms_q) || sum(nzchar(nms_q)) != length(nms_q)) {
@@ -101,10 +102,11 @@ SurveyData <- R6::R6Class(
             if (!identical(nms_q, nms_r)) {
                 stop("Names in 'questions' and 'responses' lists must be the same.")
             }
-            if (!is.null(nms_q)) {
-                questions <- questions[nms_q]
-                responses <- responses[nms_q]
+            if (!all(nms_q %in% colnames(data))) {
+                stop("Names of 'questions' much match column names in 'data'.", call. = FALSE)
             }
+            questions <- questions[nms_q]
+            responses <- responses[nms_q]
 
             private$questions_ <- questions
             private$responses_ <- responses
