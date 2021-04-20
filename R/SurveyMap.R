@@ -395,6 +395,11 @@ SurveyMap <- R6::R6Class(
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
       }
+      if (nrow(private$poststrat_data_)==0) {
+        stop("Post-stratification data not found. ",
+             "Please call the tabulate() method before fitting a model.",
+             call. = FALSE)
+      }
 
       # TODO: error if variables in formula aren't in data
       formula <- as.formula(formula)

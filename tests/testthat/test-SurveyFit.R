@@ -141,3 +141,36 @@ test_that("Error if data hasn't been mapped yet",{
     "Mapped data not found.", fixed = TRUE
   )
 })
+
+#Create the mapped data
+ex_map$mapping()
+
+test_that("Error if poststrat matrix hasn't been created yet",{
+  expect_error(
+    ex_map$fit(
+      fun = lme4::glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Post-stratification data not found.", fixed = TRUE
+  )
+  expect_error(
+    ex_map$fit(
+      fun = rstanarm::stan_glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Post-stratification data not found.", fixed = TRUE
+  )
+  expect_error(
+    ex_map$fit(
+      fun = brms::brm,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Post-stratification data not found.", fixed = TRUE
+  )
+})
+
+
+#TODO add a check for poststrat data in predictify
