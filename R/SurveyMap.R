@@ -389,7 +389,8 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (is.null(private$samp_obj_$mapped_data())) {
+      if (dim(private$samp_obj_$mapped_data())[2]==1) {
+        #Mapped data is created with just a .key column in the SurveyData obj
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)

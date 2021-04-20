@@ -51,7 +51,7 @@ q3 <- SurveyQuestion$new(
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
-ex_map <- SurveyMap$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1)
 
 
 #Small data fits for testing purposes:
@@ -113,4 +113,31 @@ test_that("Error if not fitting a bernoulli/binomial model", {
     "Currently only binomial and bernoulli models are supported."
   )
 
+})
+
+test_that("Error if data hasn't been mapped yet",{
+  expect_error(
+    ex_map$fit(
+      fun = lme4::glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Mapped data not found.", fixed = TRUE
+  )
+  expect_error(
+    ex_map$fit(
+      fun = rstanarm::stan_glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Mapped data not found.", fixed = TRUE
+  )
+  expect_error(
+    ex_map$fit(
+      fun = brms::brm,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Mapped data not found.", fixed = TRUE
+  )
 })
