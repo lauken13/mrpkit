@@ -67,3 +67,11 @@ test_that("error thrown if inputs are not SurveyData objects", {
 test_that("initializing with 0 questions doesn't error", {
   expect_silent(SurveyMap$new(samp_obj, popn_obj))
 })
+
+test_that("add() errors if name already exists", {
+  x <- SurveyMap$new(samp_obj, popn_obj, q1)
+  expect_error(
+    x$add(q1),
+    "Survey label 'age' already defined"
+  )
+})

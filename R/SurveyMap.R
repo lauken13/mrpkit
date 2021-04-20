@@ -198,8 +198,8 @@ SurveyMap <- R6::R6Class(
       for (i in 1:length(dots)) {
         ll_length <- length(private$item_map_)
         if (dots[[i]]$name() %in% names(private$item_map_)) {
-          stop("Survey label: ", dots[[i]]$name(), " already defined.  ",
-               "Use function 'replace' instead. ", call. = FALSE)
+          stop("Survey label '", dots[[i]]$name(), "' already defined.  ",
+               "Use 'replace' method instead.", call. = FALSE)
         }
         private$item_map_[[ll_length + 1]] <- dots[[i]]
         names(private$item_map_)[ll_length + 1] <- private$item_map_[[ll_length + 1]]$name()
@@ -220,7 +220,7 @@ SurveyMap <- R6::R6Class(
           loc_name <- tmp_list[[i]]
         }
         if (sum(loc_id) == 0) {
-          stop("Survey label: ", loc_name, " not defined.  ",
+          stop("Survey label '", loc_name, "' not defined.",
                call. = FALSE)
         } else {
           private$item_map_[[which(loc_id)]] <- NULL
@@ -253,7 +253,7 @@ SurveyMap <- R6::R6Class(
             name = samp_mapnames[j],
             value = as.factor(private$samp_obj_$survey_data()[, samp_mapnames[j]])
           )
-          warning("Converting ", samp_mapnames[j], "into a factor with levels ",
+          warning("Converting '", samp_mapnames[j], "' into a factor with levels ",
                   paste(levels(private$samp_obj_$survey_data()[, samp_mapnames[j]]), collapse = ", "),
                   call. = FALSE)
         }
@@ -262,7 +262,7 @@ SurveyMap <- R6::R6Class(
             name = popn_mapnames[j],
             value = as.factor(private$popn_obj_$survey_data()[, popn_mapnames[j]])
           )
-          warning("Converting ", popn_mapnames[j], "into a factor with levels ",
+          warning("Converting '", popn_mapnames[j], "' into a factor with levels ",
                   paste(levels(private$popn_obj_$survey_data()[, popn_mapnames[j]]), collapse = ", "),
                   call. = FALSE)
         }
@@ -271,39 +271,39 @@ SurveyMap <- R6::R6Class(
         levels_data_samp <- levels(private$samp_obj_$survey_data()[, samp_mapnames[j]])
         levels_data_popn <- levels(private$popn_obj_$survey_data()[, popn_mapnames[j]])
         if (!samp_mapnames[j] %in% samp_dfnames) {
-          stop("Variable ", samp_mapnames[j], " not in sample", call. = FALSE)
+          stop("Variable '", samp_mapnames[j], "' not in sample", call. = FALSE)
         }
         if (!popn_mapnames[j] %in% popn_dfnames) {
-          stop("Variable ", popn_mapnames[j], " not in population",
+          stop("Variable '", popn_mapnames[j], "' not in population",
                call. = FALSE)
         }
         if (sum(!levels_map_samp %in% levels_data_samp) > 0) {
-          stop("Levels in ",samp_mapnames[j]," ",
+          stop("Levels in '",samp_mapnames[j],"' ",
                paste(levels_map_samp[!levels_map_samp %in% levels_data_samp], collapse = ", "),
                " are included in the map but are not in the sample",
                call. = FALSE)
         }
         if (sum(!levels_data_samp %in% levels_map_samp) > 0) {
-          stop("Levels in ",samp_mapnames[j], " ",
+          stop("Levels in '",samp_mapnames[j], "' ",
                paste(levels_data_samp[!levels_data_samp %in% levels_map_samp], collapse = ", "),
                " are included in the sample but are not in the map",
                call. = FALSE)
         }
         if (sum(!levels_map_popn %in% levels_data_popn) > 0) {
-          stop("Levels in ",popn_mapnames[j], " ",
+          stop("Levels in '",popn_mapnames[j], "' ",
                paste(levels_map_popn[!levels_map_popn %in% levels_data_popn], collapse = ", "),
                " are included in the map but are not in the population data",
                call. = FALSE)
         }
         if (sum(!levels_data_popn %in% levels_map_popn)>0) {
-          stop("Levels in ",popn_mapnames[j], " ",
+          stop("Levels in '",popn_mapnames[j], "' ",
                paste(levels_data_popn[!levels_data_popn %in% levels_map_popn], collapse = ", "),
                " are included in the population data but are not in the map",
                call. = FALSE)
         }
       }
       if (sum(popn_mapnames %in% popn_dfnames) < length(popn_dfnames)) {
-        warning("Variable(s) ", paste(popn_dfnames[!popn_dfnames %in% popn_mapnames], collapse = ", "),
+        warning("Variable(s) ", paste(sQuote(popn_dfnames[!popn_dfnames %in% popn_mapnames], q = "'"), collapse = ", "),
                 " are available in the population but won't be used in the model ",
                 call. = FALSE)
       }
