@@ -27,8 +27,7 @@ feline_prefs <- SurveyData$new(
     pet_own = levels(feline_survey$pet_own),
     y = c("no","yes")
   ),
-  weights = feline_survey$wt,
-  design = formula("~.")
+  weights = feline_survey$wt
 )
 feline_prefs$print()
 
@@ -47,10 +46,10 @@ popn_obj <- SurveyData$new(
     age2 = levels(approx_popn$age2),
     pet_pref = levels(approx_popn$pet_pref)
   ),
-  weights = approx_popn$wt,
-  design = formula("~.")
+  weights = approx_popn$wt
 )
 popn_obj$print()
+
 q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
