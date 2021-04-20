@@ -95,7 +95,7 @@ SurveyData <- R6::R6Class(
                          call. = FALSE)
                 }
                 if (length(responses) != length(questions)) {
-                    stop("Mismatch between number of survey questions and answers.",
+                    stop("Mismatch between number of survey questions and responses.",
                          call. = FALSE)
                 }
             }
@@ -114,6 +114,9 @@ SurveyData <- R6::R6Class(
             nms_r <- sort(names(responses))
             if (is.null(nms_q) || sum(nzchar(nms_q)) != length(nms_q)) {
                 stop("All elements of 'questions' and 'responses' list must have names.", call. = FALSE)
+            }
+            if (length(unique(nms_q)) != length(nms_q)) {
+                stop("Names in 'questions' must be unique.", call = FALSE)
             }
             if (!identical(nms_q, nms_r)) {
                 stop("Names in 'questions' and 'responses' lists must be the same.")
