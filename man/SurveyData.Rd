@@ -27,7 +27,7 @@ feline_prefs <- SurveyData$new(
     y = c("no","yes")
   ),
   weights = feline_survey$wt,
-  design = list(ids =~1)#, strata=~stype)
+  design = list(ids =~1)
 )
 feline_prefs$print()
 
@@ -80,7 +80,7 @@ Create a new SurveyData object
   questions = list(),
   responses = list(),
   weights = numeric(),
-  design = ~1
+  design = list(ids = ~1)
 )}\if{html}{\out{</div>}}
 }
 

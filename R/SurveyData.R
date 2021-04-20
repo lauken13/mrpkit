@@ -26,7 +26,7 @@
 #'     y = c("no","yes")
 #'   ),
 #'   weights = feline_survey$wt,
-#'   design = list(ids =~1)#, strata=~stype)
+#'   design = list(ids =~1)
 #' )
 #' feline_prefs$print()
 #'
@@ -129,15 +129,7 @@ SurveyData <- R6::R6Class(
                 "\n")
 
             print_survey_design(private$design_, private$weights_, private$survey_data_)
-
-            for (i in 1:ncol(self$survey_data(key = FALSE))) {
-                cat("\nColumn label:", names(self$survey_data(key = FALSE))[i], "\n")
-                if (length(private$questions_) > 0) {
-                    cat("Question:", private$questions_[[i]], "\n")
-                    cat("Allowed answers:",
-                        paste(private$responses_[[i]], collapse = ", "), "\n")
-                }
-            }
+            print_questions_and_responses(private$questions_, private$responses_)
             invisible(self)
         },
 
@@ -185,4 +177,10 @@ print_survey_design <- function(design, weights, data) {
   cat(utils::capture.output(print(svy_design))[1], "\n")
 }
 
-
+print_questions_and_responses <- function(questions, responses) {
+  for (i in seq_along(questions)) {
+    cat("\nColumn label:", names(questions)[i], "\n")
+    cat("Question:", questions[[i]], "\n")
+    cat("Allowed answers:", paste(responses[[i]], collapse = ", "), "\n")
+  }
+}
