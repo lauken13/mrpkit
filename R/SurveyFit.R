@@ -126,7 +126,7 @@ SurveyFit <- R6::R6Class(
         posterior_preds <-
           data.frame(value = apply(poststrat_fit, 2, function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
       }
-      return(posterior_preds)
+      posterior_preds
     },
     visify = function(sae_preds, weights = TRUE) {
       if (dim(sae_preds)[2] > 2){
@@ -155,27 +155,27 @@ SurveyFit <- R6::R6Class(
         lhs_var <- as.character(formula(model_fit))[[2]]
         if (dim(sae_preds)[2] > 2) {
           by_var <- colnames(sae_preds)[1]
-          wtd_ests <- create_wtd_ests(private, lhs_var, by=by_var)
+          wtd_ests <- create_wtd_ests(self, lhs_var, by=by_var)
           gg <- gg +
             ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
             ggplot2::geom_errorbar(
               data = wtd_ests,
               ggplot2::aes(x = .data[[by_var]],
-                           ymin = .data[["mean"]] - 1.96*.data[["std"]],
-                           ymax = .data[["mean"]] + 1.96*.data[["std"]]),
+                           ymin = .data[["mean"]] - 1.96*.data[["sd"]],
+                           ymax = .data[["mean"]] + 1.96*.data[["sd"]]),
               inherit.aes = FALSE, alpha = .5)
         } else {
-          wtd_ests <- create_wtd_ests(private, lhs_var)
+          wtd_ests <- create_wtd_ests(self, lhs_var)
           gg <- gg +
             ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = .data[["mean"]])) +
             ggplot2::annotate("rect",
-              xmin = wtd_ests$mean - 1.96*wtd_ests$std, xmax = wtd_ests$mean + 1.96*wtd_ests$std,
+              xmin = wtd_ests$mean - 1.96*wtd_ests$sd, xmax = wtd_ests$mean + 1.96*wtd_ests$sd,
               ymin = 0, ymax = 1,
               alpha = .5, fill = "grey"
             )
         }
       }
-      return(gg)
+      gg
     }
   )
 )
