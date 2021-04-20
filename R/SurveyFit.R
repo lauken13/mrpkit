@@ -155,15 +155,15 @@ SurveyFit <- R6::R6Class(
         if(dim(sae_preds)[2]>2){
           by_var <- colnames(sae_preds)[1]
           wtd_ests <- create_wtd_ests(private, lhs_var, by=by_var)
-          gg <- gg + ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= get(by_var), y = mean)) +
-            ggplot2::geom_errorbar(data = wtd_ests, ggplot2::aes(x = get(by_var), ymin = mean - 1.96*std, ymax = mean + 1.96*std), inherit.aes = FALSE , alpha = .5)+
-            ggplot2::theme_bw()
-        }else{
+          gg <- gg +
+            ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= get(by_var), y = mean)) +
+            ggplot2::geom_errorbar(data = wtd_ests, ggplot2::aes(x = get(by_var), ymin = mean - 1.96*std, ymax = mean + 1.96*std), inherit.aes = FALSE , alpha = .5)
+        } else {
           wtd_ests <- create_wtd_ests(private, lhs_var)
           gg <- gg +
             ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = mean)) +
             ggplot2::annotate("rect", xmin = wtd_ests$mean - 1.96*wtd_ests$std, xmax = wtd_ests$mean + 1.96*wtd_ests$std, ymin = 0, ymax= max(density(sae_preds$value)$y*1.1),
-                              alpha = .5,fill = "grey") + ggplot2::scale_y_continuous(c(0,max(density(sae_preds$value)$y*1.1)), expand = c(0,0)) +ggplot2::theme_bw()
+                              alpha = .5,fill = "grey") + ggplot2::scale_y_continuous(c(0,max(density(sae_preds$value)$y*1.1)), expand = c(0,0))s
         }
       }
       return(gg)
