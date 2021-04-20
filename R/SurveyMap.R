@@ -163,7 +163,7 @@ SurveyMap <- R6::R6Class(
       }
 
       private$item_map_ <- list(...)
-      for (i in 1:length(private$item_map_)) {
+      for (i in 1:seq_along(private$item_map_)) {
         names(private$item_map_)[i] <- private$item_map_[[i]]$name()
       }
 
