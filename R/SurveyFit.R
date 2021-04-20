@@ -139,8 +139,7 @@ SurveyFit <- R6::R6Class(
           ggplot2::xlab(svy_q)
       } else {
         model_fit <- private$fit_
-        vv <- attr(terms(formula(model_fit)), which = "variables")
-        lhs_var <- as.character(vv[[2]])
+        lhs_var <- as.character(formula(model_fit))[[2]]
         svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
         gg <- ggplot2::ggplot(sae_preds, ggplot2::aes(x = value))+
           ggplot2::geom_density(fill = "darkblue", alpha = .3) +
