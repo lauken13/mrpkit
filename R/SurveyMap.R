@@ -400,6 +400,12 @@ SurveyMap <- R6::R6Class(
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
       }
+      admin_package = as.character(getNamespaceName(environment(fun)))
+      if(!any(admin_package %in% c("lme4","brms","rstanarm"))){
+        warning("Only rstanarm, brms and lme4 are supported natively.",
+        "Other modelling tools will need a custom predictify method.",
+             call. = FALSE)
+      }
 
       # TODO: error if variables in formula aren't in data
       formula <- as.formula(formula)
