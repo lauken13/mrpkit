@@ -225,11 +225,11 @@ test_that("Error if data is given as input",{
 ex_map$tabulate() # Use all variables in the map
 
 test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ",{
-  skip_if_not_installed("dbarts")
   expect_warning(
     ex_map$fit(
-      fun = dbarts::dbarts,
-      formula = as.numeric(y) ~ age + gender
+      fun = stats::glm,
+      formula = y ~ age + gender,
+      family = "binomial"
     ),
     "Only rstanarm, brms and lme4 are supported natively.", fixed = TRUE
   )

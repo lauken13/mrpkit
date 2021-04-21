@@ -402,7 +402,7 @@ SurveyMap <- R6::R6Class(
       }
       admin_package = as.character(getNamespaceName(environment(fun)))
       if(!any(admin_package %in% c("lme4","brms","rstanarm"))){
-        warning("Only rstanarm, brms and lme4 are supported natively.",
+        warning("Only rstanarm, brms and lme4 are supported natively. ",
         "Other modelling tools will need a custom predictify method.",
              call. = FALSE)
       }
