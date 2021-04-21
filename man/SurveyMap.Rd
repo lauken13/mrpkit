@@ -31,8 +31,7 @@ feline_prefs <- SurveyData$new(
     pet_own = levels(feline_survey$pet_own),
     y = c("no","yes")
   ),
-  weights = feline_survey$wt,
-  design = formula("~.")
+  weights = feline_survey$wt
 )
 feline_prefs$print()
 
@@ -51,12 +50,10 @@ popn_obj <- SurveyData$new(
     age2 = levels(approx_popn$age2),
     pet_pref = levels(approx_popn$pet_pref)
   ),
-  weights = approx_popn$wt,
-  design = formula("~.")
+  weights = approx_popn$wt
 )
 popn_obj$print()
 
-# mapping between the two surveys
 q1 <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
@@ -134,12 +131,17 @@ preds_by_age \%>\%
   group_by(age) \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
-(plot1 <- fit_1$visify(preds_by_age))
+# plot estimates by age
+plot_by_age <- fit_1$visify(preds_by_age)
+plot_by_age
 
 # population estimate
 preds_popn <- fit_1$aggregate(poststrat_fit)
 mean(preds_popn$value)
-(plot2 <- fit_1$visify(preds_popn))
+
+# plot population estimate
+plot_popn <- fit_1$visify(preds_popn)
+plot_popn
 
 }
 \section{Methods}{

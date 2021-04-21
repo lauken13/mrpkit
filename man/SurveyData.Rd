@@ -4,23 +4,10 @@
 \alias{SurveyData}
 \title{SurveyData objects}
 \description{
-An \link[R6:R6Class]{R6} \code{SurveyData} object represents a survey and its metadata.
-The survey itself is a data frame.
-The survey metatdata consists of the following:
-\itemize{
-\item per-column questions: a list of strings
-\item per-column allowed response values: a list of character vectors
-\item per-column survey weights: a vector of numeric weights
-\item survey design: a string that specifies the survey design using \pkg{lme4}
-style formula syntax.
-}
-
-Examples of survey designs include:
-\itemize{
-\item \code{~.}: a random sample
-\item \code{~ (1|cluster)}: a one stage cluster sample
-\item \code{~ stratum}: a stratified sample
-}
+A \code{SurveyData} object represents a survey and its metadata. The survey itself
+is a data frame. The survey metadata consists of the text of the survey
+questions, the allowed response values, and optionally survey weights and a
+survey design specification.
 }
 \examples{
 
@@ -40,7 +27,7 @@ feline_prefs <- SurveyData$new(
     y = c("no","yes")
   ),
   weights = feline_survey$wt,
-  design = formula("~.")
+  design = list(ids =~1)
 )
 feline_prefs$print()
 
@@ -59,8 +46,7 @@ popn_obj <- SurveyData$new(
     age2 = levels(approx_popn$age2),
     pet_pref = levels(approx_popn$pet_pref)
   ),
-  weights = approx_popn$wt,
-  design = formula("~.")
+  weights = approx_popn$wt
 )
 popn_obj$print()
 
@@ -94,7 +80,7 @@ Create a new SurveyData object
   questions = list(),
   responses = list(),
   weights = numeric(),
-  design = as.formula("~.")
+  design = list(ids = ~1)
 )}\if{html}{\out{</div>}}
 }
 
@@ -110,8 +96,7 @@ must correspond to the names of variables in \code{data}. See
 
 \item{\code{weights}}{Optionally, a vector of survey weights.}
 
-\item{\code{design}}{Optionally, a string that specifies the survey design
-using \pkg{lme4} style formula syntax.}
+\item{\code{design}}{Optionally, a named list of arguments to pass to \code{survey::svydesign()}.}
 }
 \if{html}{\out{</div>}}
 }
