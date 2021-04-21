@@ -30,8 +30,7 @@
 #'     pet_own = levels(feline_survey$pet_own),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = feline_survey$wt,
-#'   design = formula("~.")
+#'   weights = feline_survey$wt
 #' )
 #' feline_prefs$print()
 #'
@@ -50,12 +49,10 @@
 #'     age2 = levels(approx_popn$age2),
 #'     pet_pref = levels(approx_popn$pet_pref)
 #'   ),
-#'   weights = approx_popn$wt,
-#'   design = formula("~.")
+#'   weights = approx_popn$wt
 #' )
 #' popn_obj$print()
 #'
-#' # mapping between the two surveys
 #' q1 <- SurveyQuestion$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
@@ -133,12 +130,17 @@
 #'   group_by(age) %>%
 #'   summarize(mean = mean(value), sd = sd(value))
 #'
-#' (plot1 <- fit_1$visify(preds_by_age))
+#' # plot estimates by age
+#' plot_by_age <- fit_1$visify(preds_by_age)
+#' plot_by_age
 #'
 #' # population estimate
 #' preds_popn <- fit_1$aggregate(poststrat_fit)
 #' mean(preds_popn$value)
-#' (plot2 <- fit_1$visify(preds_popn))
+#'
+#' # plot population estimate
+#' plot_popn <- fit_1$visify(preds_popn)
+#' plot_popn
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
@@ -359,10 +361,10 @@ SurveyMap <- R6::R6Class(
         stop("At least one poststratification variable doesn't correspond to the map.", call. = FALSE)
       }
       private$poststrat_data_ <-
-          private$popn_obj_$mapped_data() %>%
-          dplyr::mutate(wts = private$popn_obj_$weights()) %>%
-          dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-          dplyr::summarize(N_j = sum(wts), .groups = 'drop')
+        private$popn_obj_$mapped_data() %>%
+        dplyr::mutate(wts = private$popn_obj_$weights()) %>%
+        dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
+        dplyr::summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
     },
 
@@ -424,5 +426,5 @@ SurveyMap <- R6::R6Class(
       }
       private$poststrat_data_
     }
-)
+  )
 )

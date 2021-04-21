@@ -3,19 +3,10 @@
 #' @name SurveyData
 #' @export
 #' @description
-#' An [R6][R6::R6Class] `SurveyData` object represents a survey and its metadata.
-#' The survey itself is a data frame.
-#' The survey metatdata consists of the following:
-#'  - per-column questions: a list of strings
-#'  - per-column allowed response values: a list of character vectors
-#'  - per-column survey weights: a vector of numeric weights
-#'  - survey design: a string that specifies the survey design using \pkg{lme4}
-#'  style formula syntax.
-#'
-#' Examples of survey designs include:
-#'   - `~.`: a random sample
-#'   - `~ (1|cluster)`: a one stage cluster sample
-#'   - `~ stratum`: a stratified sample
+#' A `SurveyData` object represents a survey and its metadata. The survey itself
+#' is a data frame. The survey metadata consists of the text of the survey
+#' questions, the allowed response values, and optionally survey weights and a
+#' survey design specification.
 #'
 #' @examples
 #'
@@ -35,7 +26,7 @@
 #'     y = c("no","yes")
 #'   ),
 #'   weights = feline_survey$wt,
-#'   design = formula("~.")
+#'   design = list(ids =~1)
 #' )
 #' feline_prefs$print()
 #'
@@ -54,8 +45,7 @@
 #'     age2 = levels(approx_popn$age2),
 #'     pet_pref = levels(approx_popn$pet_pref)
 #'   ),
-#'   weights = approx_popn$wt,
-#'   design = formula("~.")
+#'   weights = approx_popn$wt
 #' )
 #' popn_obj$print()
 #'
@@ -67,7 +57,7 @@ SurveyData <- R6::R6Class(
         questions_ = list(),
         responses_ = list(),
         weights_ = numeric(),
-        design_ = as.formula("~.")
+        design_ = list()
     ),
     public = list(
         #' @description Create a new SurveyData object
@@ -77,13 +67,12 @@ SurveyData <- R6::R6Class(
         #'   must correspond to the names of variables in `data`. See
         #'   **Examples**.
         #' @param weights Optionally, a vector of survey weights.
-        #' @param design Optionally, a string that specifies the survey design
-        #'   using \pkg{lme4} style formula syntax.
+        #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
         initialize = function(data,
                               questions = list(),
                               responses = list(),
                               weights = numeric(),
-                              design = as.formula("~.")) {
+                              design = list(ids =~1)) {
             if (ncol(data) == 0 || nrow(data) == 0) {
                 stop("'data' cannot be empty.", call. = FALSE)
             }
@@ -99,11 +88,12 @@ SurveyData <- R6::R6Class(
                          call. = FALSE)
                 }
             }
-            # allow no weights, else require weights for all columns
-            if (length(weights) != 0 & nrow(data) != length(weights)) {
+            # allow no weights, else require weights for all rows
+            if (length(weights) != 0 && nrow(data) != length(weights)) {
                 stop("Mismatch between number of data columns and weights.",
                      call. = FALSE)
             }
+
             nms_q <- sort(names(questions))
             nms_r <- sort(names(responses))
             if (is.null(nms_q) || sum(nzchar(nms_q)) != length(nms_q)) {
@@ -112,11 +102,11 @@ SurveyData <- R6::R6Class(
             if (!identical(nms_q, nms_r)) {
                 stop("Names in 'questions' and 'responses' lists must be the same.")
             }
-            if (!is.null(nms_q)) {
-                questions <- questions[nms_q]
-                responses <- responses[nms_q]
+            if (!all(nms_q %in% colnames(data))) {
+                stop("Names of 'questions' much match column names in 'data'.", call. = FALSE)
             }
-            data <- data[, nms_q, drop = FALSE]
+            questions <- questions[nms_q]
+            responses <- responses[nms_q]
 
             private$questions_ <- questions
             private$responses_ <- responses
@@ -139,25 +129,9 @@ SurveyData <- R6::R6Class(
                 self$n_obs(), "observations,",
                 self$n_questions(), "questions",
                 "\n")
-            if (length(private$design_ == 2)) {
-                cat("Random Sampling Design \n")
-            } else {
-                cat("Simple")
-                require_suggested_package("lme4")
-                if (is.null(lme4::findbars(private$design_))){
-                    cat(" stratified sample with strata", all.vars(terms(private$design_))[[1]], "\n")
-                } else {
-                    cat(" cluster sample with cluster", all.vars(terms(private$design_))[[1]], "\n")
-                }
-            }
-            for (i in 1:ncol(self$survey_data(key = FALSE))) {
-                cat("\nColumn label:", names(self$survey_data(key = FALSE))[i], "\n")
-                if (length(private$questions_) > 0) {
-                    cat("Question:", private$questions_[[i]], "\n")
-                    cat("Allowed answers:",
-                        paste(private$responses_[[i]], collapse = ", "), "\n")
-                }
-            }
+
+            print_survey_design(private$design_, private$weights_, private$survey_data_)
+            print_questions_and_responses(private$questions_, private$responses_)
             invisible(self)
         },
 
@@ -194,3 +168,21 @@ SurveyData <- R6::R6Class(
         design = function() private$design_
     )
 )
+
+
+# internal ----------------------------------------------------------------
+
+# print 1-line summary of survey design
+print_survey_design <- function(design, weights, data) {
+  svy_design <- do.call(survey::svydesign, c(design, list(weights = weights, data = data)))
+  svy_design$call <- NULL
+  cat(utils::capture.output(print(svy_design))[1], "\n")
+}
+
+print_questions_and_responses <- function(questions, responses) {
+  for (i in seq_along(questions)) {
+    cat("\nColumn label:", names(questions)[i], "\n")
+    cat("Question:", questions[[i]], "\n")
+    cat("Allowed answers:", paste(responses[[i]], collapse = ", "), "\n")
+  }
+}
