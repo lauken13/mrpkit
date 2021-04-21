@@ -21,6 +21,3 @@ A matrix with \code{nrow(newdata)} rows and \code{nsamples} columns.
 Generate approximate samples of predicted probabilities from a binomial
 \code{glmerMod} object.
 }
-\examples{
-
-}

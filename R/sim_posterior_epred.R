@@ -6,14 +6,13 @@
 #' @param newdata The data to use.
 #' @param nsamples Number of samples to generate.
 #' @return A matrix with `nrow(newdata)` rows and `nsamples` columns.
-#' @examples
 #'
 sim_posterior_epred  <- function(object, newdata, nsamples = 4000) {
   require_suggested_package("merTools")
   if (!inherits(object, "glmerMod")) {
     stop("Object must have class 'glmerMod'.", call. = FALSE)
   }
-  if (family(object)$family != "binomial") {
+  if (stats::family(object)$family != "binomial") {
     stop("Model family must be binomial.", call. = FALSE)
   }
   predict_nd <-
@@ -28,5 +27,5 @@ sim_posterior_epred  <- function(object, newdata, nsamples = 4000) {
       returnSims = TRUE,
       .parallel = FALSE
     )
-  plogis(attr(predict_nd, "sim.results"))
+  stats::plogis(attr(predict_nd, "sim.results"))
 }

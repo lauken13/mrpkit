@@ -45,15 +45,15 @@ create_wtd_ests <- function(fit_obj, outcome, by = NULL) {
                        by = ".key")
   svy_dsn <- do.call(survey::svydesign, c(design, list(weights = weights, data = merged_data)))
   if (is.null(by)) {
-    wtd_ests <- survey::svymean(as.formula(paste0(c('~',outcome), collapse = "")), design = svy_dsn)
+    wtd_ests <- survey::svymean(stats::as.formula(paste0(c('~',outcome), collapse = "")), design = svy_dsn)
     wtd_ests <- data.frame(wtd_ests)
     rownames(wtd_ests) <- levels(merged_data[[outcome]])
     wtd_ests <- wtd_ests[seq(2, dim(wtd_ests)[1], 2),]
     colnames(wtd_ests) <- c("mean", "sd")
   } else {
     wtd_ests <- survey::svyby(
-      formula = as.formula(paste0("~",outcome)),
-      by = as.formula(paste0("~", by)),
+      formula = stats::as.formula(paste0("~",outcome)),
+      by = stats::as.formula(paste0("~", by)),
       design = svy_dsn,
       survey::svymean
     )
