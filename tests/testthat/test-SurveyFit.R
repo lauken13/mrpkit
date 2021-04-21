@@ -55,11 +55,14 @@ ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1)
 
 
 #Small data fits for testing purposes:
-
-rstanarm_fit <- rstanarm::stan_glmer(y ~ (1|age1) + (1|gender), data = feline_survey[1:300,],
-                         family = binomial(link = "logit"))
-glmer_fit <- lme4::glmer(y ~ (1|age1) + (1|gender), data = feline_survey,
-                family = binomial(link = "logit"))
+if (!requireNamespace("rstanarm", quietly = TRUE)){
+  rstanarm_fit <- rstanarm::stan_glmer(y ~ (1|age1) + (1|gender), data = feline_survey[1:300,],
+                                       family = binomial(link = "logit"))
+}
+if (!requireNamespace("lme4", quietly = TRUE)){
+  glmer_fit <- lme4::glmer(y ~ (1|age1) + (1|gender), data = feline_survey,
+                  family = binomial(link = "logit"))
+}
 glm_fit <- glm(y ~ age1 + gender, data = feline_survey,
                         family = binomial(link = "logit"))
 lm_fit <- lm(y ~ age1 + gender, data = feline_survey)
@@ -67,6 +70,7 @@ lm_fit <- lm(y ~ age1 + gender, data = feline_survey)
 example_newdata <- feline_survey[sample.int(nrow(feline_survey),150),]
 
 test_that("sim_posterior_epred throws error if not given glmerMod object", {
+  skip_if_not_installed("merTools")
   expect_error(
     sim_posterior_epred(rstanarm_fit,newdata = example_newdata),
     "Object must have class 'glmerMod'."
@@ -89,6 +93,7 @@ test_that("sim_posterior_epred throws error if not given glmerMod object", {
 })
 
 test_that("Error if not fitting a bernoulli/binomial model", {
+  skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
     fun = rstanarm::stan_glmer,
@@ -98,6 +103,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
     ),
     "Currently only binomial and bernoulli models are supported."
   )
+  skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
       fun = lme4::glmer,
@@ -105,6 +111,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
     ),
     "Currently only binomial and bernoulli models are supported."
   )
+  skip_if_not_installed("brms")
   expect_error(
     ex_map$fit(
       fun = brms::brm,
@@ -116,6 +123,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
 })
 
 test_that("Error if data hasn't been mapped yet",{
+  skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
       fun = lme4::glmer,
@@ -124,6 +132,7 @@ test_that("Error if data hasn't been mapped yet",{
     ),
     "Mapped data not found.", fixed = TRUE
   )
+  skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
       fun = rstanarm::stan_glmer,
@@ -132,6 +141,7 @@ test_that("Error if data hasn't been mapped yet",{
     ),
     "Mapped data not found.", fixed = TRUE
   )
+  skip_if_not_installed("brms")
   expect_error(
     ex_map$fit(
       fun = brms::brm,
@@ -146,6 +156,7 @@ test_that("Error if data hasn't been mapped yet",{
 ex_map$mapping()
 
 test_that("Error if poststrat matrix hasn't been created yet",{
+  skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
       fun = lme4::glmer,
@@ -154,6 +165,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
     ),
     "Post-stratification data not found.", fixed = TRUE
   )
+  skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
       fun = rstanarm::stan_glmer,
@@ -162,6 +174,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
     ),
     "Post-stratification data not found.", fixed = TRUE
   )
+  skip_if_not_installed("brms")
   expect_error(
     ex_map$fit(
       fun = brms::brm,
@@ -173,6 +186,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
 })
 
 test_that("Error if data is given as input",{
+  skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
       fun = lme4::glmer,
@@ -182,6 +196,7 @@ test_that("Error if data is given as input",{
     ),
     "The 'data' argument should not be specified.", fixed = TRUE
   )
+  skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
       fun = rstanarm::stan_glmer,
@@ -191,6 +206,7 @@ test_that("Error if data is given as input",{
     ),
     "The 'data' argument should not be specified.", fixed = TRUE
   )
+  skip_if_not_installed("brms")
   expect_error(
     ex_map$fit(
       fun = brms::brm,
@@ -205,6 +221,7 @@ test_that("Error if data is given as input",{
 ex_map$tabulate() # Use all variables in the map
 
 test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ",{
+  skip_if_not_installed("dbarts")
   expect_warning(
     ex_map$fit(
       fun = dbarts::dbarts,
