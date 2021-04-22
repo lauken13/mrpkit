@@ -108,32 +108,31 @@ SurveyFit <- R6::R6Class(
         fun(fitted_model, poststrat, ...)
       }
     },
-    aggregate = function(poststrat_fit, by = NULL) {
+    aggregate = function(poststrat_probs, by = NULL) {
       poststrat <- private$map_$poststrat_data()
       if (!is.null(by)) {
         if (length(by) != 1) {
           stop("Currently only one variable can be named in 'by'.", call. = FALSE)
         }
         rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, by])
-        posterior_preds <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_fit), value = NA)
-        colnames(posterior_preds)[1] <- by
+        out <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_probs), value = NA)
+        colnames(out)[1] <- by
         for (focus_level in rotate_levels){
           level_loc <- poststrat[by] == focus_level
-          posterior_preds[posterior_preds[by] == focus_level, "value"] <-
-            apply(poststrat_fit[level_loc, ], 2, function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+          out[out[by] == focus_level, "value"] <-
+            apply(poststrat_probs[level_loc, ], 2, function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
         }
       } else {
-        posterior_preds <-
-          data.frame(value = apply(poststrat_fit, 2, function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
+        out <- data.frame(value = apply(poststrat_probs, 2, function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
       }
-      posterior_preds
+      out
     },
-    visify = function(sae_preds, weights = TRUE) {
-      if (dim(sae_preds)[2] > 2){
-        focus_var <- colnames(sae_preds)[1]
+    visify = function(estimates, weights = TRUE) {
+      if (dim(estimates)[2] > 2){
+        focus_var <- colnames(estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$samp_obj()$questions()[[which_q]]
-        gg <- ggplot2::ggplot(sae_preds) +
+        gg <- ggplot2::ggplot(estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
           ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -142,7 +141,7 @@ SurveyFit <- R6::R6Class(
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
         svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
-        gg <- ggplot2::ggplot(sae_preds) +
+        gg <- ggplot2::ggplot(estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
           ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
           ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -153,8 +152,8 @@ SurveyFit <- R6::R6Class(
       if (weights) {
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
-        if (dim(sae_preds)[2] > 2) {
-          by_var <- colnames(sae_preds)[1]
+        if (dim(estimates)[2] > 2) {
+          by_var <- colnames(estimates)[1]
           wtd_ests <- create_wtd_ests(self, lhs_var, by=by_var)
           gg <- gg +
             ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
