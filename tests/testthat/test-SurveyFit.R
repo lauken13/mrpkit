@@ -51,7 +51,7 @@ q3 <- SurveyQuestion$new(
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
-ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1)
+ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
 
 
 # Small data fits for testing purposes:
@@ -62,6 +62,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)){
                          family = binomial(link = "logit"),
                          refresh = 0, iter = 500, chains = 2)
   )
+
 }
 if (requireNamespace("lme4", quietly = TRUE)){
   glmer_fit <- lme4::glmer(y ~ (1|age1) + (1|gender), data = feline_survey,
@@ -226,6 +227,7 @@ test_that("Error if data is given as input",{
 
 ex_map$tabulate() # Use all variables in the map
 
+
 test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ",{
   expect_warning(
     ex_map$fit(
@@ -237,4 +239,83 @@ test_that("Warning is given if fitting using packages that are not lme4, brms, r
   )
 })
 
-#TODO add a check for poststrat data in predictify
+test_that("Model fits do not cause errors ",{
+  skip_if_not_installed("rstanarm")
+    expect_error(rstanarm_fit <- ex_map$fit(
+      fun = rstanarm::stan_glmer,
+      formula = y ~ (1|age) + (1|gender),
+      refresh = 100,
+      cores = 2,
+      family = binomial(link = "logit")
+    ), regexp = NA)
+
+  skip_if_not_installed("lme4")
+    expect_error(lme4_fit <- ex_map$fit(
+      fun = lme4::glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link = "logit")
+    ), regexp = NA)
+
+  skip_if_not_installed("brms")
+    expect_error(brms_fit <- ex_map$fit(
+      fun = brms::brm,
+      formula = y ~ (1|age) + (1|gender),
+      refresh = 100,
+      cores = 2,
+      family = binomial(),
+      backend = "cmdstanr"
+    ), regexp = NA)
+})
+
+test_that("Predictify runs without errors",{
+  skip_if_not_installed("rstanarm")
+  expect_error(poststrat_preds_rstanarm <-
+                 rstanarm_fit$predictify(),
+               regexp = NA)
+
+  skip_if_not_installed("lme4")
+  expect_error(poststrat_preds_lme4 <-
+                 lme4_fit$predictify(),
+               regexp = NA)
+
+  skip_if_not_installed("brms")
+  expect_error(poststrat_preds_brms <-
+                 brms_fit$predictify(),
+               regexp = NA)
+})
+
+test_that("Aggregate runs without errors",{
+  skip_if_not_installed("rstanarm")
+  expect_error(popn_ests_rstanarm <-
+               rstanarm_fit$aggregate(poststrat_preds_rstanarm),
+               regexp = NA)
+
+
+  skip_if_not_installed("lme4")
+  expect_error(popn_ests_lme4 <-
+               lme4_fit$aggregate(poststrat_preds_lme4),
+               regexp = NA)
+
+  skip_if_not_installed("brms")
+  expect_error(popn_ests_brms <-
+               brms_fit$aggregate(poststrat_preds_brms),
+               regexp = NA)
+
+})
+
+test_that("Populations are within acceptable tolerance of previous runs (+/- 2% points)",{
+  skip_if_not_installed("rstanarm")
+  expect_lt(mean(popn_ests_rstanarm$value), .72 + .02)
+  expect_gt(mean(popn_ests_rstanarm$value), .72 - .02)
+
+  skip_if_not_installed("lme4")
+  #Benchmark to a run from previous, so different benchmark values
+  expect_lt(mean(popn_ests_lme4$value), .68 + .02)
+  expect_gt(mean(popn_ests_lme4$value), .68 - .02)
+
+  skip_if_not_installed("brms")
+  #Benchmark to a run from previous, so different benchmark values
+  expect_lt(mean(popn_ests_brms$value), .85 + .02)
+  expect_gt(mean(popn_ests_brms$value), .85 - .02)
+}
+
