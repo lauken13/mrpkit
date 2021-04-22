@@ -54,6 +54,41 @@ q3 <- SurveyQuestion$new(
 ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
 
 
+
+test_that("Error if predictor vars not included in poststrat matrix",{
+  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1)
+  ex_map1$mapping()
+  ex_map1$tabulate()
+  skip_if_not_installed("lme4")
+  expect_error(
+    ex_map1$fit(
+      fun = lme4::glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Predictor variables not known in population.", fixed = TRUE
+  )
+  skip_if_not_installed("rstanarm")
+  expect_error(
+    ex_map1$fit(
+      fun = rstanarm::stan_glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Predictor variables not known in population.", fixed = TRUE
+  )
+  skip_if_not_installed("brms")
+  expect_error(
+    ex_map1$fit(
+      fun = brms::brm,
+      formula = y ~ (1|age) + (1|gender),
+      family = binomial(link="logit")
+    ),
+    "Predictor variables not known in population.", fixed = TRUE
+  )
+})
+
+
 # Small data fits for testing purposes:
 if (requireNamespace("rstanarm", quietly = TRUE)){
   rstanarm_fit <- suppressWarnings(

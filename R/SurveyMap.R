@@ -420,7 +420,7 @@ SurveyMap <- R6::R6Class(
       #check to make sure that the predictor vars are in poststrat data
       rhs_vars <- all.vars(formula[-2])
       if(sum(!rhs_vars %in% colnames(private$poststrat_data_))){
-        stop("Predictor variables not known in population.",
+        stop("Predictor variables not known in population. ",
              "Please ensure all predictor variables are mapped from sample to population.",
              call. = FALSE)
       }
