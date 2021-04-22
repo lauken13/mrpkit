@@ -411,6 +411,19 @@ SurveyMap <- R6::R6Class(
 
       formula <- as.formula(formula)
       mapped_data <- private$samp_obj_$mapped_data()
+      rhs_vars <- all.vars(formula[-2])
+      lhs_vars <- all.vars(update(formula, "~0"))
+
+      if(sum(!rhs_vars %in% colnames(mapped_data))){
+        stop("Not all variables available in the data. ",
+             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], sep = ', ')),
+             call. = FALSE)
+      }
+      if(sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))){
+        stop("Outcome variable not present in data. ",
+             call. = FALSE)
+      }
+
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
       y_and_x <- private$samp_obj_$survey_data()[, need_vars, drop = FALSE]
 
@@ -418,10 +431,10 @@ SurveyMap <- R6::R6Class(
       args$data <- cbind(mapped_data, y_and_x)
 
       #check to make sure that the predictor vars are in poststrat data
-      rhs_vars <- all.vars(formula[-2])
       if(sum(!rhs_vars %in% colnames(private$poststrat_data_))){
         stop("Predictor variables not known in population. ",
-             "Please ensure all predictor variables are mapped from sample to population.",
+             "Please ensure all predictor variables are mapped from sample to population. ",
+             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], sep = ', ')),
              call. = FALSE)
       }
 
