@@ -243,7 +243,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-aggregate}{}}}
 \subsection{Method \code{aggregate()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_probs, by = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_estimates, by = NULL)}\if{html}{\out{</div>}}
 }
 
 }
@@ -252,7 +252,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-visify}{}}}
 \subsection{Method \code{visify()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(estimates, weights = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
