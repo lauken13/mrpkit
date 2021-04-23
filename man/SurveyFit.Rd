@@ -218,15 +218,13 @@ Use fitted model to add predicted probabilities to post-stratification dataset.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{fun}}{The function to use to generate the predicted probabilities.
-This should only be specified if using a custom function, otherwise for
-\pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
-automatically used (with the result transposed) and for \pkg{lme4}
-models the \code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom
-function then the first argument should take in the fitted model object
-and the second argument should take in the poststratification
-(\code{newdata}) data frame. The function must return a matrix with rows
-corresponding to the columns of the poststratification data and columns
-corresponding to simulations.}
+This should only be specified if using a custom model fitting function.
+For models fit using \pkg{rstanarm}, \pkg{brms}, or \pkg{lme4}, \code{fun}
+is handled automatically. If \code{fun} is a custom function then the first
+argument should take in the fitted model object and the second argument
+should take in the poststratification (\code{newdata}) data frame. The
+function must return a matrix with rows corresponding to the columns of
+the poststratification data and columns corresponding to simulations.}
 
 \item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
 to pass to \code{fun}.}
