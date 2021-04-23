@@ -56,7 +56,7 @@ ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
 
 
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1)
+  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
   ex_map1$mapping()
   ex_map1$tabulate()
   skip_if_not_installed("lme4")
@@ -415,5 +415,5 @@ test_that("Populations are within acceptable tolerance of previous runs (+/- 2% 
   #Benchmark to a run from previous, so different benchmark values
   expect_lt(mean(popn_ests_brms$value), .85 + .02)
   expect_gt(mean(popn_ests_brms$value), .85 - .02)
-}
+})
 
