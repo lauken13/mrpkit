@@ -79,3 +79,47 @@ test_that("add() errors if name already exists", {
     "Survey label 'age' already defined"
   )
 })
+
+test_that("validate creates correct levels (example1)", {
+  samp_obj <- SurveyData$new(
+    data = data.frame(age1 = factor(rep(c("18-25","26-45","46+"),10)),
+                      y = rbinom(30,1,.5)),
+    questions = list(
+      age1 = "Please identify your age group",
+      y = "Response"
+    ),
+    responses = list(
+      age1 = c("18-25","26-45","46+"),
+      y = c("no","yes")
+    ),
+    weights = rnorm(30,0,1),
+    design = formula("~.")
+  )
+
+  popn_obj <- SurveyData$new(
+    data = data.frame(age2 = factor(rep(c("18-45","46+"),50))),
+    questions = list(
+      age2 = "Which age group are you?"
+    ),
+    responses = list(
+      age2 = c("18-45","46+")
+    ),
+    weights = rnorm(100,0,1),
+    design = formula("~.")
+  )
+
+  q1 <- SurveyQuestion$new(
+    name = "age",
+    col_names = c("age1","age2"),
+    values_map = list(
+      "18-25" = "18-45", "26-45" = "18-45","46+" = "46+")
+  )
+  expect_silent(ex_mapping1 <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_mapping1$validate()
+  ex_mapping1$mapping()
+  expect_setequal(ex_mapping1$.__enclos_env__$private$samp_obj_$mapped_data()$age,
+                  c('18-45', "46+"))
+  expect_setequal(ex_mapping1$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+                  c('18-45', "46+"))
+})
+
