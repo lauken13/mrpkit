@@ -391,22 +391,22 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (dim(private$samp_obj_$mapped_data())[2]==1) {
-        #Mapped data is created with just a .key column in the SurveyData obj
+      if (identical(colnames(private$samp_obj_$mapped_data()), ".key")) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
       }
-      if (nrow(private$poststrat_data_)==0) {
+      if (nrow(private$poststrat_data_) == 0) {
         stop("Post-stratification data not found. ",
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
       }
-      admin_package = as.character(getNamespaceName(environment(fun)))
-      if(!any(admin_package %in% c("lme4","brms","rstanarm"))){
+
+      admin_package <- as.character(getNamespaceName(environment(fun)))
+      if (!any(admin_package %in% c("lme4","brms","rstanarm"))){
         warning("Only rstanarm, brms and lme4 are supported natively. ",
-        "Other modelling tools will need a custom predictify method.",
-             call. = FALSE)
+                "Other modelling tools will need a custom predictify method.",
+                call. = FALSE)
       }
 
       formula <- as.formula(formula)
@@ -414,30 +414,26 @@ SurveyMap <- R6::R6Class(
       rhs_vars <- all.vars(formula[-2])
       lhs_vars <- all.vars(update(formula, "~0"))
 
-      if(sum(!rhs_vars %in% colnames(mapped_data))){
+      if (sum(!rhs_vars %in% colnames(mapped_data))) {
         stop("Not all variables available in the data. ",
-             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], sep = ', ')),
+             paste("Missing vars: ", paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
              call. = FALSE)
       }
-      if(sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))){
+      if (sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))) {
         stop("Outcome variable not present in data. ",
+             call. = FALSE)
+      }
+      if (sum(!rhs_vars %in% colnames(private$poststrat_data_))) {
+        stop("Predictor variables not known in population. ",
+             "Please ensure all predictor variables are mapped from sample to population. ",
+             paste("Missing vars:", paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], collapse = ', ')),
              call. = FALSE)
       }
 
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
       y_and_x <- private$samp_obj_$survey_data()[, need_vars, drop = FALSE]
-
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
-
-      #check to make sure that the predictor vars are in poststrat data
-      if(sum(!rhs_vars %in% colnames(private$poststrat_data_))){
-        stop("Predictor variables not known in population. ",
-             "Please ensure all predictor variables are mapped from sample to population. ",
-             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], sep = ', ')),
-             call. = FALSE)
-      }
-
       fit <- do.call(fun, args)
       SurveyFit$new(fit = fit, map = self)
     },
