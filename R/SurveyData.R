@@ -132,6 +132,7 @@ SurveyData <- R6::R6Class(
         n_questions = function() length(private$questions_),
 
         #' @description Print a summary of the survey data
+        #' @param ... Currently ignored.
         print = function(...) {
             cat("Survey with",
                 self$n_obs(), "observations,",
@@ -143,10 +144,18 @@ SurveyData <- R6::R6Class(
             invisible(self)
         },
 
+        #' @description Add a column to the sample data. This is primarily
+        #'   intended for internal use but may occasionally be useful.
+        #' @param name,value The name of the new variable (a string) and the
+        #' vector of values to add to the data frame.
         add_survey_data_column = function(name, value) {
             private$survey_data_[[name]] <- value
             invisible(self)
         },
+        #' @description Add a column to the mapped data. This is primarily
+        #'   intended for internal use but may occasionally be useful.
+        #' @param name,value The name of the new variable (a string) and the
+        #' vector of values to add to the data frame.
         add_mapped_data_column = function(name, value) {
             if (ncol(private$mapped_data_)  == 0) {
                 private$mapped_data_ <- data.frame(value)
@@ -156,6 +165,11 @@ SurveyData <- R6::R6Class(
             }
             invisible(self)
         },
+
+        #' @description Access the data frame containing the sample data.
+        #' @param key Should the `.key` column be included? This column just
+        #'   indicates the original order of the rows and is primarily intended
+        #'   for internal use.
         survey_data = function(key = TRUE) {
             if (key) {
                 private$survey_data_
@@ -163,6 +177,11 @@ SurveyData <- R6::R6Class(
                 private$survey_data_[, colnames(private$survey_data_) != ".key", drop = FALSE]
             }
         },
+
+        #' @description Access the data frame containing the mapped data.
+        #' @param key Should the `.key` column be included? This column just
+        #'   indicates the original order of the rows and is primarily intended
+        #'   for internal use.
         mapped_data = function(key = TRUE) {
             if (key) {
                 private$mapped_data_
@@ -170,9 +189,14 @@ SurveyData <- R6::R6Class(
                 private$mapped_data_[, colnames(private$mapped_data_) != ".key", drop = FALSE]
             }
         },
+
+        #' @description Access the list of survey questions
         questions = function() private$questions_,
+        #' @description Access the list of allowed survey responses
         responses = function() private$responses_,
+        #' @description Access the survey weights
         weights = function() private$weights_,
+        #' @description Access the survey design
         design = function() private$design_
     )
 )
