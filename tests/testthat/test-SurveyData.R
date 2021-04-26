@@ -42,3 +42,27 @@ test_that("error if unequal number of questions and responses", {
     "Mismatch between number of survey questions and responses"
   )
 })
+
+
+test_that("error if unmatch response and levels in data", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(gender = "Please select your gender"),
+      responses = list(gender = c("male", "female"))
+    ),
+    "?? the error in SurveyData.R haven't been specified?"
+  )
+})
+
+
+test_that("error if unmatch names of question and responses", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(gender = "Please select your gender"),
+      responses = list(sex = list(levels(feline_survey$gender)))
+    ),
+    "Names in 'questions' and 'responses' lists must be the same."
+  )
+})
