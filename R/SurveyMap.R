@@ -391,13 +391,12 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (dim(private$samp_obj_$mapped_data())[2]==1) {
-        #Mapped data is created with just a .key column in the SurveyData obj
+      if (identical(colnames(private$samp_obj_$mapped_data()), ".key")) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
       }
-      if (nrow(private$poststrat_data_)==0) {
+      if (nrow(private$poststrat_data_) == 0) {
         stop("Post-stratification data not found. ",
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
@@ -417,7 +416,7 @@ SurveyMap <- R6::R6Class(
 
       if (sum(!rhs_vars %in% colnames(mapped_data))) {
         stop("Not all variables available in the data. ",
-             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
+             paste("Missing vars: ", paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
              call. = FALSE)
       }
       if (sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))) {
