@@ -414,9 +414,9 @@ SurveyMap <- R6::R6Class(
       rhs_vars <- all.vars(formula[-2])
       lhs_vars <- all.vars(update(formula, "~0"))
 
-      if(sum(!rhs_vars %in% colnames(mapped_data))){
+      if (sum(!rhs_vars %in% colnames(mapped_data))) {
         stop("Not all variables available in the data. ",
-             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], sep = ', ')),
+             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
              call. = FALSE)
       }
       if(sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))){
