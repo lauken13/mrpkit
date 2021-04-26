@@ -402,11 +402,12 @@ SurveyMap <- R6::R6Class(
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
       }
-      admin_package = as.character(getNamespaceName(environment(fun)))
-      if(!any(admin_package %in% c("lme4","brms","rstanarm"))){
+
+      admin_package <- as.character(getNamespaceName(environment(fun)))
+      if (!any(admin_package %in% c("lme4","brms","rstanarm"))){
         warning("Only rstanarm, brms and lme4 are supported natively. ",
-        "Other modelling tools will need a custom predictify method.",
-             call. = FALSE)
+                "Other modelling tools will need a custom predictify method.",
+                call. = FALSE)
       }
 
       formula <- as.formula(formula)
@@ -419,25 +420,21 @@ SurveyMap <- R6::R6Class(
              paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
              call. = FALSE)
       }
-      if(sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))){
+      if (sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))) {
         stop("Outcome variable not present in data. ",
+             call. = FALSE)
+      }
+      if (sum(!rhs_vars %in% colnames(private$poststrat_data_))) {
+        stop("Predictor variables not known in population. ",
+             "Please ensure all predictor variables are mapped from sample to population. ",
+             paste("Missing vars:", paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], collapse = ', ')),
              call. = FALSE)
       }
 
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
       y_and_x <- private$samp_obj_$survey_data()[, need_vars, drop = FALSE]
-
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
-
-      #check to make sure that the predictor vars are in poststrat data
-      if(sum(!rhs_vars %in% colnames(private$poststrat_data_))){
-        stop("Predictor variables not known in population. ",
-             "Please ensure all predictor variables are mapped from sample to population. ",
-             paste("Missing vars: ",paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], sep = ', ')),
-             call. = FALSE)
-      }
-
       fit <- do.call(fun, args)
       SurveyFit$new(fit = fit, map = self)
     },
