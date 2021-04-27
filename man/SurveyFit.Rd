@@ -4,7 +4,7 @@
 \alias{SurveyFit}
 \title{SurveyFit}
 \description{
-An \link[R6:R6Class]{R6} SurveyFit object stores a fitted model
+An \link[R6:R6Class]{R6} \code{SurveyFit} object stores a fitted model
 object and provides methods for generating predicted probabilities for all
 poststrat cells, generating population and group estimates, and visualizing
 results.
@@ -155,10 +155,22 @@ fit_1$visify(estimates_popn)
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Create a new \code{SurveyFit} object. This method is called
+internally by the \verb{$fit()} method of the \code{\link{SurveyMap}} object and does
+not need to be called directly by the user.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$new(fit, map)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{fit}}{A fitted model object.}
+
+\item{\code{map}}{A \code{\link{SurveyMap}} object.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-fit"></a>}}
@@ -169,9 +181,6 @@ Access the fitted model object
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$fit()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-The fitted model object.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-map"></a>}}
@@ -182,9 +191,6 @@ Access the SurveyMap object
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$map()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-The \link{SurveyMap} object.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
