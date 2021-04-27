@@ -173,6 +173,7 @@ SurveyMap <- R6::R6Class(
     },
 
     #' @description Print a summary of the mapping.
+    #' @param ... Currently ignored.
     print = function(...) {
       if (length(private$item_map_) > 0) {
         for (i in 1:length(private$item_map_)) {
@@ -193,6 +194,7 @@ SurveyMap <- R6::R6Class(
     },
 
     #' @description Add new [SurveyQuestion]s.
+    #' @param ... The [SurveyQuestion]s to add.
     add = function(...) {
       dots <- list(...)
       for (i in 1:length(dots)) {

@@ -191,6 +191,13 @@ Print a summary of the mapping.
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$print(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Currently ignored.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-add"></a>}}
@@ -201,6 +208,13 @@ Add new \link{SurveyQuestion}s.
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$add(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{The \link{SurveyQuestion}s to add.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-delete"></a>}}

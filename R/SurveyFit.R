@@ -2,11 +2,12 @@
 #'
 #' @name SurveyFit
 #' @export
-#' @description An [R6][R6::R6Class] SurveyFit object stores a fitted model
+#' @description An [R6][R6::R6Class] `SurveyFit` object stores a fitted model
 #'   object and provides methods for generating predicted probabilities for all
 #'   poststrat cells, generating population and group estimates, and visualizing
 #'   results.
 #' @inherit SurveyMap examples
+#'
 SurveyFit <- R6::R6Class(
   classname = "SurveyFit",
   private = list(
@@ -14,6 +15,12 @@ SurveyFit <- R6::R6Class(
     fit_ = NULL
   ),
   public = list(
+
+    #' @description Create a new `SurveyFit` object. This method is called
+    #'   internally by the `$fit()` method of the [`SurveyMap`] object and does
+    #'   not need to be called directly by the user.
+    #' @param fit A fitted model object.
+    #' @param map A [`SurveyMap`] object.
     initialize = function(fit, map) {
       private$fit_ <- fit
       private$map_ <- map
@@ -21,13 +28,11 @@ SurveyFit <- R6::R6Class(
     },
 
     #' @description Access the fitted model object
-    #' @return The fitted model object.
     fit = function() {
       private$fit_
     },
 
     #' @description Access the SurveyMap object
-    #' @return The [SurveyMap] object.
     map = function() {
       private$map_
     },
