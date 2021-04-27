@@ -118,26 +118,24 @@ fit_2 <- ex_map$fit(
 
 # predicted probabilities
 # returns matrix with rows for poststrat cells, cols for posterior draws
-poststrat_fit <- fit_1$predictify()
+poststrat_estimates <- fit_1$predictify()
 
 # estimates by age level
-preds_by_age <- fit_1$aggregate(poststrat_fit, by = "age")
-head(preds_by_age)
-preds_by_age \%>\%
+estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+head(estimates_by_age)
+estimates_by_age \%>\%
   group_by(age) \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
 # plot estimates by age
-plot_by_age <- fit_1$visify(preds_by_age)
-plot_by_age
+fit_1$visify(estimates_by_age)
 
 # population estimate
-preds_popn <- fit_1$aggregate(poststrat_fit)
-mean(preds_popn$value)
+estimates_popn <- fit_1$aggregate(poststrat_estimates)
+mean(estimates_popn$value)
 
 # plot population estimate
-plot_popn <- fit_1$visify(preds_popn)
-plot_popn
+fit_1$visify(estimates_popn)
 
 }
 \section{Methods}{
@@ -218,15 +216,13 @@ Use fitted model to add predicted probabilities to post-stratification dataset.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{fun}}{The function to use to generate the predicted probabilities.
-This should only be specified if using a custom function, otherwise for
-\pkg{rstanarm} and \pkg{brms} models \code{posterior_epred()} is
-automatically used (with the result transposed) and for \pkg{lme4}
-models the \code{\link[=sim_posterior_epred]{sim_posterior_epred()}} is used. If \code{fun} is a custom
-function then the first argument should take in the fitted model object
-and the second argument should take in the poststratification
-(\code{newdata}) data frame. The function must return a matrix with rows
-corresponding to the columns of the poststratification data and columns
-corresponding to simulations.}
+This should only be specified if using a custom model fitting function.
+For models fit using \pkg{rstanarm}, \pkg{brms}, or \pkg{lme4}, \code{fun}
+is handled automatically. If \code{fun} is a custom function then the first
+argument should take in the fitted model object and the second argument
+should take in the poststratification (\code{newdata}) data frame. The
+function must return a matrix with rows corresponding to the columns of
+the poststratification data and columns corresponding to simulations.}
 
 \item{\code{...}}{Arguments other than the fitted model and \code{newdata} data frame
 to pass to \code{fun}.}
@@ -243,7 +239,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-aggregate}{}}}
 \subsection{Method \code{aggregate()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_fit, by = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_estimates, by = NULL)}\if{html}{\out{</div>}}
 }
 
 }
@@ -252,7 +248,7 @@ corresponding to posterior samples.
 \if{latex}{\out{\hypertarget{method-visify}{}}}
 \subsection{Method \code{visify()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(sae_preds, weights = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
 }
 
 }

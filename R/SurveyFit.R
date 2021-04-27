@@ -41,15 +41,13 @@ SurveyFit <- R6::R6Class(
 
     #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
     #' @param fun The function to use to generate the predicted probabilities.
-    #'   This should only be specified if using a custom function, otherwise for
-    #'   \pkg{rstanarm} and \pkg{brms} models `posterior_epred()` is
-    #'   automatically used (with the result transposed) and for \pkg{lme4}
-    #'   models the [sim_posterior_epred()] is used. If `fun` is a custom
-    #'   function then the first argument should take in the fitted model object
-    #'   and the second argument should take in the poststratification
-    #'   (`newdata`) data frame. The function must return a matrix with rows
-    #'   corresponding to the columns of the poststratification data and columns
-    #'   corresponding to simulations.
+    #'   This should only be specified if using a custom model fitting function.
+    #'   For models fit using \pkg{rstanarm}, \pkg{brms}, or \pkg{lme4}, `fun`
+    #'   is handled automatically. If `fun` is a custom function then the first
+    #'   argument should take in the fitted model object and the second argument
+    #'   should take in the poststratification (`newdata`) data frame. The
+    #'   function must return a matrix with rows corresponding to the columns of
+    #'   the poststratification data and columns corresponding to simulations.
     #' @param ... Arguments other than the fitted model and `newdata` data frame
     #'   to pass to `fun`.
     #' @return A matrix with rows corresponding to poststrat cells and columns
@@ -72,11 +70,12 @@ SurveyFit <- R6::R6Class(
         if ("stanreg" %in% class(private$fit_)){
           require_suggested_package("rstanarm", "2.21.0")
           return(
-            t(rstanarm::posterior_epred(
+            t(suppressMessages(rstanarm::posterior_linpred(
               object = private$fit_,
               newdata = poststrat,
+              transform = TRUE,
               ...
-            ))
+            )))
           )
         }
         if ("brmsfit" %in% class(private$fit_)){
@@ -85,10 +84,11 @@ SurveyFit <- R6::R6Class(
             t(brms::posterior_epred(
               object = private$fit_,
               newdata = poststrat,
+              dpar = "mu",
               allow_new_levels = TRUE,
               sample_new_levels =
                 if (!is.null(args$sample_new_levels)) args$sample_new_levels
-              else "gaussian",
+                else "gaussian",
               ...
             ))
           )
@@ -108,32 +108,31 @@ SurveyFit <- R6::R6Class(
         fun(fitted_model, poststrat, ...)
       }
     },
-    aggregate = function(poststrat_fit, by = NULL) {
-      poststrat <- private$map_$poststrat_data()
+    aggregate = function(poststrat_estimates, by = NULL) {
+      poststrat_data <- private$map_$poststrat_data()
       if (!is.null(by)) {
         if (length(by) != 1) {
           stop("Currently only one variable can be named in 'by'.", call. = FALSE)
         }
         rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, by])
-        posterior_preds <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_fit), value = NA)
-        colnames(posterior_preds)[1] <- by
+        out <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_estimates), value = NA)
+        colnames(out)[1] <- by
         for (focus_level in rotate_levels){
-          level_loc <- poststrat[by] == focus_level
-          posterior_preds[posterior_preds[by] == focus_level, "value"] <-
-            apply(poststrat_fit[level_loc, ], 2, function(x) sum(poststrat$N_j[level_loc]*x)/sum(poststrat$N_j[level_loc]))
+          level_loc <- poststrat_data[by] == focus_level
+          out[out[by] == focus_level, "value"] <-
+            apply(poststrat_estimates[level_loc, ], 2, function(x) sum(poststrat_data$N_j[level_loc]*x)/sum(poststrat_data$N_j[level_loc]))
         }
       } else {
-        posterior_preds <-
-          data.frame(value = apply(poststrat_fit, 2, function(x) sum(poststrat$N_j*x)/sum(poststrat$N_j)))
+        out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }
-      posterior_preds
+      out
     },
-    visify = function(sae_preds, weights = TRUE) {
-      if (dim(sae_preds)[2] > 2){
-        focus_var <- colnames(sae_preds)[1]
+    visify = function(aggregated_estimates, weights = TRUE) {
+      if (dim(aggregated_estimates)[2] > 2){
+        focus_var <- colnames(aggregated_estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$samp_obj()$questions()[[which_q]]
-        gg <- ggplot2::ggplot(sae_preds) +
+        gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
           ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -142,7 +141,7 @@ SurveyFit <- R6::R6Class(
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
         svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
-        gg <- ggplot2::ggplot(sae_preds) +
+        gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
           ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
           ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -153,8 +152,8 @@ SurveyFit <- R6::R6Class(
       if (weights) {
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
-        if (dim(sae_preds)[2] > 2) {
-          by_var <- colnames(sae_preds)[1]
+        if (dim(aggregated_estimates)[2] > 2) {
+          by_var <- colnames(aggregated_estimates)[1]
           wtd_ests <- create_wtd_ests(self, lhs_var, by=by_var)
           gg <- gg +
             ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
