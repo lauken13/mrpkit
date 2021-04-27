@@ -1,8 +1,72 @@
-# initialize() not done
-# feline_prefs$add_mapped_data_column() not done
-# feline_prefs$add_survey_data_column() not done
-# feline_prefs$design() not done
 
+test_that("error thrown if weights have NAs", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(age1 = "Please identify your age group"),
+      responses = list(age1 = levels(feline_survey$age1)),
+      weights = rep(NA, nrow(feline_survey))
+    ),
+    "NAs not allowed in weights"
+  )
+})
+
+test_that("error thrown if length(weights) != nrow(data)", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(age1 = "Please identify your age group"),
+      responses = list(age1 = levels(feline_survey$age1)),
+      weights = 1:3
+    ),
+    "Mismatch between number of data rows and number of weights"
+  )
+})
+
+test_that("error if duplicate question names", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(age1 = "Please identify your age group", age1 = "ABC"),
+      responses = list(age1 = levels(feline_survey$age1), age1 = "ABC")
+    ),
+    "Names in 'questions' must be unique"
+  )
+})
+
+test_that("error if unequal number of questions and responses", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(age1 = "Please identify your age group")
+    ),
+    "Mismatch between number of survey questions and responses"
+  )
+})
+
+
+test_that("error if unmatched response and levels in data", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(gender = "Please select your gender"),
+      responses = list(gender = c("male", "female"))
+    ),
+    "?? the error in SurveyData.R haven't been specified?"
+  )
+})
+
+
+test_that("error if unmatched names of question and responses", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(gender = "Please select your gender"),
+      responses = list(sex = list(levels(feline_survey$gender)))
+    ),
+    "Names in 'questions' and 'responses' lists must be the same."
+  )
+})
 
 feline_prefs <- SurveyData$new(
   data = feline_survey,
@@ -25,7 +89,6 @@ feline_prefs <- SurveyData$new(
 test_that("n_obs is working correctly", {
   expect_equal(feline_prefs$n_obs(), 500)
 })
-
 test_that("n_questions is working correctly", {
   expect_equal(feline_prefs$n_questions(), 4)
 })
@@ -41,7 +104,8 @@ test_that("survey_data is working correctly", {
   expect_equal(as.character(feline_prefs$survey_data()[1,2]), '26-35')
   expect_equal(as.character(feline_prefs$survey_data()[1,4]), 'cat')
   expect_equal(as.character(feline_prefs$survey_data()[1,5]), 'no')
-  expect_error(mwhwhwhwhwhw$survey_data())
+  expect_true(".key" %in% colnames(feline_prefs$survey_data()))
+  expect_false(".key" %in% colnames(feline_prefs$survey_data(key = FALSE)))
 })
 
 test_that("responses is working correctly", {
@@ -67,5 +131,3 @@ test_that("clone is working correctly", {
   expect_equal(twins$mapped_data()$.key[1], 1)
   expect_equal(twins$mapped_data()$.key[2], 2)
 })
-
-
