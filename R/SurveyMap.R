@@ -121,26 +121,24 @@
 #'
 #' # predicted probabilities
 #' # returns matrix with rows for poststrat cells, cols for posterior draws
-#' poststrat_fit <- fit_1$predictify()
+#' poststrat_estimates <- fit_1$predictify()
 #'
 #' # estimates by age level
-#' preds_by_age <- fit_1$aggregate(poststrat_fit, by = "age")
-#' head(preds_by_age)
-#' preds_by_age %>%
+#' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+#' head(estimates_by_age)
+#' estimates_by_age %>%
 #'   group_by(age) %>%
 #'   summarize(mean = mean(value), sd = sd(value))
 #'
 #' # plot estimates by age
-#' plot_by_age <- fit_1$visify(preds_by_age)
-#' plot_by_age
+#' fit_1$visify(estimates_by_age)
 #'
 #' # population estimate
-#' preds_popn <- fit_1$aggregate(poststrat_fit)
-#' mean(preds_popn$value)
+#' estimates_popn <- fit_1$aggregate(poststrat_estimates)
+#' mean(estimates_popn$value)
 #'
 #' # plot population estimate
-#' plot_popn <- fit_1$visify(preds_popn)
-#' plot_popn
+#' fit_1$visify(estimates_popn)
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
