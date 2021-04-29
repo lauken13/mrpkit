@@ -111,7 +111,7 @@ test_that("survey_data is working correctly", {
 test_that("mapped_data is working correctly", {
   expect_equal(feline_prefs$mapped_data()$.key[1], 1)
   expect_equal(feline_prefs$mapped_data()$.key[2], 2)
-  expect_equal(nrow(feline_prefs$mapped_data(key=FALSE)), 0)
+  expect_equal(ncol(feline_prefs$mapped_data(key=FALSE)), 0)
 })
 
 test_that("responses is working correctly", {
