@@ -108,8 +108,14 @@ test_that("survey_data is working correctly", {
   expect_false(".key" %in% colnames(feline_prefs$survey_data(key = FALSE)))
 })
 
+test_that("mapped_data is working correctly", {
+  expect_equal(feline_prefs$mapped_data()$.key[1], 1)
+  expect_equal(feline_prefs$mapped_data()$.key[2], 2)
+  expect_equal(nrow(feline_prefs$mapped_data(key=FALSE)), 0)
+})
+
 test_that("responses is working correctly", {
-  expect_equal(length(feline_prefs$responses()$gender), 3)
+  expect_equal(feline_prefs$responses()$gender, c("male", "female", "nonbinary"))
 })
 
 test_that("questions is working correctly", {
@@ -121,13 +127,20 @@ test_that("print is working correctly", {
   expect_output(feline_prefs$print(), 'Survey with 500 observations')
 })
 
-test_that("print is working correctly", {
-  expect_equal(feline_prefs$mapped_data()$.key[1], 1)
-  expect_equal(feline_prefs$mapped_data()$.key[2], 2)
-})
-
 test_that("clone is working correctly", {
   twins <- feline_prefs$clone()
   expect_equal(twins$mapped_data()$.key[1], 1)
   expect_equal(twins$mapped_data()$.key[2], 2)
 })
+
+test_that("add_survey_data_column works correctly", {
+  expect_error(
+    feline_prefs$add_survey_data_column("x", 1),
+    "New variable must have same number of observations as the survey data"
+  )
+
+  feline_prefs$add_survey_data_column("x", rep(1, 500))
+  expect_true("x" %in% colnames(feline_prefs$survey_data()))
+})
+
+
