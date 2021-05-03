@@ -53,139 +53,24 @@ q3 <- SurveyQuestion$new(
 )
 ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
 
+ex_map$mapping()
 
-
-test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
-  ex_map1$mapping()
-  ex_map1$tabulate()
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map1$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Predictor variables not known in population.", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map1$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Predictor variables not known in population.", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map1$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Predictor variables not known in population.", fixed = TRUE
-  )
-})
-
-
-
-test_that("Error if vars not included in data",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
-  ex_map1$mapping()
-  ex_map1$tabulate()
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map1$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender) + pineapple,
-      family = binomial(link="logit")
-    ),
-    "Not all variables available in the data.", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map1$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender) +pineapple ,
-      family = binomial(link="logit")
-    ),
-    "Not all variables available in the data. ", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map1$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender) +pineapple,
-      family = binomial(link="logit")
-    ),
-    "Not all variables available in the data.", fixed = TRUE
-  )
-
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map1$fit(
-      fun = lme4::glmer,
-      formula = pineapple ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Outcome variable not present in data. ", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map1$fit(
-      fun = rstanarm::stan_glmer,
-      formula = pineapple ~ (1|age) + (1|gender) ,
-      family = binomial(link="logit")
-    ),
-    "Outcome variable not present in data. ", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map1$fit(
-      fun = brms::brm,
-      formula = pineapple ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Outcome variable not present in data. ", fixed = TRUE
-  )
-})
-
-
-# Small data fits for testing purposes:
-if (requireNamespace("rstanarm", quietly = TRUE)){
-  rstanarm_fit <- suppressWarnings(
-    rstanarm::stan_glmer(y ~ (1|age1) + (1|gender),
-                         data = feline_survey[1:300,],
-                         family = binomial(link = "logit"),
-                         refresh = 0, iter = 500, chains = 2)
-  )
-
-}
-if (requireNamespace("lme4", quietly = TRUE)){
-  glmer_fit <- lme4::glmer(y ~ (1|age1) + (1|gender), data = feline_survey,
-                  family = binomial(link = "logit"))
-}
-glm_fit <- stats::glm(y ~ age1 + gender, data = feline_survey,
-                        family = binomial(link = "logit"))
-lm_fit <- stats::lm(as.numeric(y) ~ age1 + gender, data = feline_survey)
-
-example_newdata <- feline_survey[sample.int(nrow(feline_survey),150),]
+ex_map$tabulate()
 
 test_that("sim_posterior_epred throws error if not given glmerMod object", {
   skip_if_not_installed("merTools")
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("lme4")
   expect_error(
-    sim_posterior_epred(rstanarm_fit,newdata = example_newdata),
+    suppressWarnings(sim_posterior_epred(rstanarm_fit,newdata = example_newdata)),
     "Object must have class 'glmerMod'."
   )
   expect_error(
-    sim_posterior_epred(glm_fit,newdata = example_newdata),
+    suppressWarnings(sim_posterior_epred(glm_fit,newdata = example_newdata)),
     "Object must have class 'glmerMod'."
   )
   expect_error(
-    sim_posterior_epred(lm_fit,newdata = example_newdata),
+    suppressWarnings(sim_posterior_epred(lm_fit,newdata = example_newdata)),
     "Object must have class 'glmerMod'."
   )
   expect_equal(
@@ -197,145 +82,6 @@ test_that("sim_posterior_epred throws error if not given glmerMod object", {
     0)
 })
 
-test_that("Error if not fitting a bernoulli/binomial model", {
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map$fit(
-    fun = rstanarm::stan_glmer,
-    formula = y ~ (1|age) + (1|gender),
-    refresh = 100,
-    cores = 2
-    ),
-    "Currently only binomial and bernoulli models are supported."
-  )
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender)
-    ),
-    "Currently only binomial and bernoulli models are supported."
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender)
-    ),
-    "Currently only binomial and bernoulli models are supported."
-  )
-
-})
-
-test_that("Error if data hasn't been mapped yet",{
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Mapped data not found.", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Mapped data not found.", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Mapped data not found.", fixed = TRUE
-  )
-})
-
-#Create the mapped data
-ex_map$mapping()
-
-test_that("Error if poststrat matrix hasn't been created yet",{
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Post-stratification data not found.", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Post-stratification data not found.", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit")
-    ),
-    "Post-stratification data not found.", fixed = TRUE
-  )
-})
-
-test_that("Error if data is given as input",{
-  skip_if_not_installed("lme4")
-  expect_error(
-    ex_map$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit"),
-      data = feline_survey
-    ),
-    "The 'data' argument should not be specified.", fixed = TRUE
-  )
-  skip_if_not_installed("rstanarm")
-  expect_error(
-    ex_map$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit"),
-      data = feline_survey
-    ),
-    "The 'data' argument should not be specified.", fixed = TRUE
-  )
-  skip_if_not_installed("brms")
-  expect_error(
-    ex_map$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link="logit"),
-      data = feline_survey
-    ),
-    "The 'data' argument should not be specified.", fixed = TRUE
-  )
-})
-
-ex_map$tabulate() # Use all variables in the map
-
-
-test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ",{
-  expect_warning(
-    ex_map$fit(
-      fun = stats::glm,
-      formula = y ~ age + gender,
-      family = "binomial"
-    ),
-    "Only rstanarm, brms and lme4 are supported natively.", fixed = TRUE
-  )
-})
 
 test_that("Model fits do not cause errors ",{
   skip_if_not_installed("rstanarm")
