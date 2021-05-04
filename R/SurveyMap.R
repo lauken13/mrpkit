@@ -355,7 +355,7 @@ SurveyMap <- R6::R6Class(
 
           potential_indices <- dup_labels_samp + dup_labels_popn>0
           if (sum(multiple_collapse[potential_indices]>0)){
-            collapsed_names <- paste0(levels_map_samp[potential_indices], collapse = " + ")
+            collapsed_names <- paste0(unique(levels_map_samp[potential_indices]), collapse = " + ")
             names(new_levels_popn)[potential_indices] <- collapsed_names
             names(new_levels_samp)[potential_indices] <- collapsed_names
           } else{

@@ -334,12 +334,12 @@ test_that("validate creates correct levels (example4)", {
       "A" = "Z", "A" = "Y","B" = "Y","C" = "C",
       "D" = "X","D"="Q","E"="Q")
   )
-  expect_silent(ex_mapping3 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping3$validate()
-  ex_mapping3$mapping()
-  expect_setequal(levels(ex_mapping3$.__enclos_env__$private$samp_obj_$mapped_data()$age),
+  expect_silent(ex_mapping4 <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_mapping4$validate()
+  ex_mapping4$mapping()
+  expect_setequal(levels(ex_mapping4$.__enclos_env__$private$samp_obj_$mapped_data()$age),
                   c("A + B","C","D + E"))
-  expect_setequal(ex_mapping3$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+  expect_setequal(ex_mapping4$.__enclos_env__$private$popn_obj_$mapped_data()$age,
                   c("A + B","C","D + E"))
 })
 
