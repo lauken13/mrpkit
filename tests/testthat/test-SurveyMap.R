@@ -294,9 +294,53 @@ test_that("validate creates correct levels (example3)", {
   ex_mapping3$validate()
   ex_mapping3$mapping()
   expect_setequal(levels(ex_mapping3$.__enclos_env__$private$samp_obj_$mapped_data()$age),
-                  c("18-25","26-30 + 31-40 + 31-40 + 41-55 + 41-55","56+"))
+                  c("18-25","26-30 + 31-40 + 41-55","56+"))
   expect_setequal(ex_mapping3$.__enclos_env__$private$popn_obj_$mapped_data()$age,
-                  c("18-25","26-30 + 31-40 + 31-40 + 41-55 + 41-55","56+"))
+                  c("18-25","26-30 + 31-40 + 41-55","56+"))
+})
+
+test_that("validate creates correct levels (example4)", {
+  samp_obj <- SurveyData$new(
+    data = data.frame(age1 = factor(rep(c("A","A","B","C","D","D","E"),20)),
+                      y = rbinom(140,1,.5)),
+    questions = list(
+      age1 = "Please identify your age group",
+      y = "Response"
+    ),
+    responses = list(
+      age1 = c("A","A","B","C","D","D","E"),
+      y = c("no","yes")
+    ),
+    weights = rnorm(140,0,1),
+    design = formula("~.")
+  )
+
+  popn_obj <- SurveyData$new(
+    data = data.frame(age2 = factor(rep( c("Z","Y","Y","C","X","Q","Q"),40))),
+    questions = list(
+      age2 = "Which age group are you?"
+    ),
+    responses = list(
+      age2 =  c("Z","Y","Y","C","X","Q","Q")
+    ),
+    weights = rnorm(280,0,1),
+    design = formula("~.")
+  )
+
+  q1 <- SurveyQuestion$new(
+    name = "age",
+    col_names = c("age1","age2"),
+    values_map = list(
+      "A" = "Z", "A" = "Y","B" = "Y","C" = "C",
+      "D" = "X","D"="Q","E"="Q")
+  )
+  expect_silent(ex_mapping3 <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_mapping3$validate()
+  ex_mapping3$mapping()
+  expect_setequal(levels(ex_mapping3$.__enclos_env__$private$samp_obj_$mapped_data()$age),
+                  c("A + B","C","D + E"))
+  expect_setequal(ex_mapping3$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+                  c("A + B","C","D + E"))
 })
 
 
