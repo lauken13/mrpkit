@@ -326,6 +326,7 @@ SurveyMap <- R6::R6Class(
         new_varname <- private$item_map_[[j]]$name()
         new_levels_samp <- character(length(levels_map_samp))
         new_levels_popn <- character(length(levels_map_popn))
+        multiple_collapse <- rep(x = FALSE, length(levels_map_samp))
         for (k in 1:length(levels_map_samp)) {
           is_samp_unique <- sum(levels_map_samp %in% levels_map_samp[k]) == 1
           is_popn_unique <- sum(levels_map_popn %in% levels_map_popn[k]) == 1
@@ -341,8 +342,26 @@ SurveyMap <- R6::R6Class(
             names(new_levels_samp)[k] <- as.character(levels_map_samp[k])
             names(new_levels_popn)[k] <- as.character(levels_map_samp[k])
           } else if (!is_samp_unique & !is_popn_unique) {
-            stop("Mapping can only handle many to one mappings.", call. = FALSE)
+            multiple_collapse[k] = TRUE
+            }
+        }
+        if(sum(multiple_collapse)>0){
+
+          dup_labels_popn <- levels_map_popn[duplicated(levels_map_popn)]
+          dup_labels_samp <- levels_map_samp[duplicated(levels_map_samp)]
+
+          dup_labels_samp <- levels_map_samp %in% dup_labels_samp
+          dup_labels_popn <- levels_map_popn %in% dup_labels_popn
+
+          potential_indices <- dup_labels_samp + dup_labels_popn>0
+          if (sum(multiple_collapse[potential_indices]>0)){
+            collapsed_names <- paste0(levels_map_samp[potential_indices], collapse = " + ")
+            names(new_levels_popn)[potential_indices] <- collapsed_names
+            names(new_levels_samp)[potential_indices] <- collapsed_names
+          } else{
+            stop("There is an error with the mapping. Please investigate further.")
           }
+
         }
         private$samp_obj_$add_mapped_data_column(new_varname, forcats::fct_recode(private$samp_obj_$survey_data()[[samp_mapnames]], !!!new_levels_samp))
         private$popn_obj_$add_mapped_data_column(new_varname, forcats::fct_recode(private$popn_obj_$survey_data()[[popn_mapnames]], !!!new_levels_popn))

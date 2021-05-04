@@ -287,16 +287,16 @@ test_that("validate creates correct levels (example3)", {
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
-      "18-25" = "18-25", "26-30" = "26-35","31-40" = "26-35",
+      "18-25" = "18-25", "26-30" = "26-35","31-40" = "26-35","31-40" = "36-45",
       "41-55" = "36-45","41-55"="46-55","56+"="56+")
   )
   expect_silent(ex_mapping3 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping3$validate()
   ex_mapping3$mapping()
   expect_setequal(levels(ex_mapping3$.__enclos_env__$private$samp_obj_$mapped_data()$age),
-                  c('18-25', "26+"))
+                  c("18-25","26-30 + 31-40 + 31-40 + 41-55 + 41-55","56+"))
   expect_setequal(ex_mapping3$.__enclos_env__$private$popn_obj_$mapped_data()$age,
-                  c('18-25', "26+"))
+                  c("18-25","26-30 + 31-40 + 31-40 + 41-55 + 41-55","56+"))
 })
 
 

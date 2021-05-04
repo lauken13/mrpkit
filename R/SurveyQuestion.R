@@ -82,29 +82,6 @@ SurveyQuestion <- R6::R6Class(
         warning("Duplicated values in map, removing duplicates", call. = FALSE)
         private$values_ <- private$values_[!duplicated(private$values_), ]
       }
-      if (sum(duplicated(private$values_[, 2])) > 0 ||
-          sum(duplicated(private$values_[, 1])) > 0) {
-        dup_labels_pop <- which(duplicated(private$values_[, 2]))
-        dup_labels_samp <- which(duplicated(private$values_[, 1]))
-        for (d in dup_labels_pop) {
-          pop_loc_duplicates <- private$values_[, 2] %in% private$values_[d, 2]
-          for (b in dup_labels_samp) {
-            samp_loc_duplicates <- private$values_[, 1] %in% private$values_[b, 1]
-            if (sum(pop_loc_duplicates & samp_loc_duplicates) > 0) {
-              stop("Package can only handle many to one mappings", call. = FALSE)
-            }
-          }
-        }
-        for (b in dup_labels_samp) {
-          samp_loc_duplicates <- private$values_[, 1] %in% private$values_[b, 1]
-          for (d in dup_labels_pop) {
-            pop_loc_duplicates <- private$values_[, 2] %in% private$values_[d, 2]
-            if (sum(pop_loc_duplicates & samp_loc_duplicates) > 0) {
-              stop("Package can only handle many to one mappings", call. = FALSE)
-            }
-          }
-        }
-      }
       names(private$values_) <- col_names
       invisible(self)
     },
