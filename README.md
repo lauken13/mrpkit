@@ -8,6 +8,12 @@ Download and install the package using
 
 and get started in the workflow using the vignette. 
 
-Licensed under an MIT license. See the `LICENSE.md` file.
+### Beta release feedback
 
-Please note the current package is released for alpha testing. We will not ensure backwards compatability until an official release and hope to have additional functionality (visualizations, tutorials on extending the package with other modelling techniques) soon.
+* Help with finding the right method names for the steps in the workflow (e.g., `population_predict`) 
+
+
+
+### License 
+
+Licensed under an MIT license. See the `LICENSE.md` file.

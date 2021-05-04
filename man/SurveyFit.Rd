@@ -118,7 +118,7 @@ fit_2 <- ex_map$fit(
 
 # predicted probabilities
 # returns matrix with rows for poststrat cells, cols for posterior draws
-poststrat_estimates <- fit_1$predictify()
+poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
@@ -128,14 +128,14 @@ estimates_by_age \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
 # plot estimates by age
-fit_1$visify(estimates_by_age)
+fit_1$plot(estimates_by_age)
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 mean(estimates_popn$value)
 
 # plot population estimate
-fit_1$visify(estimates_popn)
+fit_1$plot(estimates_popn)
 
 }
 \section{Methods}{
@@ -145,9 +145,9 @@ fit_1$visify(estimates_popn)
 \item \href{#method-fit}{\code{SurveyFit$fit()}}
 \item \href{#method-map}{\code{SurveyFit$map()}}
 \item \href{#method-print}{\code{SurveyFit$print()}}
-\item \href{#method-predictify}{\code{SurveyFit$predictify()}}
+\item \href{#method-population_predict}{\code{SurveyFit$population_predict()}}
 \item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
-\item \href{#method-visify}{\code{SurveyFit$visify()}}
+\item \href{#method-plot}{\code{SurveyFit$plot()}}
 \item \href{#method-clone}{\code{SurveyFit$clone()}}
 }
 }
@@ -210,12 +210,12 @@ Call the fitted model object's print method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-predictify"></a>}}
-\if{latex}{\out{\hypertarget{method-predictify}{}}}
-\subsection{Method \code{predictify()}}{
+\if{html}{\out{<a id="method-population_predict"></a>}}
+\if{latex}{\out{\hypertarget{method-population_predict}{}}}
+\subsection{Method \code{population_predict()}}{
 Use fitted model to add predicted probabilities to post-stratification dataset.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$predictify(fun = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$population_predict(fun = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -250,11 +250,11 @@ corresponding to posterior samples.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-visify"></a>}}
-\if{latex}{\out{\hypertarget{method-visify}{}}}
-\subsection{Method \code{visify()}}{
+\if{html}{\out{<a id="method-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-plot}{}}}
+\subsection{Method \code{plot()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$visify(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
 }
 
 }

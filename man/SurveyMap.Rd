@@ -122,7 +122,7 @@ fit_2 <- ex_map$fit(
 
 # predicted probabilities
 # returns matrix with rows for poststrat cells, cols for posterior draws
-poststrat_estimates <- fit_1$predictify()
+poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
@@ -132,14 +132,14 @@ estimates_by_age \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
 # plot estimates by age
-fit_1$visify(estimates_by_age)
+fit_1$plot(estimates_by_age)
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 mean(estimates_popn$value)
 
 # plot population estimate
-fit_1$visify(estimates_popn)
+fit_1$plot(estimates_popn)
 
 }
 \section{Methods}{
