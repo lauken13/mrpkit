@@ -111,20 +111,20 @@ test_that("Model fits do not cause errors ",{
     ), regexp = NA)
 })
 
-test_that("Predictify runs without errors",{
+test_that("population_predict runs without errors",{
   skip_if_not_installed("rstanarm")
   expect_error(poststrat_preds_rstanarm <-
-                 rstanarm_fit$predictify(),
+                 rstanarm_fit$population_predict(),
                regexp = NA)
 
   skip_if_not_installed("lme4")
   expect_error(poststrat_preds_lme4 <-
-                 lme4_fit$predictify(),
+                 lme4_fit$population_predict(),
                regexp = NA)
 
   skip_if_not_installed("brms")
   expect_error(poststrat_preds_brms <-
-                 brms_fit$predictify(),
+                 brms_fit$population_predict(),
                regexp = NA)
 })
 
