@@ -58,7 +58,7 @@ SurveyFit <- R6::R6Class(
     #' @return A matrix with rows corresponding to poststrat cells and columns
     #'   corresponding to posterior samples.
     #'
-    predictify = function(fun = NULL, ...) {
+    population_predict = function(fun = NULL, ...) {
       args <- list(...)
       if (!is.null(args$newdata)) {
         stop("The 'newdata' argument should not be specified.",
@@ -101,7 +101,7 @@ SurveyFit <- R6::R6Class(
         if ("glmerMod" %in% class(private$fit_)) {
           require_suggested_package("lme4")
           return(
-            sim_posterior_epred(
+            sim_posterior_probs(
               object = private$fit_,
               newdata = poststrat,
               ...
@@ -132,7 +132,8 @@ SurveyFit <- R6::R6Class(
       }
       out
     },
-    visify = function(aggregated_estimates, weights = TRUE) {
+
+    plot = function(aggregated_estimates, weights = TRUE) {
       if (dim(aggregated_estimates)[2] > 2){
         focus_var <- colnames(aggregated_estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]

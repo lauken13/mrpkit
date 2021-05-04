@@ -31,7 +31,7 @@ Unlike many R packages, MRP-Kit uses [Object Oriented Programming (R6 objects)](
 
 # Prerequisites
 
-Some of the methods in MRP-Kit use external packages i.e. `forcats` (Wickham, 2020) in `SurveyMapping$mapping`, `dplyr` (Wickham, François, Henry & Müller, 2020) in  `SurveyMapping$tabulate`, and `ggplot2` (Wickham, 2016) in `SurveyFit$visify`. To fit the MRP model, you might also need these packages:
+Some of the methods in MRP-Kit use external packages i.e. `forcats` (Wickham, 2020) in `SurveyMapping$mapping`, `dplyr` (Wickham, François, Henry & Müller, 2020) in  `SurveyMapping$tabulate`, and `ggplot2` (Wickham, 2016) in `SurveyFit$plot`. To fit the MRP model, you might also need these packages:
 
 - rstanarm (Goodrich, Gabry, Ali, & Brilleman, 2020), at least 2.21.0 version
 - brms (Bürkner, 2017)
@@ -322,13 +322,13 @@ In this stage, we already have the fitted model object i.e. `fit1` and `fit2`. T
 
 ### Get the prediction value of each post-stratification cell
 
-After creating the `SurveyFit` object, we are able to generate the predicted probability of each post-stratification cell using the `predictify` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples. 
+After creating the `SurveyFit` object, we are able to generate the predicted probability of each post-stratification cell using the `population_predict` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples. 
 
 Furthermore, if the model fitting is done with one of the built-in function (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes two argument. The first is the fitted model object, and the second is the post-stratification dataframe. In this example, we will show how to use this method for the `mod_fit_1` object. 
 
 ```{r predict}
 # predict the probability of voting for the NLP using the fit1 model
-poststrat_fit1 <- fit1$predictify()
+poststrat_fit1 <- fit1$population_predict()
 ```
 
 
@@ -357,10 +357,10 @@ head(age_preds)
 
 ### Visualize it
 
-Once we have the aggregated value of the estimates, we are able to visualize it using the `visify` method. This method takes the aggregated data frame as the argument. It generates a violin plot of the estimated aggregated variable or the population prediction. In the example below, we show the example of the estimate of `age` and `state` variables. 
+Once we have the aggregated value of the estimates, we are able to visualize it using the `plot` method. This method takes the aggregated data frame as the argument. It generates a violin plot of the estimated aggregated variable or the population prediction. In the example below, we show the example of the estimate of `age` and `state` variables. 
 
 ```{r age-vis}
-plot_age <- fit1$visify(age_preds) 
+plot_age <- fit1$plot(age_preds) 
 plot_age
 ```
 
@@ -371,7 +371,7 @@ The next plot displays the probability of voting for the NLP by state. We learn 
 
 ```{r state-vis}
 
-plot_state <- fit1$visify(state_preds)
+plot_state <- fit1$plot(state_preds)
 plot_state
 
 ```
