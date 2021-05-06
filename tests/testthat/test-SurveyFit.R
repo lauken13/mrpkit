@@ -83,34 +83,6 @@ test_that("sim_posterior_epred throws error if not given glmerMod object", {
 })
 
 
-test_that("Model fits do not cause errors ",{
-  skip_if_not_installed("rstanarm")
-    expect_error(rstanarm_fit <- ex_map$fit(
-      fun = rstanarm::stan_glmer,
-      formula = y ~ (1|age) + (1|gender),
-      refresh = 100,
-      cores = 2,
-      family = binomial(link = "logit")
-    ), regexp = NA)
-
-  skip_if_not_installed("lme4")
-    expect_error(lme4_fit <- ex_map$fit(
-      fun = lme4::glmer,
-      formula = y ~ (1|age) + (1|gender),
-      family = binomial(link = "logit")
-    ), regexp = NA)
-
-  skip_if_not_installed("brms")
-    expect_error(brms_fit <- ex_map$fit(
-      fun = brms::brm,
-      formula = y ~ (1|age) + (1|gender),
-      refresh = 100,
-      cores = 2,
-      family = binomial(),
-      backend = "cmdstanr"
-    ), regexp = NA)
-})
-
 test_that("population_predict runs without errors",{
   skip_if_not_installed("rstanarm")
   expect_error(poststrat_preds_rstanarm <-

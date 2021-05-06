@@ -363,8 +363,6 @@ glm_fit <- stats::glm(y ~ age1 + gender, data = feline_survey,
 lm_fit <- stats::lm(as.numeric(y) ~ age1 + gender, data = feline_survey)
 
 
-## Test survey fit
-
 samp_obj <- SurveyData$new(
   data = feline_survey,
   questions = list(
@@ -719,3 +717,31 @@ test_that("Warning is given if fitting using packages that are not lme4, brms, r
   )
 })
 
+
+test_that("Model fits do not cause errors if specified correctly",{
+  skip_if_not_installed("rstanarm")
+  expect_error(rstanarm_fit <- ex_map$fit(
+    fun = rstanarm::stan_glmer,
+    formula = y ~ (1|age) + (1|gender),
+    refresh = 100,
+    cores = 2,
+    family = binomial(link = "logit")
+  ), regexp = NA)
+
+  skip_if_not_installed("lme4")
+  expect_error(lme4_fit <- ex_map$fit(
+    fun = lme4::glmer,
+    formula = y ~ (1|age) + (1|gender),
+    family = binomial(link = "logit")
+  ), regexp = NA)
+
+  skip_if_not_installed("brms")
+  expect_error(brms_fit <- ex_map$fit(
+    fun = brms::brm,
+    formula = y ~ (1|age) + (1|gender),
+    refresh = 100,
+    cores = 2,
+    family = binomial(),
+    backend = "cmdstanr"
+  ), regexp = NA)
+})
