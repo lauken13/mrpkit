@@ -1,4 +1,3 @@
-# objects to use in the tests
 samp_obj <- SurveyData$new(
   data = feline_survey,
   questions = list(
@@ -52,71 +51,94 @@ q3 <- SurveyQuestion$new(
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
-
 ex_map$mapping()
-
 ex_map$tabulate()
 
-test_that("sim_posterior_epred throws error if not given glmerMod object", {
-  skip_if_not_installed("merTools")
-  skip_if_not_installed("rstanarm")
-  skip_if_not_installed("lme4")
-  expect_error(
-    suppressWarnings(sim_posterior_epred(rstanarm_fit,newdata = example_newdata)),
-    "Object must have class 'glmerMod'."
+suppressWarnings(
+  fit_glm <- ex_map$fit(
+    fun = stats::glm,
+    formula = y ~ age + gender,
+    family = "binomial"
   )
-  expect_error(
-    suppressWarnings(sim_posterior_epred(glm_fit,newdata = example_newdata)),
-    "Object must have class 'glmerMod'."
-  )
-  expect_error(
-    suppressWarnings(sim_posterior_epred(lm_fit,newdata = example_newdata)),
-    "Object must have class 'glmerMod'."
-  )
-  expect_equal(
-    dim(sim_posterior_epred(glmer_fit,newdata = example_newdata)),
-    c(150,4000)
-  )
-  expect_equal(
-    sum(is.na(dim(sim_posterior_epred(glmer_fit,newdata = example_newdata)))),
-    0)
-})
+)
 
+if (requireNamespace("rstanarm", quietly = TRUE)) {
+  suppressWarnings(
+    fit_stan_glmer <- ex_map$fit(
+      fun = rstanarm::stan_glmer,
+      formula = y ~ (1|age) + (1|gender),
+      family = "binomial",
+      iter = 10,
+      chains = 1,
+      refresh = 0
+    )
+  )
+  suppressWarnings(
+    fit_stan_glm <- ex_map$fit(
+      fun = rstanarm::stan_glm,
+      formula = y ~ age + gender,
+      family = "binomial",
+      iter = 10,
+      chains = 1,
+      refresh = 0
+    )
+  )
+}
+
+if (requireNamespace("brms", quietly = TRUE)) {
+  suppressWarnings(
+    fit_brms <- ex_map$fit(
+      fun = brms::brm,
+      formula = y ~ (1|age) + (1|gender),
+      family = "bernoulli",
+      iter = 10,
+      chains = 1,
+      refresh = 0
+    )
+  )
+}
+
+if (requireNamespace("lme4", quietly = TRUE)) {
+  fit_glmer <- ex_map$fit(
+    fun = lme4::glmer,
+    formula = y ~ (1|age) + (1|gender),
+    family = "binomial"
+  )
+}
 
 test_that("population_predict runs without errors",{
   skip_if_not_installed("rstanarm")
-  expect_error(poststrat_preds_rstanarm <-
-                 rstanarm_fit$population_predict(),
-               regexp = NA)
+  expect_error(fit_stan_glmer$population_predict(), regexp = NA)
+  expect_error(fit_stan_glm$population_predict(), regexp = NA)
 
   skip_if_not_installed("lme4")
-  expect_error(poststrat_preds_lme4 <-
-                 lme4_fit$population_predict(),
-               regexp = NA)
+  expect_error(fit_glmer$population_predict(), regexp = NA)
 
   skip_if_not_installed("brms")
-  expect_error(poststrat_preds_brms <-
-                 brms_fit$population_predict(),
-               regexp = NA)
+  expect_error(fit_brms$population_predict(), regexp = NA)
+})
+
+test_that("population_predict errors if custom fun required but not specified", {
+  expect_error(
+    fit_glm$population_predict(),
+    "Custom population_predict method required"
+  )
 })
 
 test_that("Aggregate runs without errors",{
   skip_if_not_installed("rstanarm")
-  expect_error(popn_ests_rstanarm <-
-               rstanarm_fit$aggregate(poststrat_preds_rstanarm),
+  expect_error(fit_stan_glmer$aggregate(fit_stan_glmer$population_predict()),
+               regexp = NA)
+  expect_error(fit_stan_glm$aggregate(fit_stan_glm$population_predict()),
                regexp = NA)
 
-
   skip_if_not_installed("lme4")
-  expect_error(popn_ests_lme4 <-
-               lme4_fit$aggregate(poststrat_preds_lme4),
+  expect_error(fit_glmer$aggregate(fit_glmer$population_predict()),
                regexp = NA)
 
   skip_if_not_installed("brms")
-  expect_error(popn_ests_brms <-
-               brms_fit$aggregate(poststrat_preds_brms),
+  expect_error(fit_brms$aggregate(fit_brms$population_predict()),
                regexp = NA)
-
 })
 
 test_that("Populations are within acceptable tolerance of previous runs (+/- 2% points)",{
