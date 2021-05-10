@@ -108,6 +108,25 @@ test_that("survey_data is working correctly", {
   expect_false(".key" %in% colnames(feline_prefs$survey_data(key = FALSE)))
 })
 
+test_that("survey_data factors match input levels", {
+  expect_equal(feline_prefs$survey_data()$age1 %>% levels(),
+               c("18-25", "26-35", "36-45", "46-55", "56-65", "66-75", "76-90")
+               )
+  expect_equal(feline_prefs$survey_data()$gender %>% levels(),
+               c("male", "female", "nonbinary")
+               )
+  expect_equal(feline_prefs$survey_data()$y %>% levels(),
+               c("no", "yes")
+               )
+})
+
+
+test_that("survey_data dimensions match", {
+  expect_equal(feline_prefs$survey_data() %>% dim(),
+               c(500, 6)
+  )
+})
+
 test_that("mapped_data is working correctly", {
   expect_equal(feline_prefs$mapped_data()$.key[1], 1)
   expect_equal(feline_prefs$mapped_data()$.key[2], 2)
