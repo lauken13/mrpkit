@@ -73,7 +73,7 @@ SurveyFit <- R6::R6Class(
       poststrat <- private$map_$poststrat_data()
 
       if (is.null(fun)) {
-        if ("stanreg" %in% class(private$fit_)){
+        if ("stanreg" %in% class(private$fit_)) {
           require_suggested_package("rstanarm", "2.21.0")
           return(
             t(suppressMessages(rstanarm::posterior_linpred(
@@ -83,8 +83,7 @@ SurveyFit <- R6::R6Class(
               ...
             )))
           )
-        }
-        if ("brmsfit" %in% class(private$fit_)){
+        } else if ("brmsfit" %in% class(private$fit_)) {
           require_suggested_package("brms")
           return(
             t(brms::posterior_epred(
@@ -98,8 +97,7 @@ SurveyFit <- R6::R6Class(
               ...
             ))
           )
-        }
-        if ("glmerMod" %in% class(private$fit_)) {
+        } else if ("glmerMod" %in% class(private$fit_)) {
           require_suggested_package("lme4")
           return(
             sim_posterior_probs(
@@ -108,6 +106,9 @@ SurveyFit <- R6::R6Class(
               ...
             )
           )
+        } else {
+          stop("Custom population_predict method required. Please specifiy 'fun'.",
+               call. = FALSE)
         }
       } else {
         fun <- match.fun(fun)
