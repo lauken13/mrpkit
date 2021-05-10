@@ -697,28 +697,40 @@ test_that("Warning is given if fitting using packages that are not lme4, brms, r
 
 test_that("Model fits do not cause errors if specified correctly",{
   skip_if_not_installed("rstanarm")
-  expect_error(rstanarm_fit <- ex_map$fit(
+  expect_error(suppressWarnings(ex_map$fit(
     fun = rstanarm::stan_glmer,
     formula = y ~ (1|age) + (1|gender),
-    refresh = 100,
-    cores = 2,
+    refresh = 0,
+    cores = 1,
+    chains = 1,
+    iter = 10,
     family = binomial(link = "logit")
-  ), regexp = NA)
-
-  skip_if_not_installed("lme4")
-  expect_error(lme4_fit <- ex_map$fit(
-    fun = lme4::glmer,
-    formula = y ~ (1|age) + (1|gender),
-    family = binomial(link = "logit")
-  ), regexp = NA)
+  )), regexp = NA)
+  expect_error(suppressWarnings(ex_map$fit(
+    fun = rstanarm::stan_glm,
+    formula = y ~ age + gender,
+    refresh = 0,
+    chains = 1,
+    cores = 1,
+    iter = 10,
+    family = "binomial"
+  )), regexp = NA)
 
   skip_if_not_installed("brms")
-  expect_error(brms_fit <- ex_map$fit(
+  expect_error(suppressWarnings(ex_map$fit(
     fun = brms::brm,
     formula = y ~ (1|age) + (1|gender),
-    refresh = 100,
-    cores = 2,
-    family = binomial(),
-    backend = "cmdstanr"
+    refresh = 0,
+    iter = 10,
+    chains = 1,
+    cores = 1,
+    family = "bernoulli",
+  )), regexp = NA)
+
+  skip_if_not_installed("lme4")
+  expect_error(ex_map$fit(
+    fun = lme4::glmer,
+    formula = y ~ (1|age) + (1|gender),
+    family = "binomial"
   ), regexp = NA)
 })
