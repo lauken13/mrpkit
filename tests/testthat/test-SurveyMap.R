@@ -73,9 +73,9 @@ test_that("initializing with >0 questions doesn't error", {
 })
 
 test_that("add() errors if name already exists", {
-  x <- SurveyMap$new(samp_obj, popn_obj, q1)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1)
   expect_error(
-    x$add(q1),
+    ex_map$add(q1),
     "Survey label 'age' already defined"
   )
 })
@@ -113,12 +113,12 @@ test_that("validate creates correct levels (example1)", {
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
-  expect_silent(ex_mapping1 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping1$validate()
-  ex_mapping1$mapping()
-  expect_setequal(ex_mapping1$mapped_sample_data()$age,
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(ex_map$mapped_sample_data()$age,
                   c('18-45', "46+"))
-  expect_setequal(ex_mapping1$mapped_population_data()$age,
+  expect_setequal(ex_map$mapped_population_data()$age,
                   c('18-45', "46+"))
 })
 
@@ -155,12 +155,12 @@ test_that("validate creates correct levels (example2)", {
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
-  expect_silent(ex_mapping1 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping1$validate()
-  ex_mapping1$mapping()
-  expect_setequal(ex_mapping1$mapped_sample_data()$age[1:10],
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(ex_map$mapped_sample_data()$age[1:10],
                   c("18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45"))
-  expect_setequal(ex_mapping1$mapped_population_data()$age[1:10],
+  expect_setequal(ex_map$mapped_population_data()$age[1:10],
                   c("18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+"))
 })
 
@@ -198,12 +198,12 @@ test_that("validate creates correct levels (example3)", {
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
-  expect_silent(ex_mapping2 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping2$validate()
-  ex_mapping2$mapping()
-  expect_setequal(levels(ex_mapping2$mapped_sample_data()$age),
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c('18-25', "26+"))
-  expect_setequal(ex_mapping2$mapped_population_data()$age,
+  expect_setequal(ex_map$mapped_population_data()$age,
                   c('18-25', "26+"))
 })
 
@@ -240,12 +240,12 @@ test_that("validate creates correct levels (example4)", {
     col_names = c("age1","age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
-  expect_silent(ex_mapping2 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping2$validate()
-  ex_mapping2$mapping()
-  expect_setequal(ex_mapping2$mapped_sample_data()$age[7:16],
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(ex_map$mapped_sample_data()$age[7:16],
                   c("18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+"))
-  expect_setequal(ex_mapping2$mapped_population_data()$age[7:16],
+  expect_setequal(ex_map$mapped_population_data()$age[7:16],
                   c("18-25", "26+", "26+", "18-25", "26+", "26+", "18-25", "26+", "26+", "18-25"))
 })
 
@@ -285,40 +285,40 @@ test_that("validate creates correct levels (example5)", {
       "41-55" = "36-45", "41-55"="46-55", "56+"="56+"
     )
   )
-  expect_silent(ex_mapping3 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping3$validate()
-  ex_mapping3$mapping()
-  expect_setequal(levels(ex_mapping3$mapped_sample_data()$age),
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
-  expect_setequal(ex_mapping3$mapped_population_data()$age,
+  expect_setequal(ex_map$mapped_population_data()$age,
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
 })
 
-test_that("validate creates correct levels (example4)", {
+test_that("validate creates correct levels (example6)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("A","A","B","C","D","D","E"),20)),
-                      y = rbinom(140,1,.5)),
+    data = data.frame(age1 = factor(rep(c("A","A","B","C","D","D","E"), 20)),
+                      y = factor(rbinom(140, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
     ),
     responses = list(
-      age1 = c("A","A","B","C","D","D","E"),
-      y = c("no","yes")
+      age1 = c("A", "B", "C", "D", "E"),
+      y = c("no", "yes")
     ),
-    weights = rnorm(140,0,1),
+    weights = rnorm(140, 0, 1),
     design = formula("~.")
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep( c("Z","Y","Y","C","X","Q","Q"),40))),
+    data = data.frame(age2 = factor(rep( c("Z","Y","Y","C","X","Q","Q"), 40))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
-      age2 =  c("Z","Y","Y","C","X","Q","Q")
+      age2 =  c("Z","Y","C","X","Q")
     ),
-    weights = rnorm(280,0,1),
+    weights = rnorm(280, 0, 1),
     design = formula("~.")
   )
 
@@ -329,12 +329,12 @@ test_that("validate creates correct levels (example4)", {
       "A" = "Z", "A" = "Y","B" = "Y","C" = "C",
       "D" = "X","D"="Q","E"="Q")
   )
-  expect_silent(ex_mapping4 <- SurveyMap$new(samp_obj, popn_obj, q1))
-  ex_mapping4$validate()
-  ex_mapping4$mapping()
-  expect_setequal(levels(ex_mapping4$.__enclos_env__$private$samp_obj_$mapped_data()$age),
+  expect_silent(ex_map <- SurveyMap$new(samp_obj, popn_obj, q1))
+  ex_map$validate()
+  ex_map$mapping()
+  expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("A + B","C","D + E"))
-  expect_setequal(ex_mapping4$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+  expect_setequal(ex_map$mapped_population_data()$age,
                   c("A + B","C","D + E"))
 })
 
@@ -342,36 +342,36 @@ test_that("validate creates correct levels (example4)", {
 # Expected match: "Predictor variables not known in population."
 # Actual message: "Not all variables available in the data. Missing vars:  gender"
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map$mapping()
+  ex_map$tabulate()
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map$mapping()
+  ex_map$tabulate()
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map$mapping()
+  ex_map$tabulate()
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -381,12 +381,12 @@ test_that("Error if predictor vars not included in poststrat matrix",{
 })
 
 test_that("Error if vars not included in data",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
+  ex_map$mapping()
+  ex_map$tabulate()
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender) + pineapple,
       family = binomial(link="logit")
@@ -395,7 +395,7 @@ test_that("Error if vars not included in data",{
   )
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender) +pineapple ,
       family = binomial(link="logit")
@@ -404,7 +404,7 @@ test_that("Error if vars not included in data",{
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender) +pineapple,
       family = binomial(link="logit")
@@ -414,7 +414,7 @@ test_that("Error if vars not included in data",{
 
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = pineapple ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -423,7 +423,7 @@ test_that("Error if vars not included in data",{
   )
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = pineapple ~ (1|age) + (1|gender) ,
       family = binomial(link="logit")
@@ -432,7 +432,7 @@ test_that("Error if vars not included in data",{
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = pineapple ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -442,10 +442,10 @@ test_that("Error if vars not included in data",{
 })
 
 test_that("Error if not fitting a bernoulli/binomial model", {
-  ex_map1 <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender)
     ),
@@ -453,7 +453,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
   )
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender)
     ),
@@ -461,7 +461,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender)
     ),
@@ -471,10 +471,10 @@ test_that("Error if not fitting a bernoulli/binomial model", {
 })
 
 test_that("Error if data hasn't been mapped yet",{
-  ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -483,7 +483,7 @@ test_that("Error if data hasn't been mapped yet",{
   )
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -492,7 +492,7 @@ test_that("Error if data hasn't been mapped yet",{
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -502,11 +502,11 @@ test_that("Error if data hasn't been mapped yet",{
 })
 
 test_that("Error if poststrat matrix hasn't been created yet",{
-  ex_map1 <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
-  ex_map1$mapping()
+  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map$mapping()
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -515,7 +515,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
   )
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -524,7 +524,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit")
@@ -534,10 +534,10 @@ test_that("Error if poststrat matrix hasn't been created yet",{
 })
 
 test_that("Error if data is given as input",{
-  ex_map1 <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
   skip_if_not_installed("lme4")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = lme4::glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit"),
@@ -547,7 +547,7 @@ test_that("Error if data is given as input",{
   )
   skip_if_not_installed("rstanarm")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit"),
@@ -557,7 +557,7 @@ test_that("Error if data is given as input",{
   )
   skip_if_not_installed("brms")
   expect_error(
-    ex_map1$fit(
+    ex_map$fit(
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender),
       family = binomial(link="logit"),
@@ -568,11 +568,11 @@ test_that("Error if data is given as input",{
 })
 
 test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ", {
-  ex_map1 <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map$mapping()
+  ex_map$tabulate()
   expect_warning(
-    ex_map1$fit(
+    ex_map$fit(
       fun = stats::glm,
       formula = y ~ age + gender,
       family = "binomial"
@@ -583,11 +583,11 @@ test_that("Warning is given if fitting using packages that are not lme4, brms, r
 
 
 test_that("Model fits do not cause errors if specified correctly",{
-  ex_map1 <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
-  ex_map1$mapping()
-  ex_map1$tabulate()
+  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map$mapping()
+  ex_map$tabulate()
   skip_if_not_installed("rstanarm")
-  expect_error(suppressWarnings(ex_map1$fit(
+  expect_error(suppressWarnings(ex_map$fit(
     fun = rstanarm::stan_glmer,
     formula = y ~ (1|age) + (1|gender),
     refresh = 0,
@@ -596,7 +596,7 @@ test_that("Model fits do not cause errors if specified correctly",{
     iter = 10,
     family = binomial(link = "logit")
   )), regexp = NA)
-  expect_error(suppressWarnings(ex_map1$fit(
+  expect_error(suppressWarnings(ex_map$fit(
     fun = rstanarm::stan_glm,
     formula = y ~ age + gender,
     refresh = 0,
@@ -607,7 +607,7 @@ test_that("Model fits do not cause errors if specified correctly",{
   )), regexp = NA)
 
   skip_if_not_installed("brms")
-  expect_error(suppressWarnings(ex_map1$fit(
+  expect_error(suppressWarnings(ex_map$fit(
     fun = brms::brm,
     formula = y ~ (1|age) + (1|gender),
     refresh = 0,
@@ -618,7 +618,7 @@ test_that("Model fits do not cause errors if specified correctly",{
   )), regexp = NA)
 
   skip_if_not_installed("lme4")
-  expect_error(ex_map1$fit(
+  expect_error(ex_map$fit(
     fun = lme4::glmer,
     formula = y ~ (1|age) + (1|gender),
     family = "binomial"
