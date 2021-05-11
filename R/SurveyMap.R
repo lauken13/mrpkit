@@ -478,7 +478,8 @@ SurveyMap <- R6::R6Class(
       private$poststrat_data_
     },
 
-    #' @description Access the data frame containing the mapped sample data.
+    #' @description Access the data frame containing the mapped sample data
+    #'   created by the `mapping` method
     #' @param key Should the `.key` column be included? This column just
     #'   indicates the original order of the rows and is primarily intended
     #'   for internal use.
@@ -490,7 +491,8 @@ SurveyMap <- R6::R6Class(
       }
     },
 
-    #' @description Access the data frame containing the mapped population data.
+    #' @description Access the data frame containing the mapped population data
+    #'   created by the `mapping` method
     #' @param key Should the `.key` column be included? This column just
     #'   indicates the original order of the rows and is primarily intended
     #'   for internal use.

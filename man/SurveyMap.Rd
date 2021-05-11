@@ -158,6 +158,8 @@ fit_1$plot(estimates_popn)
 \item \href{#method-samp_obj}{\code{SurveyMap$samp_obj()}}
 \item \href{#method-popn_obj}{\code{SurveyMap$popn_obj()}}
 \item \href{#method-poststrat_data}{\code{SurveyMap$poststrat_data()}}
+\item \href{#method-mapped_sample_data}{\code{SurveyMap$mapped_sample_data()}}
+\item \href{#method-mapped_population_data}{\code{SurveyMap$mapped_population_data()}}
 \item \href{#method-clone}{\code{SurveyMap$clone()}}
 }
 }
@@ -352,11 +354,51 @@ Access the \link{SurveyData} object containing the population data
 \if{html}{\out{<a id="method-poststrat_data"></a>}}
 \if{latex}{\out{\hypertarget{method-poststrat_data}{}}}
 \subsection{Method \code{poststrat_data()}}{
-Access the poststratification data frame
+Access the poststratification data frame created by the \code{tabulate} method
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$poststrat_data()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-mapped_sample_data"></a>}}
+\if{latex}{\out{\hypertarget{method-mapped_sample_data}{}}}
+\subsection{Method \code{mapped_sample_data()}}{
+Access the data frame containing the mapped sample data
+created by the \code{mapping} method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapped_sample_data(key = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key}}{Should the \code{.key} column be included? This column just
+indicates the original order of the rows and is primarily intended
+for internal use.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-mapped_population_data"></a>}}
+\if{latex}{\out{\hypertarget{method-mapped_population_data}{}}}
+\subsection{Method \code{mapped_population_data()}}{
+Access the data frame containing the mapped population data
+created by the \code{mapping} method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapped_population_data(key = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key}}{Should the \code{.key} column be included? This column just
+indicates the original order of the rows and is primarily intended
+for internal use.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
