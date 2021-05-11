@@ -117,6 +117,23 @@ SurveyData <- R6::R6Class(
             questions <- questions[nms_q]
             responses <- responses[nms_q]
 
+            for (j in seq_along(questions)) {
+              responses_provided <- sort(responses[[j]])
+              if (is.factor(data[[nms_q[j]]])) {
+                responses_in_data <- sort(levels(data[[nms_q[j]]]))
+              } else {
+                responses_in_data <- sort(unique(data[[nms_q[j]]]))
+              }
+              if (!identical(responses_provided, responses_in_data)) {
+                stop(
+                  "Values in data do not match specified responses for variable '", nms_q[j], "'. ",
+                  "\nValues in 'data': ", paste(responses_in_data, collapse = ", "),
+                  "\nValues in 'responses': ", paste(responses_provided, collapse = ", "),
+                  call. = FALSE
+                )
+              }
+            }
+
             private$questions_ <- questions
             private$responses_ <- responses
             private$weights_ <- weights
