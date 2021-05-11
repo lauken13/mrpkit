@@ -159,12 +159,6 @@ test_that("print is working correctly", {
   expect_output(feline_prefs$print(), 'Survey with 500 observations')
 })
 
-test_that("clone is working correctly", {
-  twins <- feline_prefs$clone()
-  expect_equal(twins$mapped_data()$.key[1], 1)
-  expect_equal(twins$mapped_data()$.key[2], 2)
-})
-
 test_that("add_survey_data_column works correctly", {
   expect_error(
     feline_prefs$add_survey_data_column("x", 1),

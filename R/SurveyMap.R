@@ -146,7 +146,9 @@ SurveyMap <- R6::R6Class(
     samp_obj_ = NULL,
     popn_obj_ = NULL,
     item_map_ = list(),
-    poststrat_data_ = data.frame(NULL)
+    poststrat_data_ = data.frame(NULL),
+    mapped_sample_data_ = NULL,
+    mapped_population_data_ = NULL
   ),
   public = list(
 
@@ -169,6 +171,8 @@ SurveyMap <- R6::R6Class(
 
       private$samp_obj_ <- samp_obj
       private$popn_obj_ <- popn_obj
+      private$mapped_sample_data_ <- data.frame(.key = 1:nrow(samp_obj$survey_data()))
+      private$mapped_population_data_ <- data.frame(.key = 1:nrow(popn_obj$survey_data()))
       invisible(self)
     },
 
@@ -345,26 +349,25 @@ SurveyMap <- R6::R6Class(
             multiple_collapse[k] = TRUE
           }
         }
-        if(sum(multiple_collapse)>0){
-
+        if (sum(multiple_collapse) > 0) {
           dup_labels_popn <- levels_map_popn[duplicated(levels_map_popn)]
           dup_labels_samp <- levels_map_samp[duplicated(levels_map_samp)]
 
           dup_labels_samp <- levels_map_samp %in% dup_labels_samp
           dup_labels_popn <- levels_map_popn %in% dup_labels_popn
 
-          potential_indices <- dup_labels_samp + dup_labels_popn>0
-          if (sum(multiple_collapse[potential_indices]>0)){
+          potential_indices <- dup_labels_samp + dup_labels_popn > 0
+          if (sum(multiple_collapse[potential_indices] > 0)) {
             collapsed_names <- paste0(unique(levels_map_samp[potential_indices]), collapse = " + ")
             names(new_levels_popn)[potential_indices] <- collapsed_names
             names(new_levels_samp)[potential_indices] <- collapsed_names
-          } else{
+          } else {
             stop("There is an error with the mapping. Please investigate further.")
           }
 
         }
-        private$samp_obj_$add_mapped_data_column(new_varname, forcats::fct_recode(private$samp_obj_$survey_data()[[samp_mapnames]], !!!new_levels_samp))
-        private$popn_obj_$add_mapped_data_column(new_varname, forcats::fct_recode(private$popn_obj_$survey_data()[[popn_mapnames]], !!!new_levels_popn))
+        private$mapped_sample_data_[[new_varname]] <- forcats::fct_recode(private$samp_obj_$survey_data()[[samp_mapnames]], !!!new_levels_samp)
+        private$mapped_population_data_[[new_varname]] <- forcats::fct_recode(private$popn_obj_$survey_data()[[popn_mapnames]], !!!new_levels_popn)
       }
       invisible(self)
     },
@@ -380,7 +383,7 @@ SurveyMap <- R6::R6Class(
         stop("At least one poststratification variable doesn't correspond to the map.", call. = FALSE)
       }
       private$poststrat_data_ <-
-        private$popn_obj_$mapped_data() %>%
+        private$mapped_population_data_ %>%
         dplyr::mutate(wts = private$popn_obj_$weights()) %>%
         dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
         dplyr::summarize(N_j = sum(wts), .groups = 'drop')
@@ -410,7 +413,7 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (identical(colnames(private$samp_obj_$mapped_data()), ".key")) {
+      if (identical(colnames(private$mapped_sample_data_), ".key")) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
@@ -429,7 +432,7 @@ SurveyMap <- R6::R6Class(
       }
 
       formula <- as.formula(formula)
-      mapped_data <- private$samp_obj_$mapped_data()
+      mapped_data <- private$mapped_sample_data_
       rhs_vars <- all.vars(formula[-2])
       lhs_vars <- all.vars(update(formula, "~0"))
 
@@ -466,13 +469,37 @@ SurveyMap <- R6::R6Class(
     #' @description Access the [SurveyData] object containing the population data
     popn_obj = function() private$popn_obj_,
 
-    #' @description Access the poststratification data frame
+    #' @description Access the poststratification data frame created by the `tabulate` method
     poststrat_data = function() {
       if (is.null(private$poststrat_data_)) {
         stop("Please call the tabulate() method before accessing the poststrat data.",
              call. = FALSE)
       }
       private$poststrat_data_
+    },
+
+    #' @description Access the data frame containing the mapped sample data.
+    #' @param key Should the `.key` column be included? This column just
+    #'   indicates the original order of the rows and is primarily intended
+    #'   for internal use.
+    mapped_sample_data = function(key = TRUE) {
+      if (key) {
+        private$mapped_sample_data_
+      } else {
+        private$mapped_sample_data_[, colnames(private$mapped_sample_data_) != ".key", drop = FALSE]
+      }
+    },
+
+    #' @description Access the data frame containing the mapped population data.
+    #' @param key Should the `.key` column be included? This column just
+    #'   indicates the original order of the rows and is primarily intended
+    #'   for internal use.
+    mapped_population_data = function(key = TRUE) {
+      if (key) {
+        private$mapped_population_data_
+      } else {
+        private$mapped_population_data_[, colnames(private$mapped_population_data_) != ".key", drop = FALSE]
+      }
     }
   )
 )

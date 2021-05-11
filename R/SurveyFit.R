@@ -134,7 +134,7 @@ SurveyFit <- R6::R6Class(
         if (length(by) != 1) {
           stop("Currently only one variable can be named in 'by'.", call. = FALSE)
         }
-        rotate_levels <- levels(private$map_$samp_obj()$mapped_data()[, by])
+        rotate_levels <- levels(private$map_$mapped_sample_data()[, by])
         out <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_estimates), value = NA)
         colnames(out)[1] <- by
         for (focus_level in rotate_levels){

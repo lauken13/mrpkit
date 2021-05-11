@@ -82,8 +82,8 @@ test_that("add() errors if name already exists", {
 
 test_that("validate creates correct levels (example1)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("18-25","26-45","46+"),10)),
-                      y = rbinom(30,1,.5)),
+    data = data.frame(age1 = factor(rep(c("18-25", "26-45", "46+"), 10)),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -92,41 +92,40 @@ test_that("validate creates correct levels (example1)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30,0,1),
+    weights = rnorm(30 ,0, 1),
     design = formula("~.")
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-45","46+"),50))),
+    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
-      age2 = c("18-45","46+")
+      age2 = c("18-45", "46+")
     ),
-    weights = rnorm(100,0,1),
+    weights = rnorm(100, 0, 1),
     design = formula("~.")
   )
 
   q1 <- SurveyQuestion$new(
     name = "age",
-    col_names = c("age1","age2"),
-    values_map = list(
-      "18-25" = "18-45", "26-45" = "18-45","46+" = "46+")
+    col_names = c("age1", "age2"),
+    values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
   expect_silent(ex_mapping1 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping1$validate()
   ex_mapping1$mapping()
-  expect_setequal(ex_mapping1$.__enclos_env__$private$samp_obj_$mapped_data()$age,
+  expect_setequal(ex_mapping1$mapped_sample_data()$age,
                   c('18-45', "46+"))
-  expect_setequal(ex_mapping1$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+  expect_setequal(ex_mapping1$mapped_population_data()$age,
                   c('18-45', "46+"))
 })
 
-test_that("validate creates revels the data correctly (example1)", {
+test_that("validate creates correct levels (example2)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("18-25","26-45","46+"),10)),
-                      y = rbinom(30,1,.5)),
+    data = data.frame(age1 = factor(rep(c("18-25","26-45","46+"), 10)),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -140,144 +139,141 @@ test_that("validate creates revels the data correctly (example1)", {
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-45","46+"),50))),
+    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-45","46+")
     ),
-    weights = rnorm(100,0,1),
+    weights = rnorm(100, 0, 1),
     design = formula("~.")
   )
 
   q1 <- SurveyQuestion$new(
     name = "age",
-    col_names = c("age1","age2"),
-    values_map = list(
-      "18-25" = "18-45", "26-45" = "18-45","46+" = "46+")
+    col_names = c("age1", "age2"),
+    values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
   expect_silent(ex_mapping1 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping1$validate()
   ex_mapping1$mapping()
-  expect_setequal(ex_mapping1$.__enclos_env__$private$samp_obj_$mapped_data()$age[1:10],
+  expect_setequal(ex_mapping1$mapped_sample_data()$age[1:10],
                   c("18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45"))
-  expect_setequal(ex_mapping1$.__enclos_env__$private$popn_obj_$mapped_data()$age[1:10],
+  expect_setequal(ex_mapping1$mapped_population_data()$age[1:10],
                   c("18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+"))
 })
 
 
-test_that("validate creates correct levels (example2)", {
+test_that("validate creates correct levels (example3)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("18-25","26+"),15)),
-                      y = rbinom(30,1,.5)),
+    data = data.frame(age1 = factor(rep(c("18-25", "26+"), 15)),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
     ),
     responses = list(
-      age1 = c("18-25","26+"),
-      y = c("no","yes")
+      age1 = c("18-25", "26+"),
+      y = c("no", "yes")
     ),
-    weights = rnorm(30,0,1),
+    weights = rnorm(30, 0, 1),
     design = formula("~.")
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25","26-34","35+"),30))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
-      age2 = c("18-25","26-34","35+")
+      age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90,0,1),
+    weights = rnorm(90, 0, 1),
     design = formula("~.")
   )
 
   q1 <- SurveyQuestion$new(
     name = "age",
-    col_names = c("age1","age2"),
-    values_map = list(
-      "18-25" = "18-25", "26+" = "26-34","26+" = "35+")
+    col_names = c("age1", "age2"),
+    values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
   expect_silent(ex_mapping2 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping2$validate()
   ex_mapping2$mapping()
-  expect_setequal(levels(ex_mapping2$.__enclos_env__$private$samp_obj_$mapped_data()$age),
+  expect_setequal(levels(ex_mapping2$mapped_sample_data()$age),
                   c('18-25', "26+"))
-  expect_setequal(ex_mapping2$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+  expect_setequal(ex_mapping2$mapped_population_data()$age,
                   c('18-25', "26+"))
 })
 
-test_that("validate creates revels the data correctly (example2)", {
+test_that("validate creates correct levels (example4)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("18-25","26+"),15)),
-                      y = rbinom(30,1,.5)),
+    data = data.frame(age1 = factor(rep(c("18-25", "26+"), 15)),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
     ),
     responses = list(
-      age1 = c("18-25","26+"),
-      y = c("no","yes")
+      age1 = c("18-25", "26+"),
+      y = c("no", "yes")
     ),
-    weights = rnorm(30,0,1),
+    weights = rnorm(30, 0, 1),
     design = formula("~.")
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25","26-34","35+"),30))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
-      age2 = c("18-25","26-34","35+")
+      age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90,0,1),
+    weights = rnorm(90, 0, 1),
     design = formula("~.")
   )
 
   q1 <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1","age2"),
-    values_map = list(
-      "18-25" = "18-25", "26+" = "26-34","26+" = "35+")
+    values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
   expect_silent(ex_mapping2 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping2$validate()
   ex_mapping2$mapping()
-  expect_setequal(ex_mapping2$.__enclos_env__$private$samp_obj_$mapped_data()$age[7:16],
+  expect_setequal(ex_mapping2$mapped_sample_data()$age[7:16],
                   c("18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+"))
-  expect_setequal(ex_mapping2$.__enclos_env__$private$popn_obj_$mapped_data()$age[7:16],
+  expect_setequal(ex_mapping2$mapped_population_data()$age[7:16],
                   c("18-25", "26+", "26+", "18-25", "26+", "26+", "18-25", "26+", "26+", "18-25"))
 })
 
-test_that("validate creates correct levels (example3)", {
+test_that("validate creates correct levels (example5)", {
   samp_obj <- SurveyData$new(
-    data = data.frame(age1 = factor(rep(c("18-25","26-30","31-40","41-55","56+"),20)),
-                      y = rbinom(100,1,.5)),
+    data = data.frame(age1 = factor(rep(c("18-25", "26-30", "31-40", "41-55", "56+"), 20)),
+                      y = factor(rbinom(100, 1, .5), levels = c("no", "yes"))),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
     ),
     responses = list(
-      age1 = c("18-25","26-30","31-40","41-55","56+"),
+      age1 = c("18-25", "26-30", "31-40", "41-55", "56+"),
       y = c("no","yes")
     ),
-    weights = rnorm(100,0,1),
+    weights = rnorm(100, 0, 1),
     design = formula("~.")
   )
 
   popn_obj <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25","26-35","36-45","46-55","56+"),40))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-35", "36-45", "46-55", "56+"), 40))),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
-      age2 = c("18-25","26-35","36-45","46-55","56+")
+      age2 = c("18-25", "26-35", "36-45", "46-55", "56+")
     ),
-    weights = rnorm(200,0,1),
+    weights = rnorm(200, 0, 1),
     design = formula("~.")
   )
 
@@ -285,15 +281,16 @@ test_that("validate creates correct levels (example3)", {
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
-      "18-25" = "18-25", "26-30" = "26-35","31-40" = "26-35","31-40" = "36-45",
-      "41-55" = "36-45","41-55"="46-55","56+"="56+")
+      "18-25" = "18-25", "26-30" = "26-35", "31-40" = "26-35", "31-40" = "36-45",
+      "41-55" = "36-45", "41-55"="46-55", "56+"="56+"
+    )
   )
   expect_silent(ex_mapping3 <- SurveyMap$new(samp_obj, popn_obj, q1))
   ex_mapping3$validate()
   ex_mapping3$mapping()
-  expect_setequal(levels(ex_mapping3$.__enclos_env__$private$samp_obj_$mapped_data()$age),
+  expect_setequal(levels(ex_mapping3$mapped_sample_data()$age),
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
-  expect_setequal(ex_mapping3$.__enclos_env__$private$popn_obj_$mapped_data()$age,
+  expect_setequal(ex_mapping3$mapped_population_data()$age,
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
 })
 
@@ -473,8 +470,6 @@ test_that("Error if not fitting a bernoulli/binomial model", {
 
 })
 
-# this test will fail until https://github.com/mitzimorris/mrp-kit/issues/59
-# because the mapped data has already be
 test_that("Error if data hasn't been mapped yet",{
   ex_map1 <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
   skip_if_not_installed("lme4")
@@ -508,6 +503,7 @@ test_that("Error if data hasn't been mapped yet",{
 
 test_that("Error if poststrat matrix hasn't been created yet",{
   ex_map1 <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map1$mapping()
   skip_if_not_installed("lme4")
   expect_error(
     ex_map1$fit(
@@ -591,7 +587,7 @@ test_that("Model fits do not cause errors if specified correctly",{
   ex_map1$mapping()
   ex_map1$tabulate()
   skip_if_not_installed("rstanarm")
-  expect_error(suppressWarnings(ex_map$fit(
+  expect_error(suppressWarnings(ex_map1$fit(
     fun = rstanarm::stan_glmer,
     formula = y ~ (1|age) + (1|gender),
     refresh = 0,
@@ -600,7 +596,7 @@ test_that("Model fits do not cause errors if specified correctly",{
     iter = 10,
     family = binomial(link = "logit")
   )), regexp = NA)
-  expect_error(suppressWarnings(ex_map$fit(
+  expect_error(suppressWarnings(ex_map1$fit(
     fun = rstanarm::stan_glm,
     formula = y ~ age + gender,
     refresh = 0,
@@ -611,18 +607,18 @@ test_that("Model fits do not cause errors if specified correctly",{
   )), regexp = NA)
 
   skip_if_not_installed("brms")
-  expect_error(suppressWarnings(ex_map$fit(
+  expect_error(suppressWarnings(ex_map1$fit(
     fun = brms::brm,
     formula = y ~ (1|age) + (1|gender),
     refresh = 0,
     iter = 10,
     chains = 1,
     cores = 1,
-    family = "bernoulli",
+    family = "bernoulli"
   )), regexp = NA)
 
   skip_if_not_installed("lme4")
-  expect_error(ex_map$fit(
+  expect_error(ex_map1$fit(
     fun = lme4::glmer,
     formula = y ~ (1|age) + (1|gender),
     family = "binomial"
