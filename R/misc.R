@@ -40,7 +40,7 @@ create_wtd_ests <- function(fit_obj, outcome, by = NULL) {
     stop("Sample weights must be present", call. = FALSE)
   }
   design <- fit_obj$map()$samp_obj()$design()
-  merged_data <- merge(fit_obj$map()$samp_obj()$mapped_data(),
+  merged_data <- merge(fit_obj$map$mapped_sample_data(),
                        fit_obj$map()$samp_obj()$survey_data()[c(outcome,".key")],
                        by = ".key")
   svy_dsn <- do.call(survey::svydesign, c(design, list(weights = weights, data = merged_data)))

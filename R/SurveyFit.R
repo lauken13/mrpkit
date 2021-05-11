@@ -149,7 +149,7 @@ SurveyFit <- R6::R6Class(
     },
 
     plot = function(aggregated_estimates, weights = TRUE) {
-      if (dim(aggregated_estimates)[2] > 2){
+      if (dim(aggregated_estimates)[2] > 2) {
         focus_var <- colnames(aggregated_estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$samp_obj()$questions()[[which_q]]
