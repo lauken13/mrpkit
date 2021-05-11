@@ -624,3 +624,18 @@ test_that("Model fits do not cause errors if specified correctly",{
     family = "binomial"
   ), regexp = NA)
 })
+
+test_that("mapped_sample_data and mapped_population_data work", {
+  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  empty_samp <- ex_map$mapped_sample_data(key = FALSE)
+  empty_pop <- ex_map$mapped_population_data(key = FALSE)
+  expect_equal(dim(empty_samp), c(nrow(samp_obj$survey_data()), 0))
+  expect_equal(dim(empty_pop), c(nrow(popn_obj$survey_data()), 0))
+
+  just_key_samp <- ex_map$mapped_sample_data(key = TRUE)
+  just_key_pop <- ex_map$mapped_population_data(key = TRUE)
+  expect_equal(colnames(just_key_samp), ".key")
+  expect_equal(colnames(just_key_pop), ".key")
+  expect_equal(dim(just_key_samp), c(nrow(samp_obj$survey_data()), 1))
+  expect_equal(dim(just_key_pop), c(nrow(popn_obj$survey_data()), 1))
+})
