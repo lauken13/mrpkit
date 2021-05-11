@@ -56,11 +56,11 @@ q3 <- SurveyQuestion$new(
 test_that("error thrown if inputs are not SurveyData objects", {
   expect_error(
     SurveyMap$new("ABC", popn_obj),
-    "samp_obj must be a SurveyData object"
+    "'sample' must be a SurveyData object"
   )
   expect_error(
     SurveyMap$new(samp_obj, "ABC"),
-    "popn_obj must be a SurveyData object"
+    "'population' must be a SurveyData object"
   )
 })
 
@@ -342,7 +342,7 @@ test_that("validate creates correct levels (example6)", {
 # Expected match: "Predictor variables not known in population."
 # Actual message: "Not all variables available in the data. Missing vars:  gender"
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1, q2)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -354,7 +354,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1, q2)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("rstanarm")
@@ -366,7 +366,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1, q2)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("brms")
@@ -381,7 +381,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
 })
 
 test_that("Error if vars not included in data",{
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1,q2,q3)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -471,7 +471,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
 })
 
 test_that("Error if data hasn't been mapped yet",{
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
@@ -502,7 +502,7 @@ test_that("Error if data hasn't been mapped yet",{
 })
 
 test_that("Error if poststrat matrix hasn't been created yet",{
-  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   ex_map$mapping()
   skip_if_not_installed("lme4")
   expect_error(
@@ -534,7 +534,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
 })
 
 test_that("Error if data is given as input",{
-  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
@@ -568,7 +568,7 @@ test_that("Error if data is given as input",{
 })
 
 test_that("Warning is given if fitting using packages that are not lme4, brms, rstanarm ", {
-  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   expect_warning(
@@ -583,7 +583,7 @@ test_that("Warning is given if fitting using packages that are not lme4, brms, r
 
 
 test_that("Model fits do not cause errors if specified correctly",{
-  ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("rstanarm")
@@ -626,7 +626,7 @@ test_that("Model fits do not cause errors if specified correctly",{
 })
 
 test_that("mapped_sample_data and mapped_population_data work", {
-  ex_map <-  SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
   empty_samp <- ex_map$mapped_sample_data(key = FALSE)
   empty_pop <- ex_map$mapped_population_data(key = FALSE)
   expect_equal(dim(empty_samp), c(nrow(samp_obj$survey_data()), 0))

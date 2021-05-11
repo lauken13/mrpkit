@@ -71,7 +71,7 @@ q3 <- SurveyQuestion$new(
 
 # Create SurveyMap object
 # can add all questions at once or incrementally
-ex_map <- SurveyMap$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+ex_map <- SurveyMap$new(sample = feline_prefs, population = popn_obj, q1)
 print(ex_map)
 ex_map$validate()
 ex_map$add(q3)
