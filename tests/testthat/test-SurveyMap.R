@@ -634,8 +634,12 @@ test_that("mapped_sample_data and mapped_population_data work", {
 
   just_key_samp <- ex_map$mapped_sample_data(key = TRUE)
   just_key_pop <- ex_map$mapped_population_data(key = TRUE)
-  expect_equal(colnames(just_key_samp), ".key")
-  expect_equal(colnames(just_key_pop), ".key")
+  expect_named(just_key_samp, ".key")
+  expect_named(just_key_pop, ".key")
   expect_equal(dim(just_key_samp), c(nrow(samp_obj$survey_data()), 1))
   expect_equal(dim(just_key_pop), c(nrow(popn_obj$survey_data()), 1))
+
+  ex_map$mapping()
+  expect_named(ex_map$mapped_sample_data(key = FALSE), c("age", "pet", "gender"))
+  expect_named(ex_map$mapped_population_data(key = FALSE), c("age", "pet", "gender"))
 })
