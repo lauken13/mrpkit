@@ -99,9 +99,14 @@ feline_prefs <- SurveyData$new(
   design = list(ids =~1)
 )
 
+test_that("object has correct R6 class", {
+  expect_r6_class(feline_prefs, "SurveyData")
+})
+
 test_that("n_obs is working correctly", {
   expect_equal(feline_prefs$n_obs(), 500)
 })
+
 test_that("n_questions is working correctly", {
   expect_equal(feline_prefs$n_questions(), 4)
 })

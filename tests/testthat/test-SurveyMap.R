@@ -52,6 +52,10 @@ q3 <- SurveyQuestion$new(
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 
+test_that("object has correct R6 class", {
+  expect_r6_class(SurveyMap$new(samp_obj, popn_obj), "SurveyMap")
+})
+
 
 test_that("error thrown if inputs are not SurveyData objects", {
   expect_error(

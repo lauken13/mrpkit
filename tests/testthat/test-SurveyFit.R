@@ -106,6 +106,14 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   )
 }
 
+test_that("fit objects have correct R6 class", {
+  expect_r6_class(fit_stan_glmer, "SurveyFit")
+  expect_r6_class(fit_stan_glm, "SurveyFit")
+  expect_r6_class(fit_brms, "SurveyFit")
+  expect_r6_class(fit_glmer, "SurveyFit")
+  expect_r6_class(fit_glm, "SurveyFit")
+})
+
 test_that("population_predict returns correct objects",{
   # expect 5 draws (because iter = 10 above) for columns
   # expect same number of rows as poststrat data
