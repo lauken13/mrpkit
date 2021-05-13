@@ -114,6 +114,22 @@ test_that("fit objects have correct R6 class", {
   expect_r6_class(fit_glm, "SurveyFit")
 })
 
+test_that("map returns SurveyMap", {
+  expect_r6_class(fit_stan_glmer$map(), "SurveyMap")
+  expect_r6_class(fit_stan_glm$map(), "SurveyMap")
+  expect_r6_class(fit_brms$map(), "SurveyMap")
+  expect_r6_class(fit_glmer$map(), "SurveyMap")
+  expect_r6_class(fit_glm$map(), "SurveyMap")
+})
+
+test_that("fit returns fitted model object", {
+  expect_s3_class(fit_stan_glmer$fit(), "stanreg")
+  expect_s3_class(fit_stan_glm$fit(), "stanreg")
+  expect_s3_class(fit_brms$fit(), "brmsfit")
+  expect_s4_class(fit_glmer$fit(), "glmerMod")
+  expect_s3_class(fit_glm$fit(), "glm")
+})
+
 test_that("population_predict returns correct objects",{
   # expect 5 draws (because iter = 10 above) for columns
   # expect same number of rows as poststrat data
