@@ -9,6 +9,18 @@ test_that("object has correct R6 class", {
   )
 })
 
+test_that("print output hasn't changed", {
+  q <- SurveyQuestion$new(
+    name = "pet",
+    col_names = c("pet_own","pet_pref"),
+    values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
+  )
+  expect_known_output(
+    print(q),
+    file = test_path("answers/SurveyQuestion-print")
+  )
+})
+
 test_that("error if 'name' specified incorrectly", {
   expect_error(
     SurveyQuestion$new(

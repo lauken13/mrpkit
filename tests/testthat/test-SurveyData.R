@@ -103,6 +103,13 @@ test_that("object has correct R6 class", {
   expect_r6_class(feline_prefs, "SurveyData")
 })
 
+test_that("print output hasn't changed", {
+  expect_known_output(
+    print(feline_prefs),
+    file = test_path("answers/SurveyData-print")
+  )
+})
+
 test_that("n_obs is working correctly", {
   expect_equal(feline_prefs$n_obs(), 500)
 })
@@ -110,7 +117,6 @@ test_that("n_obs is working correctly", {
 test_that("n_questions is working correctly", {
   expect_equal(feline_prefs$n_questions(), 4)
 })
-
 
 test_that("weights is working correctly", {
   expect_equal(feline_prefs$weights()[1], 98.98852)
