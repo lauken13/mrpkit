@@ -1,10 +1,23 @@
-test_that("silent if specified correctly", {
-  expect_silent(
+test_that("object has correct R6 class", {
+  expect_r6_class(
     SurveyQuestion$new(
       name = "pet",
       col_names = c("pet_own","pet_pref"),
       values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
-    )
+    ),
+    "SurveyQuestion"
+  )
+})
+
+test_that("print output hasn't changed", {
+  q <- SurveyQuestion$new(
+    name = "pet",
+    col_names = c("pet_own","pet_pref"),
+    values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
+  )
+  expect_known_output(
+    print(q),
+    file = test_path("answers/SurveyQuestion-print")
   )
 })
 
