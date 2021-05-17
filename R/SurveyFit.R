@@ -46,21 +46,23 @@ SurveyFit <- R6::R6Class(
 
     #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
     #' @param fun The function to use to generate the predicted probabilities.
-    #'   This should only be specified if using a custom model fitting function.
+    #'   This should only be specified if you used a model fitting function
+    #'   not natively supported by \pkg{mrpkit}.
     #'   For models fit using \pkg{rstanarm}, \pkg{brms}, or \pkg{lme4}, `fun`
-    #'   is handled automatically. If `fun` is a custom function then the first
-    #'   argument should take in the fitted model object and the second argument
-    #'   should take in the poststratification (`newdata`) data frame. The
-    #'   function must return a matrix with rows corresponding to the columns of
-    #'   the poststratification data and columns corresponding to simulations.
-    #' @param ... Arguments other than the fitted model and `newdata` data frame
-    #'   to pass to `fun`.
-    #' @return A matrix with rows corresponding to poststrat cells and columns
-    #'   corresponding to posterior samples.
-    #'
-    population_predict = function(fun = NULL, ...) {
+    #'   is handled automatically. If `fun` is specified then:
+    #'   * the first argument should be the fitted model object
+    #'   * the second argument should be the poststratification data frame
+    #'   * it can take an arbitrary number of other arguments
+    #'   * the returned object should match the specifications in the 'Returns'
+    #'    section below in order to be compatible with subsequent methods
+    #' @param ... Arguments other than the fitted model object and
+    #'   poststratification data frame to pass to `fun`.
+    #' @return A matrix with rows corresponding to poststratification cells and
+    #'   columns corresponding to posterior samples (or approximate ones
+    #'   in the case of \pkg{lme4} models).
+    population_predict = function(..., fun = NULL) {
       args <- list(...)
-      if (!is.null(args$newdata)) {
+      if (!is.null(args$newdata) && is.null(fun)) {
         stop("The 'newdata' argument should not be specified.",
              call. = FALSE)
       }
@@ -71,8 +73,8 @@ SurveyFit <- R6::R6Class(
       }
       poststrat <- private$map_$poststrat_data()
 
-      if (is.null(args$fun)) {
-        if ("stanreg" %in% class(private$fit_)){
+      if (is.null(fun)) {
+        if ("stanreg" %in% class(private$fit_)) {
           require_suggested_package("rstanarm", "2.21.0")
           return(
             t(suppressMessages(rstanarm::posterior_linpred(
@@ -82,8 +84,7 @@ SurveyFit <- R6::R6Class(
               ...
             )))
           )
-        }
-        if ("brmsfit" %in% class(private$fit_)){
+        } else if ("brmsfit" %in% class(private$fit_)) {
           require_suggested_package("brms")
           return(
             t(brms::posterior_epred(
@@ -97,8 +98,7 @@ SurveyFit <- R6::R6Class(
               ...
             ))
           )
-        }
-        if ("glmerMod" %in% class(private$fit_)) {
+        } else if ("glmerMod" %in% class(private$fit_)) {
           require_suggested_package("lme4")
           return(
             sim_posterior_probs(
@@ -107,12 +107,27 @@ SurveyFit <- R6::R6Class(
               ...
             )
           )
+        } else {
+          stop("Custom population_predict method required. Please specifiy 'fun'.",
+               call. = FALSE)
         }
       } else {
         fun <- match.fun(fun)
         fun(fitted_model, poststrat, ...)
       }
     },
+
+    #' @description Aggregate estimates to the population level or by level of a grouping variable
+    #' @param poststrat_estimates The object returned by `population_predict`.
+    #' @param by Optionally a string specifying a grouping variable. If
+    #'   specified the aggregation will happen by level of the named variable.
+    #'   If not specified population-level estimates will be computed.
+    #' @return A data frame. If `by` is not specified then the data frame will
+    #'   have number of rows equal to the number of posterior draws. If `by` is
+    #'   specified the data frame will have number of rows equal to the number
+    #'   of posterior draws times the number of levels of the `by` variable,
+    #'   and there will be an extra column indicating which level of the `by`
+    #'   variable each row corresponds to.
     aggregate = function(poststrat_estimates, by = NULL) {
       poststrat_data <- private$map_$poststrat_data()
       if (!is.null(by)) {
@@ -174,9 +189,9 @@ SurveyFit <- R6::R6Class(
           gg <- gg +
             ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = .data[["mean"]])) +
             ggplot2::annotate("rect",
-              xmin = wtd_ests$mean - 1.96*wtd_ests$sd, xmax = wtd_ests$mean + 1.96*wtd_ests$sd,
-              ymin = 0, ymax = 1,
-              alpha = .5, fill = "grey"
+                              xmin = wtd_ests$mean - 1.96*wtd_ests$sd, xmax = wtd_ests$mean + 1.96*wtd_ests$sd,
+                              ymin = 0, ymax = 1,
+                              alpha = .5, fill = "grey"
             )
         }
       }
