@@ -677,3 +677,23 @@ test_that("mapped_sample_data and mapped_population_data work", {
   expect_named(ex_map$mapped_sample_data(key = FALSE), c("age", "pet", "gender"))
   expect_named(ex_map$mapped_population_data(key = FALSE), c("age", "pet", "gender"))
 })
+
+test_that("tabulate doesn't error if no weights were specified", {
+  suppressWarnings({
+    samp <- SurveyData$new(feline_survey)
+    popn <- SurveyData$new(approx_popn)
+  })
+  q1 <- SurveyQuestion$new(
+    name = "age",
+    col_names = c("age1","age2"),
+    values_map = list(
+      "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+      "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
+    )
+  )
+  ex_map <- SurveyMap$new(samp, popn, q1)
+  ex_map$mapping()
+  expect_equal(nrow(ex_map$poststrat_data()), 0)
+  expect_silent(ex_map$tabulate())
+  expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
+})
