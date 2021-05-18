@@ -152,21 +152,21 @@ SurveyFit <- R6::R6Class(
       if (dim(aggregated_estimates)[2] > 2) {
         focus_var <- colnames(aggregated_estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
-        svy_q <- private$map_$samp_obj()$questions()[[which_q]]
+        svy_q <- private$map_$sample()$questions()[[which_q]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
           ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
-          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
+          ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)
       } else {
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
-        svy_q <- private$map_$samp_obj()$questions()[[lhs_var]]
+        svy_q <- private$map_$sample()$questions()[[lhs_var]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
           ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
-          ggplot2::scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
-          ggplot2::scale_y_continuous(limits = c(0,1), expand = c(0, 0)) +
+          ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+          ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)
       }
 
@@ -190,9 +190,8 @@ SurveyFit <- R6::R6Class(
             ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = .data[["mean"]])) +
             ggplot2::annotate("rect",
                               xmin = wtd_ests$mean - 1.96*wtd_ests$sd, xmax = wtd_ests$mean + 1.96*wtd_ests$sd,
-                              ymin = 0, ymax = 1,
-                              alpha = .5, fill = "grey"
-            )
+                              ymin = 0, ymax = 1.05,
+                              alpha = .5, fill = "grey")
         }
       }
       gg

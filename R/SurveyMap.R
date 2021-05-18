@@ -74,7 +74,7 @@
 #'
 #' # Create SurveyMap object
 #' # can add all questions at once or incrementally
-#' ex_map <- SurveyMap$new(samp_obj = feline_prefs, popn_obj = popn_obj, q1)
+#' ex_map <- SurveyMap$new(sample = feline_prefs, population = popn_obj, q1)
 #' print(ex_map)
 #' ex_map$validate()
 #' ex_map$add(q3)
@@ -143,8 +143,8 @@
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
-    samp_obj_ = NULL,
-    popn_obj_ = NULL,
+    sample_ = NULL,
+    population_ = NULL,
     item_map_ = list(),
     poststrat_data_ = data.frame(NULL),
     mapped_sample_data_ = NULL,
@@ -153,15 +153,15 @@ SurveyMap <- R6::R6Class(
   public = list(
 
     #' @description Create a new SurveyMap object
-    #' @param samp_obj The [SurveyData] object corresponding to the sample data.
-    #' @param popn_obj The [SurveyData] object corresponding to the population data.
+    #' @param sample The [SurveyData] object corresponding to the sample data.
+    #' @param population The [SurveyData] object corresponding to the population data.
     #' @param ... [SurveyQuestion] objects.
-    initialize = function(samp_obj, popn_obj, ...) {
-      if (!inherits(samp_obj, "SurveyData")) {
-        stop("samp_obj must be a SurveyData object.", call. = FALSE)
+    initialize = function(sample, population, ...) {
+      if (!inherits(sample, "SurveyData")) {
+        stop("'sample' must be a SurveyData object.", call. = FALSE)
       }
-      if (!inherits(popn_obj, "SurveyData")) {
-        stop("popn_obj must be a SurveyData object.", call. = FALSE)
+      if (!inherits(population, "SurveyData")) {
+        stop("'population' must be a SurveyData object.", call. = FALSE)
       }
 
       private$item_map_ <- list(...)
@@ -169,10 +169,10 @@ SurveyMap <- R6::R6Class(
         names(private$item_map_)[i] <- private$item_map_[[i]]$name()
       }
 
-      private$samp_obj_ <- samp_obj
-      private$popn_obj_ <- popn_obj
-      private$mapped_sample_data_ <- data.frame(.key = 1:nrow(samp_obj$survey_data()))
-      private$mapped_population_data_ <- data.frame(.key = 1:nrow(popn_obj$survey_data()))
+      private$sample_ <- sample
+      private$population_ <- population
+      private$mapped_sample_data_ <- data.frame(.key = 1:nrow(sample$survey_data()))
+      private$mapped_population_data_ <- data.frame(.key = 1:nrow(population$survey_data()))
       invisible(self)
     },
 
@@ -247,35 +247,35 @@ SurveyMap <- R6::R6Class(
 
     #' @description Validate the mapping
     validate = function() {
-      samp_dfnames <- colnames(private$samp_obj_$survey_data(key = FALSE))
-      popn_dfnames <- colnames(private$popn_obj_$survey_data(key = FALSE))
+      samp_dfnames <- colnames(private$sample_$survey_data(key = FALSE))
+      popn_dfnames <- colnames(private$population_$survey_data(key = FALSE))
       samp_mapnames <- character(length(private$item_map_))
       popn_mapnames <- character(length(private$item_map_))
       for (j in 1:length(private$item_map_)) {
         samp_mapnames[j] <- private$item_map_[[j]]$col_names()[1]
         popn_mapnames[j] <- private$item_map_[[j]]$col_names()[2]
-        if (!is.factor(private$samp_obj_$survey_data()[, samp_mapnames[j]])) {
-          private$samp_obj_$add_survey_data_column(
+        if (!is.factor(private$sample_$survey_data()[, samp_mapnames[j]])) {
+          private$sample_$add_survey_data_column(
             name = samp_mapnames[j],
-            value = as.factor(private$samp_obj_$survey_data()[, samp_mapnames[j]])
+            value = as.factor(private$sample_$survey_data()[, samp_mapnames[j]])
           )
           warning("Converting '", samp_mapnames[j], "' into a factor with levels ",
-                  paste(levels(private$samp_obj_$survey_data()[, samp_mapnames[j]]), collapse = ", "),
+                  paste(levels(private$sample_$survey_data()[, samp_mapnames[j]]), collapse = ", "),
                   call. = FALSE)
         }
-        if (!is.factor(private$popn_obj_$survey_data()[, popn_mapnames[j]])) {
-          private$popn_obj_$add_survey_data_column(
+        if (!is.factor(private$population_$survey_data()[, popn_mapnames[j]])) {
+          private$population_$add_survey_data_column(
             name = popn_mapnames[j],
-            value = as.factor(private$popn_obj_$survey_data()[, popn_mapnames[j]])
+            value = as.factor(private$population_$survey_data()[, popn_mapnames[j]])
           )
           warning("Converting '", popn_mapnames[j], "' into a factor with levels ",
-                  paste(levels(private$popn_obj_$survey_data()[, popn_mapnames[j]]), collapse = ", "),
+                  paste(levels(private$population_$survey_data()[, popn_mapnames[j]]), collapse = ", "),
                   call. = FALSE)
         }
         levels_map_samp <- levels(private$item_map_[[j]]$values()[, 1])
         levels_map_popn <- levels(private$item_map_[[j]]$values()[, 2])
-        levels_data_samp <- levels(private$samp_obj_$survey_data()[, samp_mapnames[j]])
-        levels_data_popn <- levels(private$popn_obj_$survey_data()[, popn_mapnames[j]])
+        levels_data_samp <- levels(private$sample_$survey_data()[, samp_mapnames[j]])
+        levels_data_popn <- levels(private$population_$survey_data()[, popn_mapnames[j]])
         if (!samp_mapnames[j] %in% samp_dfnames) {
           stop("Variable '", samp_mapnames[j], "' not in sample", call. = FALSE)
         }
@@ -366,8 +366,8 @@ SurveyMap <- R6::R6Class(
           }
 
         }
-        private$mapped_sample_data_[[new_varname]] <- forcats::fct_recode(private$samp_obj_$survey_data()[[samp_mapnames]], !!!new_levels_samp)
-        private$mapped_population_data_[[new_varname]] <- forcats::fct_recode(private$popn_obj_$survey_data()[[popn_mapnames]], !!!new_levels_popn)
+        private$mapped_sample_data_[[new_varname]] <- forcats::fct_recode(private$sample_$survey_data()[[samp_mapnames]], !!!new_levels_samp)
+        private$mapped_population_data_[[new_varname]] <- forcats::fct_recode(private$population_$survey_data()[[popn_mapnames]], !!!new_levels_popn)
       }
       invisible(self)
     },
@@ -384,7 +384,7 @@ SurveyMap <- R6::R6Class(
       }
       private$poststrat_data_ <-
         private$mapped_population_data_ %>%
-        dplyr::mutate(wts = private$popn_obj_$weights()) %>%
+        dplyr::mutate(wts = private$population_$weights()) %>%
         dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
         dplyr::summarize(N_j = sum(wts), .groups = 'drop')
       invisible(self)
@@ -441,7 +441,7 @@ SurveyMap <- R6::R6Class(
              paste("Missing vars: ", paste(rhs_vars[!rhs_vars %in% colnames(mapped_data)], collapse = ', ')),
              call. = FALSE)
       }
-      if (sum(!lhs_vars %in% colnames(private$samp_obj_$survey_data()))) {
+      if (sum(!lhs_vars %in% colnames(private$sample_$survey_data()))) {
         stop("Outcome variable not present in data. ",
              call. = FALSE)
       }
@@ -453,7 +453,7 @@ SurveyMap <- R6::R6Class(
       }
 
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
-      y_and_x <- private$samp_obj_$survey_data()[, need_vars, drop = FALSE]
+      y_and_x <- private$sample_$survey_data()[, need_vars, drop = FALSE]
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
       fit <- do.call(fun, args)
@@ -464,10 +464,10 @@ SurveyMap <- R6::R6Class(
     item_map = function() private$item_map_,
 
     #' @description Access the [SurveyData] object containing the sample data
-    samp_obj = function() private$samp_obj_,
+    sample = function() private$sample_,
 
     #' @description Access the [SurveyData] object containing the population data
-    popn_obj = function() private$popn_obj_,
+    population = function() private$population_,
 
     #' @description Access the poststratification data frame created by the `tabulate` method
     poststrat_data = function() {
