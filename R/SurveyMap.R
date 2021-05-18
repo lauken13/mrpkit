@@ -30,7 +30,7 @@
 #'     pet_own = levels(feline_survey$pet_own),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = feline_survey$wt
+#'   weights = feline_survey$wt # optional
 #' )
 #' feline_prefs$print()
 #'
@@ -49,11 +49,11 @@
 #'     age2 = levels(approx_popn$age2),
 #'     pet_pref = levels(approx_popn$pet_pref)
 #'   ),
-#'   weights = approx_popn$wt
+#'   weights = approx_popn$wt # optional
 #' )
 #' popn_obj$print()
 #'
-#' q1 <- SurveyQuestion$new(
+#' q_age <- SurveyQuestion$new(
 #'   name = "age",
 #'   col_names = c("age1","age2"),
 #'   values_map = list(
@@ -61,43 +61,46 @@
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
 #'   )
 #' )
-#' q2 <- SurveyQuestion$new(
+#' q_pet <- SurveyQuestion$new(
 #'   name = "pet",
 #'   col_names = c("pet_own","pet_pref"),
 #'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 #' )
-#' q3 <- SurveyQuestion$new(
+#' q_gender <- SurveyQuestion$new(
 #'   name = "gender",
 #'   col_names = c("gender","gender"),
 #'   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
-#' # Create SurveyMap object
-#' # can add all questions at once or incrementally
-#' ex_map <- SurveyMap$new(sample = feline_prefs, population = popn_obj, q1)
+#' # Create SurveyMap object adding all questions at once
+#' ex_map <- SurveyMap$new(
+#'   sample = feline_prefs,
+#'   population = popn_obj,
+#'   q_age,
+#'   q_pet,
+#'   q_gender
+#' )
+#' print(ex_map) # or ex_map$print()
+#'
+#' # Or can add questions incrementally
+#' ex_map <- SurveyMap$new(sample = feline_prefs, population = popn_obj)
 #' print(ex_map)
-#' ex_map$validate()
-#' ex_map$add(q3)
+#'
+#' ex_map$add(q_age, q_pet)
 #' print(ex_map)
-#' ex_map$delete(q3)
+#'
+#' ex_map$add(q_gender)
 #' print(ex_map)
-#' ex_map$add(q3)
-#' ex_map$delete("gender")
-#' print(ex_map)
-#' ex_map$add(q2)
-#' print(ex_map)
-#' ex_map$replace(q1,q3)
-#' print(ex_map)
-#' ex_map$add(q1)
-#' print(ex_map)
-#' ex_map$validate()
+#'
+#' # Create the mapping between sample and population
 #' ex_map$mapping()
-#' ex_map$tabulate("age") # Just use age in the poststrat matrix
-#' ex_map$tabulate() # Use all variables in the map
 #'
+#' # Create the poststratification data frame using all variables in the mapping
+#' # (alternatively, can specify particular variables, e.g. tabulate("age"))
+#' ex_map$tabulate()
 #'
-#' #' Example rstanarm usage
-#' #' Returns a SurveyFit object
+#' # Example rstanarm usage
+#' # Returns a SurveyFit object
 #' fit_1 <- ex_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
@@ -107,10 +110,15 @@
 #' )
 #'
 #' \dontrun{
-#' # Example brms usage
-#' # Returns a SurveyFit object
-#' # (not run because requires compilation)
+#' # Example lme4 usage
 #' fit_2 <- ex_map$fit(
+#'   fun = lme4::glmer,
+#'   formula = y ~ (1|age) + (1|gender),
+#'   family = "binomial"
+#' )
+#'
+#' # Example brms usage
+#' fit_3 <- ex_map$fit(
 #'   fun = brms::brm,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "bernoulli",
