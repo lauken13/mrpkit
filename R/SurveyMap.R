@@ -317,6 +317,11 @@ SurveyMap <- R6::R6Class(
         warning("At least one variable in the survey needs to be unknown in the population.",
                 call. = FALSE)
       }
+      if (anyNA(private$sample_$survey_data()[, samp_mapnames]) ||
+          anyNA(private$population_$survey_data()[, popn_mapnames])) {
+        stop("NAs not allowed in variables mapped between sample and population.", call. = FALSE)
+      }
+
       invisible(self)
     },
 
@@ -374,7 +379,10 @@ SurveyMap <- R6::R6Class(
 
     #' @description Prepare the poststratification table
     #' @param ... The variables to include.
-    tabulate  = function(...) {
+    tabulate = function(...) {
+      if (ncol(self$mapped_population_data(key = FALSE)) == 0) {
+        stop("Please call the mapping() method before tabulate()", call. = FALSE)
+      }
       grouping_vars <- c(...)
       if (length(grouping_vars) == 0) {
         grouping_vars <- names(private$item_map_)
@@ -413,7 +421,7 @@ SurveyMap <- R6::R6Class(
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
-      if (identical(colnames(private$mapped_sample_data_), ".key")) {
+      if (ncol(self$mapped_population_data(key = FALSE)) == 0) {
         stop("Mapped data not found. ",
              "Please call the mapping() method before fitting a model.",
              call. = FALSE)
@@ -422,13 +430,6 @@ SurveyMap <- R6::R6Class(
         stop("Post-stratification data not found. ",
              "Please call the tabulate() method before fitting a model.",
              call. = FALSE)
-      }
-
-      admin_package <- as.character(getNamespaceName(environment(fun)))
-      if (!any(admin_package %in% c("lme4","brms","rstanarm"))){
-        warning("Only rstanarm, brms and lme4 are supported natively. ",
-                "Other modeling tools will need a custom population_predict() method.",
-                call. = FALSE)
       }
 
       formula <- as.formula(formula)
@@ -450,6 +451,17 @@ SurveyMap <- R6::R6Class(
              "Please ensure all predictor variables are mapped from sample to population. ",
              paste("Missing vars:", paste(rhs_vars[!rhs_vars %in% colnames(private$poststrat_data_)], collapse = ', ')),
              call. = FALSE)
+      }
+      if (anyNA(private$sample_$survey_data()[[lhs_vars]])) {
+        warning("Outcome variable has missing values that may be dropped ",
+                "by the model fitting package.",
+                call. = FALSE
+        )
+      }
+      if (!any(getNamespaceName(environment(fun)) %in% c("lme4","brms","rstanarm"))) {
+        warning("Only rstanarm, brms and lme4 are supported natively. ",
+                "Other modeling tools will need a custom population_predict() method.",
+                call. = FALSE)
       }
 
       need_vars <- setdiff(all.vars(formula), colnames(mapped_data))
