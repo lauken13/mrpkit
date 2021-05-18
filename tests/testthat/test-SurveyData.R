@@ -151,11 +151,11 @@ test_that("survey_data dimensions match", {
   expect_equal(dim(feline_prefs$survey_data()), c(500, 6))
 })
 
-test_that("responses is working correctly", {
+test_that("responses returns correct object", {
   expect_equal(feline_prefs$responses()$gender, c("male", "female", "nonbinary"))
 })
 
-test_that("questions is working correctly", {
+test_that("questions returns correct object", {
   expect_match(feline_prefs$questions()$gender, "Please select your gender")
   expect_equal(length(feline_prefs$questions()), 4)
 })
