@@ -41,7 +41,8 @@ Suggests:
     lme4,
     merTools,
     knitr,
-    rmarkdown
+    rmarkdown,
+    vdiffr
 Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 2.10)
