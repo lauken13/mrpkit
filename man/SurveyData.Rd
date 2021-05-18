@@ -88,10 +88,11 @@ Create a new SurveyData object
 \describe{
 \item{\code{data}}{A data frame containing the survey data.}
 
-\item{\code{questions, responses}}{Named lists containing the text of the
-survey questions and the allowed responses, respectively. The names
-must correspond to the names of variables in \code{data}. See
-\strong{Examples}.}
+\item{\code{questions, responses}}{Named lists containing the text of the survey
+questions and the allowed responses, respectively. The names must
+correspond to the names of variables in \code{data}. See \strong{Examples}. If
+these aren't provided then they will be created internally using all
+factor, character, and binary variables in \code{data}.}
 
 \item{\code{weights}}{Optionally, a vector of survey weights.}
 
