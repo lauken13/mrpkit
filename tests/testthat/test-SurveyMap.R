@@ -314,8 +314,8 @@ test_that("validate creates correct levels (example6)", {
 test_that("validate errors if NAs in adjustment variables in sample data", {
   d <- feline_survey
   d$age1[3] <- NA
-  suppressWarnings(samp_obj_NA <- SurveyData$new(data = d))
-  ex_map <- SurveyMap$new(samp_obj_NA, popn_obj, q1, q2, q3)
+  suppressWarnings(samp_NA <- SurveyData$new(data = d))
+  ex_map <- SurveyMap$new(samp_NA, popn, q1, q2, q3)
   expect_error(
     ex_map$validate(),
     "NAs not allowed in variables mapped between sample and population"
@@ -325,8 +325,8 @@ test_that("validate errors if NAs in adjustment variables in sample data", {
 test_that("validate errors if NAs in population data", {
   d <- approx_popn
   d$age2[3] <- NA
-  suppressWarnings(popn_obj_NA <- SurveyData$new(data = d))
-  ex_map <- SurveyMap$new(samp_obj, popn_obj_NA, q1, q2, q3)
+  suppressWarnings(popn_NA <- SurveyData$new(data = d))
+  ex_map <- SurveyMap$new(samp, popn_NA, q1, q2, q3)
   expect_error(
     ex_map$validate(),
     "NAs not allowed in variables mapped between sample and population"
@@ -497,7 +497,7 @@ test_that("Error if data hasn't been mapped yet",{
 })
 
 test_that("Error if calling tabulate before mapping", {
-  ex_map <- SurveyMap$new(samp_obj, popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
   expect_error(
     ex_map$tabulate(),
     "Please call the mapping() method",
@@ -591,13 +591,13 @@ test_that("Warning if missingness in outcome", {
   d <- feline_survey
   d$y[3] <- NA
   suppressWarnings(
-    samp_obj2 <- SurveyData$new(
+    samp2 <- SurveyData$new(
       data = d,
       weights = feline_survey$wt,
       design = formula("~.")
     )
   )
-  ex_map <- SurveyMap$new(samp_obj2, popn_obj, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp2, popn, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   expect_warning(
