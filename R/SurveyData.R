@@ -54,7 +54,6 @@ SurveyData <- R6::R6Class(
   classname = "SurveyData",
   private = list(
     survey_data_ = data.frame(NULL),
-    mapped_data_ = data.frame(NULL),
     questions_ = list(),
     responses_ = list(),
     weights_ = numeric(),
@@ -146,7 +145,6 @@ SurveyData <- R6::R6Class(
       private$weights_ <- weights
       private$design_ <- design
       private$survey_data_ <- data.frame(.key = 1:nrow(data), data)
-      private$mapped_data_ <- data.frame(.key = 1:nrow(data))
       invisible(self)
     },
 
@@ -181,19 +179,6 @@ SurveyData <- R6::R6Class(
       private$survey_data_[[name]] <- value
       invisible(self)
     },
-    #' @description Add a column to the mapped data. This is primarily
-    #'   intended for internal use but may occasionally be useful.
-    #' @param name,value The name of the new variable (a string) and the
-    #' vector of values to add to the data frame.
-    add_mapped_data_column = function(name, value) {
-      if (ncol(private$mapped_data_)  == 0) {
-        private$mapped_data_ <- data.frame(value)
-        colnames(private$mapped_data_) <- name
-      } else {
-        private$mapped_data_[[name]] <- value
-      }
-      invisible(self)
-    },
 
     #' @description Access the data frame containing the sample data.
     #' @param key Should the `.key` column be included? This column just
@@ -204,18 +189,6 @@ SurveyData <- R6::R6Class(
         private$survey_data_
       } else {
         private$survey_data_[, colnames(private$survey_data_) != ".key", drop = FALSE]
-      }
-    },
-
-    #' @description Access the data frame containing the mapped data.
-    #' @param key Should the `.key` column be included? This column just
-    #'   indicates the original order of the rows and is primarily intended
-    #'   for internal use.
-    mapped_data = function(key = TRUE) {
-      if (key) {
-        private$mapped_data_
-      } else {
-        private$mapped_data_[, colnames(private$mapped_data_) != ".key", drop = FALSE]
       }
     },
 

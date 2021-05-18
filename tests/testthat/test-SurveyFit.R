@@ -50,7 +50,7 @@ q3 <- SurveyQuestion$new(
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
-ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
+ex_map <- SurveyMap$new(samp_obj, popn_obj, q1,q2,q3)
 ex_map$mapping()
 ex_map$tabulate()
 
