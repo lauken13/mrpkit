@@ -50,7 +50,7 @@ q3 <- SurveyQuestion$new(
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
-ex_map <- SurveyMap$new(samp_obj = samp_obj, popn_obj = popn_obj, q1,q2,q3)
+ex_map <- SurveyMap$new(samp_obj, popn_obj, q1,q2,q3)
 ex_map$mapping()
 ex_map$tabulate()
 
@@ -206,6 +206,55 @@ test_that("Aggregate (by variable level) returns correct objects", {
   expect_s3_class(x, "data.frame")
   expect_named(x, expected_names)
   expect_equal(dim(x), expected_dims)
+})
+
+test_that("plot returns ggplot object", {
+  popn <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
+  expect_s3_class(fit_stan_glmer$plot(popn, weights = TRUE), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, weights = FALSE), "ggplot")
+
+  by_age <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
+  expect_s3_class(fit_stan_glmer$plot(by_age, weights = TRUE), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(by_age, weights = FALSE), "ggplot")
+})
+
+test_that("plot appearance hasn't changed", {
+  skip_on_cran()
+  skip_if_not_installed("vdiffr")
+
+  # need to use deterministic inputs to the plots to test appearance changes
+  popn <- data.frame(value = c(0.60, 0.65, 0.70, 0.75, 0.80))
+  by_age <- data.frame(age = factor(rep(1:4, 5), labels = popn_obj$responses()$age),
+                       draw = rep(1:5, each = 4),
+                       value = c(0.299514804640785, 0.217973976861686, 0.258871184848249, 0.271914651058614,
+                                 0.31649006572552, 0.697755558183417, 0.209188556019217, 0.431414544349536,
+                                 0.74861360588111, 0.209171398542821, 0.385790600813925, 0.45710161360912,
+                                 0.537278639385477, 0.752459280192852, 0.510153451515362, 0.644023981876671,
+                                 0.570707685500383, 0.323449705773965, 0.505213424470276, 0.236637408705428)
+                       )
+
+  vdiffr::expect_doppelganger(
+    "plot-population",
+    fit_glmer$plot(popn, weights = FALSE),
+    path = "SurveyFit"
+  )
+  vdiffr::expect_doppelganger(
+    "plot-population-weights",
+    fit_glmer$plot(popn, weights = TRUE),
+    path = "SurveyFit"
+  )
+
+  vdiffr::expect_doppelganger(
+    "plot-group",
+    fit_glmer$plot(by_age, weights = FALSE),
+    path = "SurveyFit"
+  )
+
+  vdiffr::expect_doppelganger(
+    "plot-group-weights",
+    fit_glmer$plot(by_age, weights = TRUE),
+    path = "SurveyFit"
+  )
 })
 
 # the objects in this test still need to be created

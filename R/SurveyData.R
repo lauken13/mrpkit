@@ -54,7 +54,6 @@ SurveyData <- R6::R6Class(
   classname = "SurveyData",
   private = list(
     survey_data_ = data.frame(NULL),
-    mapped_data_ = data.frame(NULL),
     questions_ = list(),
     responses_ = list(),
     weights_ = numeric(),
@@ -63,10 +62,11 @@ SurveyData <- R6::R6Class(
   public = list(
     #' @description Create a new SurveyData object
     #' @param data A data frame containing the survey data.
-    #' @param questions,responses Named lists containing the text of the
-    #'   survey questions and the allowed responses, respectively. The names
-    #'   must correspond to the names of variables in `data`. See
-    #'   **Examples**.
+    #' @param questions,responses Named lists containing the text of the survey
+    #'   questions and the allowed responses, respectively. The names must
+    #'   correspond to the names of variables in `data`. See **Examples**. If
+    #'   these aren't provided then they will be created internally using all
+    #'   factor, character, and binary variables in `data`.
     #' @param weights Optionally, a vector of survey weights.
     #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
     initialize = function(data,
@@ -78,33 +78,31 @@ SurveyData <- R6::R6Class(
         stop("'data' cannot be empty.", call. = FALSE)
       }
 
-      # allow no question/response, else require info for all columns
-      if (length(questions) != 0 || length(responses) != 0) {
-        if (ncol(data) != length(questions) &
-            length(questions) == sum(stats::complete.cases(data))) {
-          stop("Mismatch between number of data columns and questions.",
-               call. = FALSE)
-        }
-        if (length(responses) != length(questions)) {
-          stop("Mismatch between number of survey questions and responses.",
-               call. = FALSE)
-        }
-        if (length(responses) != length(unique(responses))) {
-          stop("All elements of 'responses' must be unique.")
-        }
-        if (length(questions) != length(unique(questions))) {
-          stop("All elements of 'questions' must be unique.")
-        }
+      if (length(questions) == 0 && length(responses) == 0) {
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(x)) == 2
+        data_use <- data[, sapply(data, keep), drop = FALSE]
+        questions <- setNames(as.list(colnames(data_use)), colnames(data_use))
+        responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(x))
+        warning(
+          "No 'questions' and 'responses' provided. ",
+          "Using all factor, character, and binary variables in 'data' by default.",
+          call. = FALSE
+        )
       }
-
-      if (length(weights) != 0) {
-        if (length(weights) != nrow(data)) {
-          stop("Mismatch between number of data rows and number of weights.",
-               call. = FALSE)
-        }
-        if (anyNA(weights)) {
-          stop("NAs not allowed in weights.", call. = FALSE)
-        }
+      if (ncol(data) != length(questions) &
+          length(questions) == sum(stats::complete.cases(data))) {
+        stop("Mismatch between number of data columns and questions.",
+             call. = FALSE)
+      }
+      if (length(responses) != length(questions)) {
+        stop("Mismatch between number of survey questions and responses.",
+             call. = FALSE)
+      }
+      if (length(responses) != length(unique(responses))) {
+        stop("All elements of 'responses' must be unique.")
+      }
+      if (length(questions) != length(unique(questions))) {
+        stop("All elements of 'questions' must be unique.")
       }
 
       nms_q <- sort(names(questions))
@@ -141,12 +139,21 @@ SurveyData <- R6::R6Class(
         }
       }
 
+      if (length(weights) != 0) {
+        if (length(weights) != nrow(data)) {
+          stop("Mismatch between number of data rows and number of weights.",
+               call. = FALSE)
+        }
+        if (anyNA(weights)) {
+          stop("NAs not allowed in weights.", call. = FALSE)
+        }
+      }
+
       private$questions_ <- questions
       private$responses_ <- responses
       private$weights_ <- weights
       private$design_ <- design
       private$survey_data_ <- data.frame(.key = 1:nrow(data), data)
-      private$mapped_data_ <- data.frame(.key = 1:nrow(data))
       invisible(self)
     },
 
@@ -181,19 +188,6 @@ SurveyData <- R6::R6Class(
       private$survey_data_[[name]] <- value
       invisible(self)
     },
-    #' @description Add a column to the mapped data. This is primarily
-    #'   intended for internal use but may occasionally be useful.
-    #' @param name,value The name of the new variable (a string) and the
-    #' vector of values to add to the data frame.
-    add_mapped_data_column = function(name, value) {
-      if (ncol(private$mapped_data_)  == 0) {
-        private$mapped_data_ <- data.frame(value)
-        colnames(private$mapped_data_) <- name
-      } else {
-        private$mapped_data_[[name]] <- value
-      }
-      invisible(self)
-    },
 
     #' @description Access the data frame containing the sample data.
     #' @param key Should the `.key` column be included? This column just
@@ -204,18 +198,6 @@ SurveyData <- R6::R6Class(
         private$survey_data_
       } else {
         private$survey_data_[, colnames(private$survey_data_) != ".key", drop = FALSE]
-      }
-    },
-
-    #' @description Access the data frame containing the mapped data.
-    #' @param key Should the `.key` column be included? This column just
-    #'   indicates the original order of the rows and is primarily intended
-    #'   for internal use.
-    mapped_data = function(key = TRUE) {
-      if (key) {
-        private$mapped_data_
-      } else {
-        private$mapped_data_[, colnames(private$mapped_data_) != ".key", drop = FALSE]
       }
     },
 
