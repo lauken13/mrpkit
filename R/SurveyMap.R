@@ -173,6 +173,7 @@ SurveyMap <- R6::R6Class(
       private$population_ <- population
       private$mapped_sample_data_ <- data.frame(.key = 1:nrow(sample$survey_data()))
       private$mapped_population_data_ <- data.frame(.key = 1:nrow(population$survey_data()))
+      self$validate()
       invisible(self)
     },
 
@@ -210,6 +211,7 @@ SurveyMap <- R6::R6Class(
         private$item_map_[[ll_length + 1]] <- dots[[i]]
         names(private$item_map_)[ll_length + 1] <- private$item_map_[[ll_length + 1]]$name()
       }
+      self$validate()
       invisible(self)
     },
 
@@ -232,6 +234,7 @@ SurveyMap <- R6::R6Class(
           private$item_map_[[which(loc_id)]] <- NULL
         }
       }
+      self$validate()
       invisible(self)
     },
 
@@ -247,6 +250,9 @@ SurveyMap <- R6::R6Class(
 
     #' @description Validate the mapping
     validate = function() {
+      if (length(private$item_map_) == 0) {
+        return(invisible(self))
+      }
       samp_dfnames <- colnames(private$sample_$survey_data(key = FALSE))
       popn_dfnames <- colnames(private$population_$survey_data(key = FALSE))
       samp_mapnames <- character(length(private$item_map_))
