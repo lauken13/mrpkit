@@ -38,11 +38,13 @@ test_that("error thrown if inputs are not SurveyData objects", {
 })
 
 test_that("initializing with 0 questions doesn't error", {
-  expect_silent(SurveyMap$new(samp, popn))
+  ex_map <- SurveyMap$new(samp, popn)
+  expect_length(ex_map$item_map(), 0)
 })
 
 test_that("initializing with >0 questions doesn't error", {
-  expect_silent(SurveyMap$new(samp, popn, q1, q2))
+  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  expect_length(ex_map$item_map(), 3)
 })
 
 test_that("add() errors if name already exists", {
@@ -87,7 +89,6 @@ test_that("validate creates correct levels (example1)", {
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age,
                   c('18-45', "46+"))
@@ -129,7 +130,6 @@ test_that("validate creates correct levels (example2)", {
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age[1:10],
                   c("18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45"))
@@ -172,7 +172,6 @@ test_that("validate creates correct levels (example3)", {
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c('18-25', "26+"))
@@ -214,7 +213,6 @@ test_that("validate creates correct levels (example4)", {
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age[7:16],
                   c("18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+"))
@@ -259,7 +257,6 @@ test_that("validate creates correct levels (example5)", {
     )
   )
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
@@ -302,8 +299,7 @@ test_that("validate creates correct levels (example6)", {
       "A" = "Z", "A" = "Y","B" = "Y","C" = "C",
       "D" = "X","D"="Q","E"="Q")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  ex_map <- SurveyMap$new(samp, popn, q1)
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("A + B","C","D + E"))
@@ -315,9 +311,8 @@ test_that("validate errors if NAs in adjustment variables in sample data", {
   d <- feline_survey
   d$age1[3] <- NA
   suppressWarnings(samp_NA <- SurveyData$new(data = d))
-  ex_map <- SurveyMap$new(samp_NA, popn, q1, q2, q3)
   expect_error(
-    ex_map$validate(),
+    SurveyMap$new(samp_NA, popn, q1, q2, q3),
     "NAs not allowed in variables mapped between sample and population"
   )
 })
@@ -326,9 +321,8 @@ test_that("validate errors if NAs in population data", {
   d <- approx_popn
   d$age2[3] <- NA
   suppressWarnings(popn_NA <- SurveyData$new(data = d))
-  ex_map <- SurveyMap$new(samp, popn_NA, q1, q2, q3)
   expect_error(
-    ex_map$validate(),
+    SurveyMap$new(samp, popn_NA, q1, q2, q3),
     "NAs not allowed in variables mapped between sample and population"
   )
 })
