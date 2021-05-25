@@ -44,7 +44,7 @@ get_pop_sample <- function(data, n) {
 }
 
 ### create the survey data
-bp_survey <- get_sample(popn,500)
+shape_survey <- get_sample(popn,500)
 
 ### create the approx.population data
 approx_voters_popn <- get_pop_sample(popn, 5000) %>%
@@ -73,22 +73,22 @@ approx_voters_popn$wt <- weights(wts_trim_approx_popn)
 #### Voters Survey ####
 
 # Create weights #
-bp_survey$wt = 1
+shape_survey$wt = 1
 
-svy_design_bp_survey <- svydesign(ids=~1,weights = ~wt, data= bp_survey)
+svy_design_shape_survey <- svydesign(ids=~1,weights = ~wt, data= shape_survey)
 
-rkd_obj_bp_survey <- rake(design = svy_design_bp_survey, sample.margins = list(
+rkd_obj_shape_survey <- rake(design = svy_design_shape_survey, sample.margins = list(
   ~ gender, ~ age_group, ~ vote_for, ~ education, ~ state),
   population.margins = list(gender_margin,age_margin, vote_margin,
                             education_margin, state_margin))
-wts_trim_bp_survey <- trimWeights(rkd_obj_bp_survey,
-                                  upper = quantile(weights(rkd_obj_bp_survey),.975))
-bp_survey$wt <- weights(wts_trim_bp_survey)
+wts_trim_shape_survey <- trimWeights(rkd_obj_shape_survey,
+                                  upper = quantile(weights(rkd_obj_shape_survey),.975))
+shape_survey$wt <- weights(wts_trim_shape_survey)
 
 
 # Adjust measurement  #
 
-bp_survey <- bp_survey %>%
+shape_survey <- shape_survey %>%
   select(-S_inclusion_prob) %>%
   mutate_at(c("age_group", "gender", "vote_for", "education", "state" ,"y"), as.factor) %>%
   mutate(age =fct_recode(age_group, `18-25` = "1", `26-35` = "2",
@@ -145,4 +145,4 @@ approx_voters_popn <- approx_voters_popn %>%
                             "E" = "5")) %>%
   select(c(age_group, gender, vote_pref, wt, education, state))
 
-usethis::use_data(bp_survey, approx_voters_popn, overwrite = TRUE)
+usethis::use_data(shape_survey, approx_voters_popn, overwrite = TRUE)

@@ -54,13 +54,13 @@
 #' }
 #' @examples
 #'
-#'  bp_survey
+#'  shape_survey
 #'
-"bp_survey"
+"shape_survey"
 
 #' Simulated approximate population data for the Shape World survey
 #'
-#' Simulated approximate population data for the [Shape World][bp_survey]
+#' Simulated approximate population data for the [Shape World][shape_survey]
 #' voters survey (modeled after ACS).
 #'
 #' @source Created in ShapeWorldVoters.R
