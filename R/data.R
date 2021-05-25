@@ -8,12 +8,14 @@
 #'  \item{y}{Example binary outcome variable}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
+#'
 #' @examples
 #' str(feline_survey)
 #'
 "feline_survey"
 
 #' Example approximate population (modelled after ACS)
+#'
 #' @source Created in CreateTestData.R
 #' @format A data frame with columns:
 #' \describe{
@@ -22,18 +24,20 @@
 #'  \item{pet_pref}{Pet preference}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
-#' @examples
 #'
-#'  approx_popn
+#' @examples
+#' str(approx_popn)
 #'
 "approx_popn"
 
 
-#' A Simulated Data of Box Party Voters Survey
+#' Simulated Survey Data for Shape World
 #'
-#' This is a simulated survey of voter preferences for the Box Party
-#' (BP) that also includes several demographic variables. We use this data
-#' throughout the documentation to demonstrate the usage of the package.
+#' This is a simulated survey of whether Shape World voters prefer the Box Party
+#' (BP) or the Circle Party (CP) in the 2020 election. The data also include
+#' several demographic variables and the party the respondent voted for in the
+#' previous election. We use this data throughout the documentation to
+#' demonstrate the usage of the package.
 #'
 #' @source Created in ShapeWorldVoters.R
 #'
@@ -45,7 +49,7 @@
 #'  \item{vote_for}{Party voted for in the 2016 election}
 #'  \item{highest_educ}{Highest grade of education completed}
 #'  \item{state}{State}
-#'  \item{y}{Preference for BP in 2020 election}
+#'  \item{y}{Preference for BP over CP in 2020 election}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
 #' @examples
@@ -54,7 +58,10 @@
 #'
 "bp_survey"
 
-#' Simulated approximate population data for the NLP Voters survey (modeled after ACS)
+#' Simulated approximate population data for the Shape World survey
+#'
+#' Simulated approximate population data for the [Shape World][bp_survey]
+#' voters survey (modeled after ACS).
 #'
 #' @source Created in ShapeWorldVoters.R
 #'
@@ -68,9 +75,9 @@
 #'  \item{state}{State}
 #'  \item{wt}{Raked and trimmed survey weight}
 #' }
-#' @examples
 #'
-#'  approx_voters_popn
+#' @examples
+#' approx_voters_popn
 #'
 "approx_voters_popn"
 
