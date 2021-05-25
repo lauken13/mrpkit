@@ -105,27 +105,27 @@
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
-#'   refresh = 100,
-#'   cores = 2
+#'   seed = 1111,
+#'   # just to keep the example fast and small
+#'   chains = 1,
+#'   warmup = 200
 #' )
 #'
-#' \dontrun{
 #' # Example lme4 usage
-#' fit_2 <- ex_map$fit(
-#'   fun = lme4::glmer,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "binomial"
-#' )
-#'
+#' # fit_2 <- ex_map$fit(
+#' #   fun = lme4::glmer,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "binomial"
+#' # )
+#' #
 #' # Example brms usage
-#' fit_3 <- ex_map$fit(
-#'   fun = brms::brm,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "bernoulli",
-#'   refresh = 100,
-#'   cores = 2
-#' )
-#' }
+#' # fit_3 <- ex_map$fit(
+#' #   fun = brms::brm,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "bernoulli",
+#' #   seed = 1111
+#' # )
+#'
 #'
 #' # predicted probabilities
 #' # returns matrix with rows for poststrat cells, cols for posterior draws
