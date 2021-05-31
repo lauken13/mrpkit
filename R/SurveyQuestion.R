@@ -7,9 +7,9 @@
 #'   for one question or demographic between the survey and population dataset.
 #'
 #' @examples
-#' q1 <- SurveyQuestion$new(
+#' q_age <- SurveyQuestion$new(
 #'   name = "age",
-#'   col_names = c("age1","age2"),
+#'   col_names = c("age","age_group"),
 #'   values_map = list(
 #'     "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
@@ -17,12 +17,12 @@
 #' )
 #' print(q1)
 #'
-#' q2 <- SurveyQuestion$new(
-#'   name = "pet",
-#'   col_names = c("pet_pref","pet_own"),
-#'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","dog" = "puppy")
+#' q_party_pref <- SurveyQuestion$new(
+#'   name = "party_pref",
+#'   col_names = c("vote_for","vote_pref"),
+#'   values_map = list("Box Party" = "The BP", "The BP" = "The BP","The Circle Party" = "The Circles","The Circles" = "The Circles")
 #' )
-#' q3 <- SurveyQuestion$new(
+#' q_gender <- SurveyQuestion$new(
 #'   name = "gender",
 #'   col_names = c("gender", "gender"),
 #'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
