@@ -68,7 +68,7 @@
 #' q_party_pref <- SurveyQuestion$new(
 #'   name = "party_pref",
 #'   col_names = c("vote_for","vote_pref"),
-#'   values_map = list("Box Party" = "The BP", "The BP" = "The BP","The Circle Party" = "The Circles","The Circles" = "The Circles")
+#'   values_map = list("Box Party" = "BP",  "BP" = "BP","Circle Party" = "CP", "CP" = "CP")
 #' )
 #' q_gender <- SurveyQuestion$new(
 #'   name = "gender",
