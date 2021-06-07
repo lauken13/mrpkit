@@ -2,7 +2,7 @@ suppressWarnings({
   samp <- SurveyData$new(data = feline_survey, weights = feline_survey$wt)
   popn <- SurveyData$new(data = approx_popn, weights = approx_popn$wt)
 })
-q1 <- SurveyQuestion$new(
+q_age <- SurveyQuestion$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -10,12 +10,12 @@ q1 <- SurveyQuestion$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q2 <- SurveyQuestion$new(
+q_pet <- SurveyQuestion$new(
   name = "pet",
   col_names = c("pet_own","pet_pref"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 )
-q3 <- SurveyQuestion$new(
+q_gender <- SurveyQuestion$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
@@ -38,17 +38,19 @@ test_that("error thrown if inputs are not SurveyData objects", {
 })
 
 test_that("initializing with 0 questions doesn't error", {
-  expect_silent(SurveyMap$new(samp, popn))
+  ex_map <- SurveyMap$new(samp, popn)
+  expect_length(ex_map$item_map(), 0)
 })
 
 test_that("initializing with >0 questions doesn't error", {
-  expect_silent(SurveyMap$new(samp, popn, q1, q2))
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
+  expect_length(ex_map$item_map(), 3)
 })
 
 test_that("add() errors if name already exists", {
-  ex_map <- SurveyMap$new(samp, popn, q1)
+  ex_map <- SurveyMap$new(samp, popn, q_age)
   expect_error(
-    ex_map$add(q1),
+    ex_map$add(q_age),
     "Survey label 'age' already defined"
   )
 })
@@ -65,8 +67,7 @@ test_that("validate creates correct levels (example1)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30 ,0, 1),
-    design = formula("~.")
+    weights = rnorm(30 ,0, 1)
   )
 
   popn <- SurveyData$new(
@@ -77,17 +78,15 @@ test_that("validate creates correct levels (example1)", {
     responses = list(
       age2 = c("18-45", "46+")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age,
                   c('18-45', "46+"))
@@ -107,8 +106,7 @@ test_that("validate creates correct levels (example2)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30,0,1),
-    design = formula("~.")
+    weights = rnorm(30,0,1)
   )
 
   popn <- SurveyData$new(
@@ -119,17 +117,15 @@ test_that("validate creates correct levels (example2)", {
     responses = list(
       age2 = c("18-45","46+")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age[1:10],
                   c("18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45"))
@@ -150,8 +146,7 @@ test_that("validate creates correct levels (example3)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1),
-    design = formula("~.")
+    weights = rnorm(30, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -162,17 +157,15 @@ test_that("validate creates correct levels (example3)", {
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1),
-    design = formula("~.")
+    weights = rnorm(90, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c('18-25', "26+"))
@@ -192,8 +185,7 @@ test_that("validate creates correct levels (example4)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1),
-    design = formula("~.")
+    weights = rnorm(30, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -204,17 +196,15 @@ test_that("validate creates correct levels (example4)", {
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1),
-    design = formula("~.")
+    weights = rnorm(90, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age[7:16],
                   c("18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+", "18-25", "26+"))
@@ -234,8 +224,7 @@ test_that("validate creates correct levels (example5)", {
       age1 = c("18-25", "26-30", "31-40", "41-55", "56+"),
       y = c("no","yes")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -246,11 +235,10 @@ test_that("validate creates correct levels (example5)", {
     responses = list(
       age2 = c("18-25", "26-35", "36-45", "46-55", "56+")
     ),
-    weights = rnorm(200, 0, 1),
-    design = formula("~.")
+    weights = rnorm(200, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
@@ -258,8 +246,7 @@ test_that("validate creates correct levels (example5)", {
       "41-55" = "36-45", "41-55"="46-55", "56+"="56+"
     )
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("18-25","26-30 + 31-40 + 41-55","56+"))
@@ -279,8 +266,7 @@ test_that("validate creates correct levels (example6)", {
       age1 = c("A", "B", "C", "D", "E"),
       y = c("no", "yes")
     ),
-    weights = rnorm(140, 0, 1),
-    design = formula("~.")
+    weights = rnorm(140, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -291,19 +277,17 @@ test_that("validate creates correct levels (example6)", {
     responses = list(
       age2 =  c("Z","Y","C","X","Q")
     ),
-    weights = rnorm(280, 0, 1),
-    design = formula("~.")
+    weights = rnorm(280, 0, 1)
   )
 
-  q1 <- SurveyQuestion$new(
+  q_age <- SurveyQuestion$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
       "A" = "Z", "A" = "Y","B" = "Y","C" = "C",
       "D" = "X","D"="Q","E"="Q")
   )
-  expect_silent(ex_map <- SurveyMap$new(samp, popn, q1))
-  ex_map$validate()
+  ex_map <- SurveyMap$new(samp, popn, q_age)
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("A + B","C","D + E"))
@@ -311,11 +295,30 @@ test_that("validate creates correct levels (example6)", {
                   c("A + B","C","D + E"))
 })
 
+test_that("validate errors if NAs in adjustment variables in sample data", {
+  d <- feline_survey
+  d$age1[3] <- NA
+  suppressWarnings(samp_NA <- SurveyData$new(data = d))
+  expect_error(
+    SurveyMap$new(samp_NA, popn, q_age, q_pet, q_gender),
+    "NAs not allowed in variables mapped between sample and population"
+  )
+})
+
+test_that("validate errors if NAs in population data", {
+  d <- approx_popn
+  d$age2[3] <- NA
+  suppressWarnings(popn_NA <- SurveyData$new(data = d))
+  expect_error(
+    SurveyMap$new(samp, popn_NA, q_age, q_pet, q_gender),
+    "NAs not allowed in variables mapped between sample and population"
+  )
+})
 
 # This test is currently failing. Should it be?
 # Expected match: "Predictor variables not known in population."
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -327,7 +330,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("rstanarm")
@@ -339,7 +342,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("brms")
@@ -354,7 +357,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
 })
 
 test_that("Error if vars not included in data",{
-  ex_map <-  SurveyMap$new(samp, popn, q1,q2,q3)
+  ex_map <-  SurveyMap$new(samp, popn, q_age,q_pet,q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -415,7 +418,7 @@ test_that("Error if vars not included in data",{
 })
 
 test_that("Error if not fitting a bernoulli/binomial model", {
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
@@ -444,7 +447,7 @@ test_that("Error if not fitting a bernoulli/binomial model", {
 })
 
 test_that("Error if data hasn't been mapped yet",{
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
@@ -474,8 +477,17 @@ test_that("Error if data hasn't been mapped yet",{
   )
 })
 
+test_that("Error if calling tabulate before mapping", {
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
+  expect_error(
+    ex_map$tabulate(),
+    "Please call the mapping() method",
+    fixed = TRUE
+  )
+})
+
 test_that("Error if poststrat matrix hasn't been created yet",{
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   skip_if_not_installed("lme4")
   expect_error(
@@ -507,7 +519,7 @@ test_that("Error if poststrat matrix hasn't been created yet",{
 })
 
 test_that("Error if data is given as input",{
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -543,7 +555,7 @@ test_that("Error if data is given as input",{
 })
 
 test_that("Warning if fitting using packages that are not lme4, brms, rstanarm ", {
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   expect_warning(
@@ -556,8 +568,27 @@ test_that("Warning if fitting using packages that are not lme4, brms, rstanarm "
   )
 })
 
+test_that("Warning if missingness in outcome", {
+  d <- feline_survey
+  d$y[3] <- NA
+  suppressWarnings(
+    samp2 <- SurveyData$new(
+      data = d,
+      weights = feline_survey$wt
+    )
+  )
+  ex_map <- SurveyMap$new(samp2, popn, q_age, q_pet, q_gender)
+  ex_map$mapping()
+  ex_map$tabulate()
+  expect_warning(
+    fit <- ex_map$fit(lme4::glmer, formula = y ~ (1|age), family = "binomial"),
+    "Outcome variable has missing values that may be dropped by the model fitting package."
+  )
+  expect_r6_class(fit, "SurveyFit")
+})
+
 test_that("Model fits do not cause errors if specified correctly",{
-  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("rstanarm")
@@ -600,7 +631,7 @@ test_that("Model fits do not cause errors if specified correctly",{
 })
 
 test_that("mapped_sample_data and mapped_population_data work", {
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
+  ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   empty_samp <- ex_map$mapped_sample_data(key = FALSE)
   empty_pop <- ex_map$mapped_population_data(key = FALSE)
   expect_equal(dim(empty_samp), c(nrow(samp$survey_data()), 0))
@@ -617,3 +648,24 @@ test_that("mapped_sample_data and mapped_population_data work", {
   expect_named(ex_map$mapped_sample_data(key = FALSE), c("age", "pet", "gender"))
   expect_named(ex_map$mapped_population_data(key = FALSE), c("age", "pet", "gender"))
 })
+
+test_that("tabulate doesn't error if no weights were specified", {
+  suppressWarnings({
+    samp <- SurveyData$new(feline_survey)
+    popn <- SurveyData$new(approx_popn)
+  })
+  q_age <- SurveyQuestion$new(
+    name = "age",
+    col_names = c("age1","age2"),
+    values_map = list(
+      "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
+      "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
+    )
+  )
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
+  ex_map$mapping()
+  expect_equal(nrow(ex_map$poststrat_data()), 0)
+  expect_silent(ex_map$tabulate())
+  expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
+})
+
