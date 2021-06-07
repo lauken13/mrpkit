@@ -214,6 +214,8 @@ SurveyData <- R6::R6Class(
         if (anyNA(weights)) {
           stop("NAs not allowed in weights.", call. = FALSE)
         }
+      } else {
+        weights <- rep(1, nrow(data))
       }
 
       if (!is.list(design) ||
