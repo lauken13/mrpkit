@@ -19,7 +19,7 @@
 #' box_prefs <- SurveyData$new(
 #'   data = shape_survey,
 #'   questions = list(
-#'     age1 = "Please identify your age group",
+#'     age = "Please identify your age group",
 #'     gender = "Please select your gender",
 #'     vote_for = "Which party did you vote for in the 2018 election?",
 #'     y = "If today is the election day, would you vote for the Box Party?"
