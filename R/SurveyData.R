@@ -4,49 +4,51 @@
 #' @export
 #' @description
 #' A `SurveyData` object represents a survey and its metadata. The survey itself
-#' is a data frame. The survey metadata consists of the text of the survey
-#' questions, the allowed response values, and optionally survey weights and a
-#' survey design specification.
+#' is a data frame containing all data from the survey. The survey data object also
+#' includes the survey questions and responses (if left empty these will just be the
+#' column and factor level names). To enable weights comparison, a weights column and
+#' survey design can be specified, with the survey design specified using `survey` package
+#' notation.
 #'
 #' @examples
 #'
-#' head(feline_survey)
-#' feline_prefs <- SurveyData$new(
-#'   data = feline_survey,
+#' head(shape_survey)
+#' box_prefs <- SurveyData$new(
+#'   data = shape_survey,
 #'   questions = list(
-#'     age1 = "Please identify your age group",
+#'     age = "Please identify your age group",
 #'     gender = "Please select your gender",
-#'     pet_own = "Which pet do you own?",
-#'     y = "Response"
+#'     vote_for = "Which party did you vote for in the 2018 election?",
+#'     y = "If today is the election day, would you vote for the Box Party?"
 #'   ),
 #'   responses = list(
-#'     age1 = levels(feline_survey$age1),
-#'     gender = levels(feline_survey$gender),
-#'     pet_own = levels(feline_survey$pet_own),
+#'     age = levels(shape_survey$age),
+#'     gender = levels(shape_survey$gender),
+#'     vote_for = levels(shape_survey$vote_for),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = feline_survey$wt,
+#'   weights = shape_survey$wt,
 #'   design = list(ids =~1)
 #' )
-#' feline_prefs$print()
-#' feline_prefs$n_questions()
+#' box_prefs$print()
+#' box_prefs$n_questions()
 #'
-#' head(approx_popn)
+#' head(approx_voters_popn)
 #' popn_obj <- SurveyData$new(
-#'   data = approx_popn,
+#'   data = approx_voters_popn,
 #'   questions = list(
-#'     age2 = "Which age group are you?",
+#'     age_group = "Which age group are you?",
 #'     gender = "Gender?",
-#'     pet_pref = "Which pet would you like to own?"
+#'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
 #'   # order doesn't matter (gender before age2 here) because
 #'   # the list has the names of the variables
 #'   responses = list(
-#'     gender = levels(approx_popn$gender),
-#'     age2 = levels(approx_popn$age2),
-#'     pet_pref = levels(approx_popn$pet_pref)
+#'     gender = levels(approx_voters_popn$gender),
+#'     age_group = levels(approx_voters_popn$age_group),
+#'     vote_pref = levels(approx_voters_popn$vote_pref)
 #'   ),
-#'   weights = approx_popn$wt
+#'   weights = approx_voters_popn$wt
 #' )
 #' popn_obj$print()
 #'
@@ -60,7 +62,14 @@ SurveyData <- R6::R6Class(
     design_ = list()
   ),
   public = list(
-    #' @description Create a new SurveyData object
+    #' @description Create a new SurveyData object using an existing data frame and other
+    #' survey information.
+    #' The same object is being used for a sample and population.
+    #' If a population is approximated from a large survey (like the ACS or DHS),
+    #' then the package will enable the creation of a weighted poststratification matrix.
+    #' If the population is summarized as a poststratification matrix already, then set the weights
+    #' as the size in each cell $N_j$.
+    #' If the entire individual level population data is given, then specify the weights as 1.
     #' @param data A data frame containing the survey data.
     #' @param questions,responses Named lists containing the text of the survey
     #'   questions and the allowed responses, respectively. The names must
@@ -68,7 +77,65 @@ SurveyData <- R6::R6Class(
     #'   these aren't provided then they will be created internally using all
     #'   factor, character, and binary variables in `data`.
     #' @param weights Optionally, a vector of survey weights.
-    #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
+    #' @param design Optionally, a named list of arguments (except `weights` and
+    #'   `data`) to pass to `survey::svydesign()` to specify the survey design.
+    #' @examples
+    #' #Population estimated from large survey
+    #' popn_obj1 <- SurveyData$new(
+    #'   data = approx_voters_popn,
+    #'   questions = list(
+    #'     age_group = "Which age group are you?",
+    #'     gender = "Gender?",
+    #'     vote_pref = "Which party do you prefer to vote for?"
+    #'   ),
+    #'   # order doesn't matter (gender before age2 here) because
+    #'   # the list has the names of the variables
+    #'   responses = list(
+    #'     gender = levels(approx_voters_popn$gender),
+    #'     age_group = levels(approx_voters_popn$age_group),
+    #'     vote_pref = levels(approx_voters_popn$vote_pref)
+    #'   ),
+    #'   weights = approx_voters_popn$wt
+    #' )
+    #' #Population poststratification matrix already known
+    #' popn_ps <- approx_voters_popn %>%
+    #' group_by(age_group,gender_vote_pref)%>%
+    #' summarise(N_j = sum(wts))
+    #'
+    #' popn_obj2 <- SurveyData$new(
+    #'   data = popn_ps,
+    #'   questions = list(
+    #'     age_group = "Which age group are you?",
+    #'     gender = "Gender?",
+    #'     vote_pref = "Which party do you prefer to vote for?"
+    #'   ),
+    #'   # order doesn't matter (gender before age2 here) because
+    #'   # the list has the names of the variables
+    #'   responses = list(
+    #'     gender = levels(popn_ps$gender),
+    #'     age_group = levels(popn_ps$age_group),
+    #'     vote_pref = levels(popn_ps$vote_pref)
+    #'   ),
+    #'   weights = popn_ps$N_j
+    #' )
+    #'# Individual population data known:
+    #'# Pretend that approx_voters_popn is the full population
+    #' popn_obj3 <- SurveyData$new(
+    #'   data = approx_voters_popn,
+    #'   questions = list(
+    #'     age_group = "Which age group are you?",
+    #'     gender = "Gender?",
+    #'     vote_pref = "Which party do you prefer to vote for?"
+    #'   ),
+    #'   # order doesn't matter (gender before age2 here) because
+    #'   # the list has the names of the variables
+    #'   responses = list(
+    #'     gender = levels(approx_voters_popn$gender),
+    #'     age_group = levels(approx_voters_popn$age_group),
+    #'     vote_pref = levels(approx_voters_popn$vote_pref)
+    #'   ),
+    #'   weights = rep(1,nrow(approx_voters_popn))
+    #' )
     initialize = function(data,
                           questions = list(),
                           responses = list(),
@@ -149,6 +216,20 @@ SurveyData <- R6::R6Class(
         }
       } else {
         weights <- rep(1, nrow(data))
+      }
+
+      if (!is.list(design) ||
+          (is.null(names(design)) || any(!nzchar(names(design))))) {
+        stop("'design' must be a named list.", call. = FALSE)
+      }
+      if (!"ids" %in% names(design)) {
+        stop("'design' must contain an element 'ids'.", call. = FALSE)
+      }
+      if ("weights" %in% names(design)) {
+        stop("'design' should not include element 'weights'.")
+      }
+      if ("data" %in% names(design)) {
+        stop("'design' should not include element 'data'.")
       }
 
       private$questions_ <- questions

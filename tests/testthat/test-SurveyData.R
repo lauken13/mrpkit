@@ -79,6 +79,29 @@ test_that("error if unmatched names of question and responses", {
   )
 })
 
+test_that("error if design specified incorrectly", {
+  expect_error(
+    suppressWarnings(SurveyData$new(feline_survey, design = formula("~."))),
+    "'design' must be a named list"
+  )
+  expect_error(
+    suppressWarnings(SurveyData$new(feline_survey, design = list(ids = ~ 1, 2))),
+    "'design' must be a named list"
+  )
+  expect_error(
+    suppressWarnings(SurveyData$new(feline_survey, design = list(ids = ~ 1, data = data.frame()))),
+    "'design' should not include element 'data'"
+  )
+  expect_error(
+    suppressWarnings(SurveyData$new(feline_survey, design = list(ids = ~ 1, weights = 1))),
+    "'design' should not include element 'weights'"
+  )
+  expect_error(
+    suppressWarnings(SurveyData$new(feline_survey, design = list(a = 2))),
+    "'design' must contain an element 'ids'"
+  )
+})
+
 
 feline_prefs <- SurveyData$new(
   data = feline_survey,

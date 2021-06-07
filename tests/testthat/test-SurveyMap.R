@@ -329,9 +329,8 @@ test_that("validate errors if NAs in population data", {
 
 # This test is currently failing. Should it be?
 # Expected match: "Predictor variables not known in population."
-# Actual message: "Not all variables available in the data. Missing vars:  gender"
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map <- SurveyMap$new(samp, popn, q1, q2)
+  ex_map <- SurveyMap$new(samp, popn, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("lme4")
@@ -343,7 +342,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2)
+  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("rstanarm")
@@ -355,7 +354,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
     ),
     "Predictor variables not known in population.", fixed = TRUE
   )
-  ex_map <-  SurveyMap$new(samp, popn, q1, q2)
+  ex_map <-  SurveyMap$new(samp, popn, q1, q2, q3)
   ex_map$mapping()
   ex_map$tabulate()
   skip_if_not_installed("brms")
