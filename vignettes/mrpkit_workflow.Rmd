@@ -26,7 +26,7 @@ This vignette presents the typical workflow of MRP-Kit, an R package for impleme
 
 The aim of `mrpkit` is to use a grammar to perform multilevel regression with post-stratification (MRP). By using this package, you follow a specific workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping these objects to each other, fitting the model, getting predictions, aggregating values, and visualizing the results. Hence, it creates a more reproducible and accountable environment for conducting MRP.
 
-Unlike many R packages, `mrpkit` uses [R6 objects](https://adv-r.hadley.nz/r6.html) (Chang, 2019). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. Typical usage of this package will create four objects: `SurveyData`, `SurveyQuestion`, `SurveyMap`, and `SurveyFit`. There are several methods in each of these objects that will be explained later in this vignette.     
+Unlike many R packages, `mrpkit` uses [R6 objects](https://adv-r.hadley.nz/r6.html) (Chang, 2019). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. Typical usage of this package will create four objects: `SurveyData`, `QuestionMap`, `SurveyMap`, and `SurveyFit`. There are several methods in each of these objects that will be explained later in this vignette.     
 
 
 # Workflow
@@ -125,11 +125,11 @@ popn_obj$print()
 ```
 
 
-## Match the value between survey and post-stratification object using `SurveyQuestion$new`
+## Match the value between survey and post-stratification object using `QuestionMap$new`
 
 From the metadata above, we can see that `box_pref` and `popn_obj` have different column labels and response level. For example, the column label for age in `box_pref` is `age`, whereas in `popn_obj`, the column label is `age_group`. This variable also has different levels, `box_pref` has seven levels of age, whereas `popn_obj` has only four levels of age. 
 
-These column labels and levels should be aligned to be able to perform MRP. With `SurveyQuestion$new` method, we are able to align the names of the columns and mapping their values.  
+These column labels and levels should be aligned to be able to perform MRP. With `QuestionMap$new` method, we are able to align the names of the columns and mapping their values.  
 
 This method takes three arguments:
 
@@ -140,28 +140,28 @@ This method takes three arguments:
 Here is the example of how this method works:
 
 ```{r questions}
-# create SurveyQuestion$object for the question related to age
-q_age <- SurveyQuestion$new(
+# create QuestionMap$object for the question related to age
+q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age","age_group"),
   values_map = list(
     "18-25" = "18-35", "26-35" = "18-35", "36-45" = "36-55",
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"))
 
-# create SurveyQuestion$object for the question related to party preference
-q_party_pref <- SurveyQuestion$new(
+# create QuestionMap$object for the question related to party preference
+q_party_pref <- QuestionMap$new(
  name = "party_pref",
  col_names = c("vote_for","vote_pref"),
  values_map = list("Box Party" = "BP", "BP" = "BP", "Circle Party" = "CP", "CP" = "CP"))
 
-# create SurveyQuestion$object for the question related to gender
-q_gender <- SurveyQuestion$new(
+# create QuestionMap$object for the question related to gender
+q_gender <- QuestionMap$new(
   name = "gender",
   col_names = c("gender", "gender"),
   values_map = data.frame("male" = "m", "female" = "f", "nonbinary" = "nb"))
 
-# create SurveyQuestion$object for the question related to education
-q_educ <- SurveyQuestion$new(
+# create QuestionMap$object for the question related to education
+q_educ <- QuestionMap$new(
   name = "highest_education",
   col_names = c("highest_educ", "education"),
   values_map = list("no high school" = "no high school",
@@ -171,8 +171,8 @@ q_educ <- SurveyQuestion$new(
                     "4-year college" = "4-years college",
                     "post-graduate" = "post-grad"))
 
-# create SurveyQuestion$object for the question related to state
-q_state <- SurveyQuestion$new(
+# create QuestionMap$object for the question related to state
+q_state <- QuestionMap$new(
   name = "state",
   col_names = c("state", "state"),
   values_map = list("State A" = "A",
@@ -186,13 +186,13 @@ q_state <- SurveyQuestion$new(
 
 ## Using the SurveyMap object
 
-The `SurveyMap` object holds the mapping between a set of items in the survey and post-stratification datasets. It takes the `SurveyData` objects, which in this case are `bp_pref` and `popn_obj`, together with labels and values that have been matched and provided in the `SurveyQuestion` object. The mapped object would specify the correspondences in the variables that will be used when fitting the model.
+The `SurveyMap` object holds the mapping between a set of items in the survey and post-stratification datasets. It takes the `SurveyData` objects, which in this case are `bp_pref` and `popn_obj`, together with labels and values that have been matched and provided in the `QuestionMap` object. The mapped object would specify the correspondences in the variables that will be used when fitting the model.
 
 The `SurveyMap` object has various methods as listed as follows:
 
 1. `new`
 
-    This method is used to initialize a new `SurveyMap` object. This takes `SurveyData` and `SurveyQuestion` objects as its argument. You can include all of the questions here, or add it incrementally using `add` method that is explained in point 3. 
+    This method is used to initialize a new `SurveyMap` object. This takes `SurveyData` and `QuestionMap` objects as its argument. You can include all of the questions here, or add it incrementally using `add` method that is explained in point 3. 
     
 
 2. `validate`
@@ -216,7 +216,7 @@ ex_map$validate()
 
 3. `add`
 
-    To get rid of the warning above, we could use this method to add other `SurveyQuestion` objects to the map. Here is the example of the code:
+    To get rid of the warning above, we could use this method to add other `QuestionMap` objects to the map. Here is the example of the code:
     
 ```{r add}
 # add questions incrementally
@@ -240,11 +240,11 @@ print(ex_map)
 
     Replace is used to replace the matching level in one question, not between different question.
 
-    Suppose that you changed your mind and want to use another level of matching for a certain question. For example, in question regarding education, q4, you want to change the "associates" level to be equal to "4-years college". To do this, you can firstly create a new `SurveyQuestion` object corresponding to that new level mapping. Secondly, you can use the `replace` method to change the question object. This method takes two arguments, namely `old question` as the first argument and the `new question` as the second argument. The example of these steps could be seen as follows:
+    Suppose that you changed your mind and want to use another level of matching for a certain question. For example, in question regarding education, q4, you want to change the "associates" level to be equal to "4-years college". To do this, you can firstly create a new `QuestionMap` object corresponding to that new level mapping. Secondly, you can use the `replace` method to change the question object. This method takes two arguments, namely `old question` as the first argument and the `new question` as the second argument. The example of these steps could be seen as follows:
     
 ```{r replace}
-# create a new SurveyQuestion corresponding to the new level matching
-q_educ_new <- SurveyQuestion$new(
+# create a new QuestionMap corresponding to the new level matching
+q_educ_new <- QuestionMap$new(
   name = "highest_educ",
   col_names = c("highest_educ", "education"),
   values_map = list("no high school" = "no high school",

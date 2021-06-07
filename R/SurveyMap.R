@@ -55,7 +55,7 @@
 #' )
 #' popn_obj$print()
 #'
-#' q_age <- SurveyQuestion$new(
+#' q_age <- QuestionMap$new(
 #'   name = "age",
 #'   col_names = c("age","age_group"),
 #'   values_map = list(
@@ -65,12 +65,12 @@
 #' )
 #' print(q1)
 #'
-#' q_party_pref <- SurveyQuestion$new(
+#' q_party_pref <- QuestionMap$new(
 #'   name = "party_pref",
 #'   col_names = c("vote_for","vote_pref"),
 #'   values_map = list("Box Party" = "BP",  "BP" = "BP","Circle Party" = "CP", "CP" = "CP")
 #' )
-#' q_gender <- SurveyQuestion$new(
+#' q_gender <- QuestionMap$new(
 #'   name = "gender",
 #'   col_names = c("gender", "gender"),
 #'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
@@ -167,7 +167,7 @@ SurveyMap <- R6::R6Class(
     #' @description Create a new SurveyMap object
     #' @param sample The [SurveyData] object corresponding to the sample data.
     #' @param population The [SurveyData] object corresponding to the population data.
-    #' @param ... [SurveyQuestion] objects.
+    #' @param ... [QuestionMap] objects.
     initialize = function(sample, population, ...) {
       if (!inherits(sample, "SurveyData")) {
         stop("'sample' must be a SurveyData object.", call. = FALSE)
@@ -209,8 +209,8 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Add new [SurveyQuestion]s.
-    #' @param ... The [SurveyQuestion]s to add.
+    #' @description Add new [QuestionMap]s.
+    #' @param ... The [QuestionMap]s to add.
     add = function(...) {
       dots <- list(...)
       for (i in 1:length(dots)) {
@@ -225,12 +225,12 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Delete [SurveyQuestion]s.
-    #' @param ... The [SurveyQuestion]s to delete.
+    #' @description Delete [QuestionMap]s.
+    #' @param ... The [QuestionMap]s to delete.
     delete = function(...) {
       tmp_list <- list(...)
       for (i in length(tmp_list)) {
-        if (inherits(tmp_list[[i]], "SurveyQuestion")) {
+        if (inherits(tmp_list[[i]], "QuestionMap")) {
           loc_id <- names(private$item_map_) %in% tmp_list[[i]]$name()
           loc_name <- tmp_list[[i]]$name()
         } else {
@@ -247,9 +247,9 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Replace one [SurveyQuestion] with another.
-    #' @param old_question The [SurveyQuestion] object to replace.
-    #' @param new_question The [SurveyQuestion] object to use instead.
+    #' @description Replace one [QuestionMap] with another.
+    #' @param old_question The [QuestionMap] object to replace.
+    #' @param new_question The [QuestionMap] object to use instead.
     #'
     replace = function(old_question, new_question) {
       self$delete(old_question)

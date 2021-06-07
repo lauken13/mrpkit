@@ -2,7 +2,7 @@ suppressWarnings({
   samp <- SurveyData$new(data = feline_survey, weights = feline_survey$wt)
   popn <- SurveyData$new(data = approx_popn, weights = approx_popn$wt)
 })
-q1 <- SurveyQuestion$new(
+q1 <- QuestionMap$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -10,12 +10,12 @@ q1 <- SurveyQuestion$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q2 <- SurveyQuestion$new(
+q2 <- QuestionMap$new(
   name = "pet",
   col_names = c("pet_own","pet_pref"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 )
-q3 <- SurveyQuestion$new(
+q3 <- QuestionMap$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
@@ -81,7 +81,7 @@ test_that("validate creates correct levels (example1)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
@@ -123,7 +123,7 @@ test_that("validate creates correct levels (example2)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
@@ -166,7 +166,7 @@ test_that("validate creates correct levels (example3)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
@@ -208,7 +208,7 @@ test_that("validate creates correct levels (example4)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
@@ -250,7 +250,7 @@ test_that("validate creates correct levels (example5)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
@@ -295,7 +295,7 @@ test_that("validate creates correct levels (example6)", {
     design = formula("~.")
   )
 
-  q1 <- SurveyQuestion$new(
+  q1 <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
