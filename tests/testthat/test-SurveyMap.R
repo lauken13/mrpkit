@@ -67,8 +67,7 @@ test_that("validate creates correct levels (example1)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30 ,0, 1),
-    design = formula("~.")
+    weights = rnorm(30 ,0, 1)
   )
 
   popn <- SurveyData$new(
@@ -79,8 +78,7 @@ test_that("validate creates correct levels (example1)", {
     responses = list(
       age2 = c("18-45", "46+")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -108,8 +106,7 @@ test_that("validate creates correct levels (example2)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30,0,1),
-    design = formula("~.")
+    weights = rnorm(30,0,1)
   )
 
   popn <- SurveyData$new(
@@ -120,8 +117,7 @@ test_that("validate creates correct levels (example2)", {
     responses = list(
       age2 = c("18-45","46+")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -150,8 +146,7 @@ test_that("validate creates correct levels (example3)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1),
-    design = formula("~.")
+    weights = rnorm(30, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -162,8 +157,7 @@ test_that("validate creates correct levels (example3)", {
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1),
-    design = formula("~.")
+    weights = rnorm(90, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -191,8 +185,7 @@ test_that("validate creates correct levels (example4)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1),
-    design = formula("~.")
+    weights = rnorm(30, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -203,8 +196,7 @@ test_that("validate creates correct levels (example4)", {
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1),
-    design = formula("~.")
+    weights = rnorm(90, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -232,8 +224,7 @@ test_that("validate creates correct levels (example5)", {
       age1 = c("18-25", "26-30", "31-40", "41-55", "56+"),
       y = c("no","yes")
     ),
-    weights = rnorm(100, 0, 1),
-    design = formula("~.")
+    weights = rnorm(100, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -244,8 +235,7 @@ test_that("validate creates correct levels (example5)", {
     responses = list(
       age2 = c("18-25", "26-35", "36-45", "46-55", "56+")
     ),
-    weights = rnorm(200, 0, 1),
-    design = formula("~.")
+    weights = rnorm(200, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -276,8 +266,7 @@ test_that("validate creates correct levels (example6)", {
       age1 = c("A", "B", "C", "D", "E"),
       y = c("no", "yes")
     ),
-    weights = rnorm(140, 0, 1),
-    design = formula("~.")
+    weights = rnorm(140, 0, 1)
   )
 
   popn <- SurveyData$new(
@@ -288,8 +277,7 @@ test_that("validate creates correct levels (example6)", {
     responses = list(
       age2 =  c("Z","Y","C","X","Q")
     ),
-    weights = rnorm(280, 0, 1),
-    design = formula("~.")
+    weights = rnorm(280, 0, 1)
   )
 
   q1 <- SurveyQuestion$new(
@@ -586,8 +574,7 @@ test_that("Warning if missingness in outcome", {
   suppressWarnings(
     samp2 <- SurveyData$new(
       data = d,
-      weights = feline_survey$wt,
-      design = formula("~.")
+      weights = feline_survey$wt
     )
   )
   ex_map <- SurveyMap$new(samp2, popn, q1, q2, q3)
