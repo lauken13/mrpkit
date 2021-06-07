@@ -348,7 +348,7 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a dataframe with variable levels, the draw/iteration, and the probability of the `y`. In this example, `age_preds` represents the age-group, the draw, and the probability of voting for the NLP party for each age-group and each draw.
+This method then will return a dataframe with variable levels, the draw/iteration, and the probability of the `y`. In this example, `age_preds` represents the age-group, the draw, and the probability of voting for the Box Party for each age-group and each draw.
 
 ```{r show-aggr}
 head(age_estimation)
@@ -371,7 +371,7 @@ The next plot displays the probability of voting for the BP by state. We learn t
 
 ```{r state-vis}
 library(ggplot2)
-plot_state <- fit1$plot(state_preds) +
+plot_state <- fit1$plot(state_estimation) +
   ggtitle("Probability of voting the BP by state") +
   theme_bw()
 plot_state
