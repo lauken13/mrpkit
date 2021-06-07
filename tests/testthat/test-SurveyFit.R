@@ -13,7 +13,7 @@ samp_obj <- SurveyData$new(
     y = c("no","yes")
   ),
   weights = feline_survey$wt,
-  design = formula("~.")
+  design = list(ids =~1)
 )
 
 popn_obj <- SurveyData$new(
@@ -29,8 +29,7 @@ popn_obj <- SurveyData$new(
     pet_pref = levels(approx_popn$pet_pref)
   ),
   weights = approx_popn$wt,
-  design = formula("~.")
-)
+  design = list(ids =~1))
 
 q1 <- SurveyQuestion$new(
   name = "age",
@@ -162,7 +161,6 @@ test_that("Aggregate (to population) returns correct objects", {
   expect_named(x, "value")
   expect_equal(dim(x), expected_dims)
 
-  x <- fit_stan_glmer$aggregate(fit_stan_glm$population_predict())
   expect_s3_class(x, "data.frame")
   expect_named(x, "value")
   expect_equal(dim(x), expected_dims)

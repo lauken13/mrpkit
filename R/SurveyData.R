@@ -68,7 +68,8 @@ SurveyData <- R6::R6Class(
     #'   these aren't provided then they will be created internally using all
     #'   factor, character, and binary variables in `data`.
     #' @param weights Optionally, a vector of survey weights.
-    #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
+    #' @param design Optionally, a named list of arguments (except `weights` and
+    #'   `data`) to pass to `survey::svydesign()` to specify the survey design.
     initialize = function(data,
                           questions = list(),
                           responses = list(),
@@ -147,6 +148,20 @@ SurveyData <- R6::R6Class(
         if (anyNA(weights)) {
           stop("NAs not allowed in weights.", call. = FALSE)
         }
+      }
+
+      if (!is.list(design) ||
+          (is.null(names(design)) || any(!nzchar(names(design))))) {
+        stop("'design' must be a named list.", call. = FALSE)
+      }
+      if (!"ids" %in% names(design)) {
+        stop("'design' must contain an element 'ids'.", call. = FALSE)
+      }
+      if ("weights" %in% names(design)) {
+        stop("'design' should not include element 'weights'.")
+      }
+      if ("data" %in% names(design)) {
+        stop("'design' should not include element 'data'.")
       }
 
       private$questions_ <- questions
