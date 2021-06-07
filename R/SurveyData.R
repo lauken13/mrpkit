@@ -10,43 +10,43 @@
 #'
 #' @examples
 #'
-#' head(feline_survey)
-#' feline_prefs <- SurveyData$new(
-#'   data = feline_survey,
+#' head(shape_survey)
+#' box_prefs <- SurveyData$new(
+#'   data = shape_survey,
 #'   questions = list(
-#'     age1 = "Please identify your age group",
+#'     age = "Please identify your age group",
 #'     gender = "Please select your gender",
-#'     pet_own = "Which pet do you own?",
-#'     y = "Response"
+#'     vote_for = "Which party did you vote for in the 2018 election?",
+#'     y = "If today is the election day, would you vote for the Box Party?"
 #'   ),
 #'   responses = list(
-#'     age1 = levels(feline_survey$age1),
-#'     gender = levels(feline_survey$gender),
-#'     pet_own = levels(feline_survey$pet_own),
+#'     age = levels(shape_survey$age),
+#'     gender = levels(shape_survey$gender),
+#'     vote_for = levels(shape_survey$vote_for),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = feline_survey$wt,
+#'   weights = shape_survey$wt,
 #'   design = list(ids =~1)
 #' )
-#' feline_prefs$print()
-#' feline_prefs$n_questions()
+#' box_prefs$print()
+#' box_prefs$n_questions()
 #'
-#' head(approx_popn)
+#' head(approx_voters_popn)
 #' popn_obj <- SurveyData$new(
-#'   data = approx_popn,
+#'   data = approx_voters_popn,
 #'   questions = list(
-#'     age2 = "Which age group are you?",
+#'     age_group = "Which age group are you?",
 #'     gender = "Gender?",
-#'     pet_pref = "Which pet would you like to own?"
+#'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
 #'   # order doesn't matter (gender before age2 here) because
 #'   # the list has the names of the variables
 #'   responses = list(
-#'     gender = levels(approx_popn$gender),
-#'     age2 = levels(approx_popn$age2),
-#'     pet_pref = levels(approx_popn$pet_pref)
+#'     gender = levels(approx_voters_popn$gender),
+#'     age_group = levels(approx_voters_popn$age_group),
+#'     vote_pref = levels(approx_voters_popn$vote_pref)
 #'   ),
-#'   weights = approx_popn$wt
+#'   weights = approx_voters_popn$wt
 #' )
 #' popn_obj$print()
 #'
@@ -68,7 +68,8 @@ SurveyData <- R6::R6Class(
     #'   these aren't provided then they will be created internally using all
     #'   factor, character, and binary variables in `data`.
     #' @param weights Optionally, a vector of survey weights.
-    #' @param design Optionally, a named list of arguments to pass to `survey::svydesign()`.
+    #' @param design Optionally, a named list of arguments (except `weights` and
+    #'   `data`) to pass to `survey::svydesign()` to specify the survey design.
     initialize = function(data,
                           questions = list(),
                           responses = list(),
@@ -147,6 +148,20 @@ SurveyData <- R6::R6Class(
         if (anyNA(weights)) {
           stop("NAs not allowed in weights.", call. = FALSE)
         }
+      }
+
+      if (!is.list(design) ||
+          (is.null(names(design)) || any(!nzchar(names(design))))) {
+        stop("'design' must be a named list.", call. = FALSE)
+      }
+      if (!"ids" %in% names(design)) {
+        stop("'design' must contain an element 'ids'.", call. = FALSE)
+      }
+      if ("weights" %in% names(design)) {
+        stop("'design' should not include element 'weights'.")
+      }
+      if ("data" %in% names(design)) {
+        stop("'design' should not include element 'data'.")
       }
 
       private$questions_ <- questions

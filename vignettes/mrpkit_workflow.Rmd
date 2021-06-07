@@ -56,7 +56,7 @@ head(shape_survey)
 
 Additionally, the approximate population can be seen as follows:
 
-```{r nlp-popn}
+```{r shape-popn}
 head(approx_voters_popn)
 ```
  
@@ -70,16 +70,11 @@ The most important methods in `SurveyData` are `SurveyData$new` and `SurveyData$
 In this example, we will show the steps to create the `SurveyData` object using `SurveyData$new` method. `SurveyData` takes the argument of the metadata as mentioned previously, which are:
 
 1. `data` : Dataframe i.e. survey or post-stratifcation data that would be transformed to a `SurveyData` object.
-2. `questions`: List of the questions asked in the questionnaire for each of those columns defined by its corresponding variable name.
-3. `responses`: Allowed response for each corresponding question, identified by its corresponding variable name. 
-4. `weights`: The survey weights (optional).
-5. `design`: The design formula of the survey (optional). This could include:
-   - `~.` for a random sample
-   - `~ (1|cluster)` for one stage cluster sample
-   - `~ stratum:` for a stratified sample
-   
 Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. If you want to use any numerical variables in `data`, we suggest that you set it in this method, or convert it into one of those data types. Otherwise, it would not be included in the object. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
-
+2. `questions`: The question asked in the questionnaire for each of those columns.
+3. `responses`: Allowed response for each question.
+4. `weights`: The survey weights.
+5. `design`: The design formula of the survey, specified using the survey package format
 
 **Create the `SurveyData` object for the survey data set**
 
@@ -98,7 +93,8 @@ box_pref <- SurveyData$new(
                    highest_educ = levels(shape_survey$highest_educ),
                    state = levels(shape_survey$state),
                    y = c("no","yes")),
-  weights = shape_survey$wt)
+  weights = shape_survey$wt,
+  design = list(ids =~1))
 
 # print it
 box_pref$print()
@@ -121,7 +117,8 @@ popn_obj <- SurveyData$new(
                    vote_pref = levels(approx_voters_popn$vote_pref),
                    education = levels(approx_voters_popn$education),
                    state = levels(approx_voters_popn$state)),
-  weights = approx_voters_popn$wt)
+  weights = approx_voters_popn$wt,
+  design = list(ids =~1))
 
 # print it
 popn_obj$print() 
@@ -213,7 +210,6 @@ ex_map <- SurveyMap$new(sample = box_pref, population = popn_obj, q_age)
 # ex_map <- SurveyMap$new(sample = box_pref, population = popn_obj, 
 #                        q_age, q_educ, q_gender, q_party_pref, q_state)
 
-# validate the map
 ex_map$validate()
 
 ```
@@ -330,7 +326,7 @@ After creating the `SurveyFit` object, we are able to generate the predicted pro
 Furthermore, if the model fitting is done with one of the built-in function (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes two argument. The first is the fitted model object, and the second is the post-stratification data frame. In this example, we will show how to use this method for the `fit1` object.
 
 ```{r predict}
-# predict the probability of voting for the NLP using the fit1 model
+# predict the probability of voting for the Box Party using the fit1 model
 poststrat_est_fit1 <- fit1$population_predict()
 ```
 
@@ -353,7 +349,6 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 ```
 
 This method then will return a dataframe with variable levels, the draw/iteration, and the probability of the `y`. In this example, `age_preds` represents the age-group, the draw, and the probability of voting for the NLP party for each age-group and each draw.
-
 
 ```{r show-aggr}
 head(age_estimation)

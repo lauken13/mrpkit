@@ -96,7 +96,8 @@ factor, character, and binary variables in \code{data}.}
 
 \item{\code{weights}}{Optionally, a vector of survey weights.}
 
-\item{\code{design}}{Optionally, a named list of arguments to pass to \code{survey::svydesign()}.}
+\item{\code{design}}{Optionally, a named list of arguments (except \code{weights} and
+\code{data}) to pass to \code{survey::svydesign()} to specify the survey design.}
 }
 \if{html}{\out{</div>}}
 }
