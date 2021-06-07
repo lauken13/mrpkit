@@ -662,9 +662,10 @@ test_that("tabulate doesn't error if no weights were specified", {
       "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
     )
   )
-  ex_map <- SurveyMap$new(samp, popn, q_age)
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_equal(nrow(ex_map$poststrat_data()), 0)
   expect_silent(ex_map$tabulate())
   expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
 })
+
