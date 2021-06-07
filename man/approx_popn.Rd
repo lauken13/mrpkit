@@ -23,8 +23,7 @@ approx_popn
 Example approximate population (modelled after ACS)
 }
 \examples{
-
- approx_popn
+str(approx_popn)
 
 }
 \keyword{datasets}

@@ -15,109 +15,121 @@
 #' @examples
 #' library(dplyr)
 #'
-#' head(feline_survey)
-#' feline_prefs <- SurveyData$new(
-#'   data = feline_survey,
+#' head(shape_survey)
+#' box_prefs <- SurveyData$new(
+#'   data = shape_survey,
 #'   questions = list(
-#'     age1 = "Please identify your age group",
+#'     age = "Please identify your age group",
 #'     gender = "Please select your gender",
-#'     pet_own = "Which pet do you own?",
-#'     y = "Response"
+#'     vote_for = "Which party did you vote for in the 2018 election?",
+#'     y = "If today is the election day, would you vote for the Box Party?"
 #'   ),
 #'   responses = list(
-#'     age1 = levels(feline_survey$age1),
-#'     gender = levels(feline_survey$gender),
-#'     pet_own = levels(feline_survey$pet_own),
+#'     age = levels(shape_survey$age),
+#'     gender = levels(shape_survey$gender),
+#'     vote_for = levels(shape_survey$vote_for),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = feline_survey$wt
+#'   weights = shape_survey$wt,
+#'   design = list(ids =~1)
 #' )
-#' feline_prefs$print()
+#' box_prefs$print()
+#' box_prefs$n_questions()
 #'
-#' head(approx_popn)
+#' head(approx_voters_popn)
 #' popn_obj <- SurveyData$new(
-#'   data = approx_popn,
+#'   data = approx_voters_popn,
 #'   questions = list(
-#'     age2 = "Which age group are you?",
+#'     age_group = "Which age group are you?",
 #'     gender = "Gender?",
-#'     pet_pref = "Which pet would you like to own?"
+#'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
 #'   # order doesn't matter (gender before age2 here) because
 #'   # the list has the names of the variables
 #'   responses = list(
-#'     gender = levels(approx_popn$gender),
-#'     age2 = levels(approx_popn$age2),
-#'     pet_pref = levels(approx_popn$pet_pref)
+#'     gender = levels(approx_voters_popn$gender),
+#'     age_group = levels(approx_voters_popn$age_group),
+#'     vote_pref = levels(approx_voters_popn$vote_pref)
 #'   ),
-#'   weights = approx_popn$wt
+#'   weights = approx_voters_popn$wt
 #' )
 #' popn_obj$print()
 #'
-#' q1 <- SurveyQuestion$new(
+#' q_age <- SurveyQuestion$new(
 #'   name = "age",
-#'   col_names = c("age1","age2"),
+#'   col_names = c("age","age_group"),
 #'   values_map = list(
 #'     "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
 #'     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
 #'   )
 #' )
-#' q2 <- SurveyQuestion$new(
-#'   name = "pet",
-#'   col_names = c("pet_own","pet_pref"),
-#'   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
+#' print(q1)
+#'
+#' q_party_pref <- SurveyQuestion$new(
+#'   name = "party_pref",
+#'   col_names = c("vote_for","vote_pref"),
+#'   values_map = list("Box Party" = "BP",  "BP" = "BP","Circle Party" = "CP", "CP" = "CP")
 #' )
-#' q3 <- SurveyQuestion$new(
+#' q_gender <- SurveyQuestion$new(
 #'   name = "gender",
-#'   col_names = c("gender","gender"),
-#'   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
+#'   col_names = c("gender", "gender"),
+#'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
-#' # Create SurveyMap object
-#' # can add all questions at once or incrementally
-#' ex_map <- SurveyMap$new(sample = feline_prefs, population = popn_obj, q1)
+#' # Create SurveyMap object adding all questions at once
+#' ex_map <- SurveyMap$new(
+#'   sample = box_prefs,
+#'   population = popn_obj,
+#'   q_age,
+#'   q_party_pref,
+#'   q_gender
+#' )
+#' print(ex_map) # or ex_map$print()
+#'
+#' # Or can add questions incrementally
+#' ex_map <- SurveyMap$new(sample = box_prefs, population = popn_obj)
 #' print(ex_map)
-#' ex_map$validate()
-#' ex_map$add(q3)
+#'
+#' ex_map$add(q_age, q_party_pref)
 #' print(ex_map)
-#' ex_map$delete(q3)
+#'
+#' ex_map$add(q_gender)
 #' print(ex_map)
-#' ex_map$add(q3)
-#' ex_map$delete("gender")
-#' print(ex_map)
-#' ex_map$add(q2)
-#' print(ex_map)
-#' ex_map$replace(q1,q3)
-#' print(ex_map)
-#' ex_map$add(q1)
-#' print(ex_map)
-#' ex_map$validate()
+#'
+#' # Create the mapping between sample and population
 #' ex_map$mapping()
-#' ex_map$tabulate("age") # Just use age in the poststrat matrix
-#' ex_map$tabulate() # Use all variables in the map
 #'
+#' # Create the poststratification data frame using all variables in the mapping
+#' # (alternatively, can specify particular variables, e.g. tabulate("age"))
+#' ex_map$tabulate()
 #'
-#' #' Example rstanarm usage
-#' #' Returns a SurveyFit object
+#' # Example rstanarm usage
+#' # Returns a SurveyFit object
 #' fit_1 <- ex_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
-#'   refresh = 100,
-#'   cores = 2
+#'   seed = 1111,
+#'   # just to keep the example fast and small
+#'   chains = 1,
+#'   warmup = 200
 #' )
 #'
-#' \dontrun{
+#' # Example lme4 usage
+#' # fit_2 <- ex_map$fit(
+#' #   fun = lme4::glmer,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "binomial"
+#' # )
+#' #
 #' # Example brms usage
-#' # Returns a SurveyFit object
-#' # (not run because requires compilation)
-#' fit_2 <- ex_map$fit(
-#'   fun = brms::brm,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "bernoulli",
-#'   refresh = 100,
-#'   cores = 2
-#' )
-#' }
+#' # fit_3 <- ex_map$fit(
+#' #   fun = brms::brm,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "bernoulli",
+#' #   seed = 1111
+#' # )
+#'
 #'
 #' # predicted probabilities
 #' # returns matrix with rows for poststrat cells, cols for posterior draws
