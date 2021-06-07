@@ -25,6 +25,21 @@ test_that("object has correct R6 class", {
   expect_r6_class(SurveyMap$new(samp, popn), "SurveyMap")
 })
 
+test_that("print output hasn't changed", {
+  expect_known_output(
+    print(SurveyMap$new(samp_obj, popn_obj)),
+    file = test_path("answers/SurveyMap-print-empty")
+  )
+
+  expect_known_output(
+    print(SurveyMap$new(samp_obj, popn_obj, q1)),
+    file = test_path("answers/SurveyMap-print-1-question")
+  )
+  expect_known_output(
+    print(SurveyMap$new(samp_obj, popn_obj, q1)),
+    file = test_path("answers/SurveyMap-print-1-question")
+  )
+})
 
 test_that("error thrown if inputs are not SurveyData objects", {
   expect_error(
