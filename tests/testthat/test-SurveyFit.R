@@ -31,7 +31,7 @@ popn_obj <- SurveyData$new(
   weights = approx_popn$wt,
   design = list(ids =~1))
 
-q1 <- QuestionMap$new(
+q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -39,17 +39,17 @@ q1 <- QuestionMap$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q2 <- QuestionMap$new(
+q_pet <- QuestionMap$new(
   name = "pet",
   col_names = c("pet_own","pet_pref"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 )
-q3 <- QuestionMap$new(
+q_gender <- QuestionMap$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
 )
-ex_map <- SurveyMap$new(samp_obj, popn_obj, q1,q2,q3)
+ex_map <- SurveyMap$new(samp_obj, popn_obj, q_age, q_pet, q_gender)
 ex_map$mapping()
 ex_map$tabulate()
 
