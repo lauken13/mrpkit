@@ -1,13 +1,13 @@
-#' SurveyQuestion
+#' QuestionMap
 #'
-#' @name SurveyQuestion
+#' @name QuestionMap
 #' @export
 #'
-#' @description An [R6][R6::R6Class] `SurveyQuestion` object holds the mapping
+#' @description An [R6][R6::R6Class] `QuestionMap` object holds the mapping
 #'   for one question or demographic between the survey and population dataset.
 #'
 #' @examples
-#' q_age <- SurveyQuestion$new(
+#' q_age <- QuestionMap$new(
 #'   name = "age",
 #'   col_names = c("age","age_group"),
 #'   values_map = list(
@@ -17,26 +17,26 @@
 #' )
 #' print(q1)
 #'
-#' q_party_pref <- SurveyQuestion$new(
+#' q_party_pref <- QuestionMap$new(
 #'   name = "party_pref",
 #'   col_names = c("vote_for","vote_pref"),
 #'   values_map = list("Box Party" = "The BP", "The BP" = "The BP","The Circle Party" = "The Circles","The Circles" = "The Circles")
 #' )
-#' q_gender <- SurveyQuestion$new(
+#' q_gender <- QuestionMap$new(
 #'   name = "gender",
 #'   col_names = c("gender", "gender"),
 #'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
-SurveyQuestion <- R6::R6Class(
-  classname = "SurveyQuestion",
+QuestionMap <- R6::R6Class(
+  classname = "QuestionMap",
   private = list(
     name_ = character(),
     col_names_ = character(),
     values_ = list()
   ),
   public = list(
-    #' @description Create a new `SurveyQuestion`
+    #' @description Create a new `QuestionMap`
     #' @param name The name of the underlying construct. For example if the
     #'   sample data uses the name `age1` and the population data uses
     #'   the name `age2` then `name` could be `age`.
@@ -48,7 +48,7 @@ SurveyQuestion <- R6::R6Class(
     #'   to the responses in the population data. If there is a meaningful
     #'   ordering over the values, they should be listed in that order, either
     #'   descending or ascending. See **Examples**.
-    #' @return A `SurveyQuestion` object that can be added to a [`SurveyMap`]
+    #' @return A `QuestionMap` object that can be added to a [`SurveyMap`]
     #'   object.
     #'
     initialize = function(name, col_names, values_map) {
@@ -86,9 +86,9 @@ SurveyQuestion <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Print a `SurveyQuestion`.
+    #' @description Print a `QuestionMap`.
     #' @param ... Currently ignored.
-    #' @return The `SurveyQuestion` object, invisibly.
+    #' @return The `QuestionMap` object, invisibly.
     print = function(...) {
       cat("--------------",'\n')
       cat(private$name_,'\n')
