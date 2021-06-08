@@ -5,9 +5,11 @@
 \title{SurveyData objects}
 \description{
 A \code{SurveyData} object represents a survey and its metadata. The survey itself
-is a data frame. The survey metadata consists of the text of the survey
-questions, the allowed response values, and optionally survey weights and a
-survey design specification.
+is a data frame containing all data from the survey. The survey data object also
+includes the survey questions and responses (if left empty these will just be the
+column and factor level names). To enable weights comparison, a weights column and
+survey design can be specified, with the survey design specified using \code{survey} package
+notation.
 }
 \examples{
 
@@ -51,6 +53,67 @@ popn_obj <- SurveyData$new(
 )
 popn_obj$print()
 
+
+## ------------------------------------------------
+## Method `SurveyData$new`
+## ------------------------------------------------
+
+#Population estimated from large survey
+popn_obj1 <- SurveyData$new(
+  data = approx_voters_popn,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(approx_voters_popn$gender),
+    age_group = levels(approx_voters_popn$age_group),
+    vote_pref = levels(approx_voters_popn$vote_pref)
+  ),
+  weights = approx_voters_popn$wt
+)
+#Population poststratification matrix already known
+popn_ps <- approx_voters_popn \%>\%
+group_by(age_group,gender_vote_pref)\%>\%
+summarise(N_j = sum(wts))
+
+popn_obj2 <- SurveyData$new(
+  data = popn_ps,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(popn_ps$gender),
+    age_group = levels(popn_ps$age_group),
+    vote_pref = levels(popn_ps$vote_pref)
+  ),
+  weights = popn_ps$N_j
+)
+# Individual population data known:
+# Pretend that approx_voters_popn is the full population
+popn_obj3 <- SurveyData$new(
+  data = approx_voters_popn,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(approx_voters_popn$gender),
+    age_group = levels(approx_voters_popn$age_group),
+    vote_pref = levels(approx_voters_popn$vote_pref)
+  ),
+  weights = rep(1,nrow(approx_voters_popn))
+)
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -72,7 +135,14 @@ popn_obj$print()
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new SurveyData object
+Create a new SurveyData object using an existing data frame and other
+survey information.
+The same object is being used for a sample and population.
+If a population is approximated from a large survey (like the ACS or DHS),
+then the package will enable the creation of a weighted poststratification matrix.
+If the population is summarized as a poststratification matrix already, then set the weights
+as the size in each cell $N_j$.
+If the entire individual level population data is given, then specify the weights as 1.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$new(
   data,
@@ -101,6 +171,69 @@ factor, character, and binary variables in \code{data}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{#Population estimated from large survey
+popn_obj1 <- SurveyData$new(
+  data = approx_voters_popn,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(approx_voters_popn$gender),
+    age_group = levels(approx_voters_popn$age_group),
+    vote_pref = levels(approx_voters_popn$vote_pref)
+  ),
+  weights = approx_voters_popn$wt
+)
+#Population poststratification matrix already known
+popn_ps <- approx_voters_popn \%>\%
+group_by(age_group,gender_vote_pref)\%>\%
+summarise(N_j = sum(wts))
+
+popn_obj2 <- SurveyData$new(
+  data = popn_ps,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(popn_ps$gender),
+    age_group = levels(popn_ps$age_group),
+    vote_pref = levels(popn_ps$vote_pref)
+  ),
+  weights = popn_ps$N_j
+)
+# Individual population data known:
+# Pretend that approx_voters_popn is the full population
+popn_obj3 <- SurveyData$new(
+  data = approx_voters_popn,
+  questions = list(
+    age_group = "Which age group are you?",
+    gender = "Gender?",
+    vote_pref = "Which party do you prefer to vote for?"
+  ),
+  # order doesn't matter (gender before age2 here) because
+  # the list has the names of the variables
+  responses = list(
+    gender = levels(approx_voters_popn$gender),
+    age_group = levels(approx_voters_popn$age_group),
+    vote_pref = levels(approx_voters_popn$vote_pref)
+  ),
+  weights = rep(1,nrow(approx_voters_popn))
+)
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-n_obs"></a>}}
