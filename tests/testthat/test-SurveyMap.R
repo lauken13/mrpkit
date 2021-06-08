@@ -32,11 +32,11 @@ test_that("print output hasn't changed", {
   )
 
   expect_known_output(
-    print(SurveyMap$new(samp, popn, q_age)),
+    print(suppressWarnings(SurveyMap$new(samp, popn, q_age))),
     file = test_path("answers/SurveyMap-print-1-question")
   )
   expect_known_output(
-    print(SurveyMap$new(samp, popn, q_age)),
+    print(suppressWarnings(SurveyMap$new(samp, popn, q_age))),
     file = test_path("answers/SurveyMap-print-1-question")
   )
 })
