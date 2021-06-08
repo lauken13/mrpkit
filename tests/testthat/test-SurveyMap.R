@@ -27,16 +27,16 @@ test_that("object has correct R6 class", {
 
 test_that("print output hasn't changed", {
   expect_known_output(
-    print(SurveyMap$new(samp_obj, popn_obj)),
+    print(SurveyMap$new(samp, popn)),
     file = test_path("answers/SurveyMap-print-empty")
   )
 
   expect_known_output(
-    print(SurveyMap$new(samp_obj, popn_obj, q_age)),
+    print(SurveyMap$new(samp, popn, q_age)),
     file = test_path("answers/SurveyMap-print-1-question")
   )
   expect_known_output(
-    print(SurveyMap$new(samp_obj, popn_obj, q_age)),
+    print(SurveyMap$new(samp, popn, q_age)),
     file = test_path("answers/SurveyMap-print-1-question")
   )
 })
@@ -669,7 +669,7 @@ test_that("tabulate doesn't error if no weights were specified", {
     samp <- SurveyData$new(feline_survey)
     popn <- SurveyData$new(approx_popn)
   })
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
