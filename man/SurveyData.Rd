@@ -5,11 +5,11 @@
 \title{SurveyData objects}
 \description{
 A \code{SurveyData} object represents a survey and its metadata. The survey itself
-is a data frame containing all data from the survey. The survey data object also
-includes the survey questions and responses (if left empty these will just be the
-column and factor level names). To enable weights comparison, a weights column and
-survey design can be specified, with the survey design specified using \code{survey} package
-notation.
+is a data frame containing all data from the survey. The survey data object
+also includes the survey questions and responses (if left empty these will
+just be the column and factor level names). To enable weighted comparisons,
+survey weights and a survey design can be specified, with the survey design
+specified using \pkg{survey} package notation.
 }
 \examples{
 
@@ -28,7 +28,7 @@ box_prefs <- SurveyData$new(
     vote_for = levels(shape_survey$vote_for),
     y = c("no","yes")
   ),
-  weights = shape_survey$wt,
+  weights = "wt",
   design = list(ids =~1)
 )
 box_prefs$print()
@@ -49,7 +49,7 @@ popn_obj <- SurveyData$new(
     age_group = levels(approx_voters_popn$age_group),
     vote_pref = levels(approx_voters_popn$vote_pref)
   ),
-  weights = approx_voters_popn$wt
+  weights = "wt"
 )
 popn_obj$print()
 
@@ -58,7 +58,7 @@ popn_obj$print()
 ## Method `SurveyData$new`
 ## ------------------------------------------------
 
-#Population estimated from large survey
+# Population estimated from large survey
 popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -73,12 +73,14 @@ popn_obj1 <- SurveyData$new(
     age_group = levels(approx_voters_popn$age_group),
     vote_pref = levels(approx_voters_popn$vote_pref)
   ),
-  weights = approx_voters_popn$wt
+  weights = "wt" # use the wt column from approx_voters_popn data
 )
-#Population poststratification matrix already known
+
+# Population poststratification matrix already known
+library(dplyr)
 popn_ps <- approx_voters_popn \%>\%
-group_by(age_group,gender_vote_pref)\%>\%
-summarise(N_j = sum(wts))
+  group_by(age_group,gender_vote_pref) \%>\%
+  summarise(N_j = sum(wts))
 
 popn_obj2 <- SurveyData$new(
   data = popn_ps,
@@ -87,15 +89,14 @@ popn_obj2 <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
-  # the list has the names of the variables
   responses = list(
     gender = levels(popn_ps$gender),
     age_group = levels(popn_ps$age_group),
     vote_pref = levels(popn_ps$vote_pref)
   ),
-  weights = popn_ps$N_j
+  weights = "N_j"# use N_j column from popn_ps data
 )
+
 # Individual population data known:
 # Pretend that approx_voters_popn is the full population
 popn_obj3 <- SurveyData$new(
@@ -105,14 +106,11 @@ popn_obj3 <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
-  # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
     age_group = levels(approx_voters_popn$age_group),
     vote_pref = levels(approx_voters_popn$vote_pref)
-  ),
-  weights = rep(1,nrow(approx_voters_popn))
+  )
 )
 }
 \section{Methods}{
@@ -137,12 +135,13 @@ popn_obj3 <- SurveyData$new(
 \subsection{Method \code{new()}}{
 Create a new SurveyData object using an existing data frame and other
 survey information.
-The same object is being used for a sample and population.
+This method is used to create the objects for both the sample and the population data.
 If a population is approximated from a large survey (like the ACS or DHS),
 then the package will enable the creation of a weighted poststratification matrix.
 If the population is summarized as a poststratification matrix already, then set the weights
 as the size in each cell $N_j$.
-If the entire individual level population data is given, then specify the weights as 1.
+If the entire individual level population data is given, then weights should
+be omitted and will be automatically set to 1.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$new(
   data,
@@ -164,7 +163,8 @@ correspond to the names of variables in \code{data}. See \strong{Examples}. If
 these aren't provided then they will be created internally using all
 factor, character, and binary variables in \code{data}.}
 
-\item{\code{weights}}{Optionally, a vector of survey weights.}
+\item{\code{weights}}{Optionally, the name of a variable in \code{data} containing
+survey weights.}
 
 \item{\code{design}}{Optionally, a named list of arguments (except \code{weights} and
 \code{data}) to pass to \code{survey::svydesign()} to specify the survey design.}
@@ -173,7 +173,7 @@ factor, character, and binary variables in \code{data}.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{#Population estimated from large survey
+\preformatted{# Population estimated from large survey
 popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -188,12 +188,14 @@ popn_obj1 <- SurveyData$new(
     age_group = levels(approx_voters_popn$age_group),
     vote_pref = levels(approx_voters_popn$vote_pref)
   ),
-  weights = approx_voters_popn$wt
+  weights = "wt" # use the wt column from approx_voters_popn data
 )
-#Population poststratification matrix already known
+
+# Population poststratification matrix already known
+library(dplyr)
 popn_ps <- approx_voters_popn \%>\%
-group_by(age_group,gender_vote_pref)\%>\%
-summarise(N_j = sum(wts))
+  group_by(age_group,gender_vote_pref) \%>\%
+  summarise(N_j = sum(wts))
 
 popn_obj2 <- SurveyData$new(
   data = popn_ps,
@@ -202,15 +204,14 @@ popn_obj2 <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
-  # the list has the names of the variables
   responses = list(
     gender = levels(popn_ps$gender),
     age_group = levels(popn_ps$age_group),
     vote_pref = levels(popn_ps$vote_pref)
   ),
-  weights = popn_ps$N_j
+  weights = "N_j"# use N_j column from popn_ps data
 )
+
 # Individual population data known:
 # Pretend that approx_voters_popn is the full population
 popn_obj3 <- SurveyData$new(
@@ -220,14 +221,11 @@ popn_obj3 <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
-  # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
     age_group = levels(approx_voters_popn$age_group),
     vote_pref = levels(approx_voters_popn$vote_pref)
-  ),
-  weights = rep(1,nrow(approx_voters_popn))
+  )
 )
 }
 \if{html}{\out{</div>}}

@@ -4,11 +4,11 @@
 #' @export
 #' @description
 #' A `SurveyData` object represents a survey and its metadata. The survey itself
-#' is a data frame containing all data from the survey. The survey data object also
-#' includes the survey questions and responses (if left empty these will just be the
-#' column and factor level names). To enable weights comparison, a weights column and
-#' survey design can be specified, with the survey design specified using `survey` package
-#' notation.
+#' is a data frame containing all data from the survey. The survey data object
+#' also includes the survey questions and responses (if left empty these will
+#' just be the column and factor level names). To enable weighted comparisons,
+#' survey weights and a survey design can be specified, with the survey design
+#' specified using \pkg{survey} package notation.
 #'
 #' @examples
 #'
@@ -27,7 +27,7 @@
 #'     vote_for = levels(shape_survey$vote_for),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = shape_survey$wt,
+#'   weights = "wt",
 #'   design = list(ids =~1)
 #' )
 #' box_prefs$print()
@@ -48,7 +48,7 @@
 #'     age_group = levels(approx_voters_popn$age_group),
 #'     vote_pref = levels(approx_voters_popn$vote_pref)
 #'   ),
-#'   weights = approx_voters_popn$wt
+#'   weights = "wt"
 #' )
 #' popn_obj$print()
 #'
@@ -64,23 +64,25 @@ SurveyData <- R6::R6Class(
   public = list(
     #' @description Create a new SurveyData object using an existing data frame and other
     #' survey information.
-    #' The same object is being used for a sample and population.
+    #' This method is used to create the objects for both the sample and the population data.
     #' If a population is approximated from a large survey (like the ACS or DHS),
     #' then the package will enable the creation of a weighted poststratification matrix.
     #' If the population is summarized as a poststratification matrix already, then set the weights
     #' as the size in each cell $N_j$.
-    #' If the entire individual level population data is given, then specify the weights as 1.
+    #' If the entire individual level population data is given, then weights should
+    #' be omitted and will be automatically set to 1.
     #' @param data A data frame containing the survey data.
     #' @param questions,responses Named lists containing the text of the survey
     #'   questions and the allowed responses, respectively. The names must
     #'   correspond to the names of variables in `data`. See **Examples**. If
     #'   these aren't provided then they will be created internally using all
     #'   factor, character, and binary variables in `data`.
-    #' @param weights Optionally, a vector of survey weights.
+    #' @param weights Optionally, the name of a variable in `data` containing
+    #'   survey weights.
     #' @param design Optionally, a named list of arguments (except `weights` and
     #'   `data`) to pass to `survey::svydesign()` to specify the survey design.
     #' @examples
-    #' #Population estimated from large survey
+    #' # Population estimated from large survey
     #' popn_obj1 <- SurveyData$new(
     #'   data = approx_voters_popn,
     #'   questions = list(
@@ -95,12 +97,14 @@ SurveyData <- R6::R6Class(
     #'     age_group = levels(approx_voters_popn$age_group),
     #'     vote_pref = levels(approx_voters_popn$vote_pref)
     #'   ),
-    #'   weights = approx_voters_popn$wt
+    #'   weights = "wt" # use the wt column from approx_voters_popn data
     #' )
-    #' #Population poststratification matrix already known
+    #'
+    #' # Population poststratification matrix already known
+    #' library(dplyr)
     #' popn_ps <- approx_voters_popn %>%
-    #' group_by(age_group,gender_vote_pref)%>%
-    #' summarise(N_j = sum(wts))
+    #'   group_by(age_group,gender_vote_pref) %>%
+    #'   summarise(N_j = sum(wts))
     #'
     #' popn_obj2 <- SurveyData$new(
     #'   data = popn_ps,
@@ -109,17 +113,16 @@ SurveyData <- R6::R6Class(
     #'     gender = "Gender?",
     #'     vote_pref = "Which party do you prefer to vote for?"
     #'   ),
-    #'   # order doesn't matter (gender before age2 here) because
-    #'   # the list has the names of the variables
     #'   responses = list(
     #'     gender = levels(popn_ps$gender),
     #'     age_group = levels(popn_ps$age_group),
     #'     vote_pref = levels(popn_ps$vote_pref)
     #'   ),
-    #'   weights = popn_ps$N_j
+    #'   weights = "N_j"# use N_j column from popn_ps data
     #' )
-    #'# Individual population data known:
-    #'# Pretend that approx_voters_popn is the full population
+    #'
+    #' # Individual population data known:
+    #' # Pretend that approx_voters_popn is the full population
     #' popn_obj3 <- SurveyData$new(
     #'   data = approx_voters_popn,
     #'   questions = list(
@@ -127,20 +130,17 @@ SurveyData <- R6::R6Class(
     #'     gender = "Gender?",
     #'     vote_pref = "Which party do you prefer to vote for?"
     #'   ),
-    #'   # order doesn't matter (gender before age2 here) because
-    #'   # the list has the names of the variables
     #'   responses = list(
     #'     gender = levels(approx_voters_popn$gender),
     #'     age_group = levels(approx_voters_popn$age_group),
     #'     vote_pref = levels(approx_voters_popn$vote_pref)
-    #'   ),
-    #'   weights = rep(1,nrow(approx_voters_popn))
+    #'   )
     #' )
     initialize = function(data,
                           questions = list(),
                           responses = list(),
                           weights = numeric(),
-                          design = list(ids =~1)) {
+                          design = list(ids = ~1)) {
       if (ncol(data) == 0 || nrow(data) == 0) {
         stop("'data' cannot be empty.", call. = FALSE)
       }
@@ -155,11 +155,6 @@ SurveyData <- R6::R6Class(
           "Using all factor, character, and binary variables in 'data' by default.",
           call. = FALSE
         )
-      }
-      if (ncol(data) != length(questions) &
-          length(questions) == sum(stats::complete.cases(data))) {
-        stop("Mismatch between number of data columns and questions.",
-             call. = FALSE)
       }
       if (length(responses) != length(questions)) {
         stop("Mismatch between number of survey questions and responses.",
@@ -206,16 +201,17 @@ SurveyData <- R6::R6Class(
         }
       }
 
-      if (length(weights) != 0) {
-        if (length(weights) != nrow(data)) {
-          stop("Mismatch between number of data rows and number of weights.",
-               call. = FALSE)
+      if (length(weights) == 0) {
+        wts <- rep(1, nrow(data))
+      } else {
+        if (!is.character(weights) || !weights %in% colnames(data)) {
+          stop("'weights' must be a string naming a column in 'data'.", call. = FALSE)
         }
-        if (anyNA(weights)) {
+        wts <- data[[weights]]
+        data[[weights]] <- NULL
+        if (anyNA(wts)) {
           stop("NAs not allowed in weights.", call. = FALSE)
         }
-      } else {
-        weights <- rep(1, nrow(data))
       }
 
       if (!is.list(design) ||
@@ -234,7 +230,7 @@ SurveyData <- R6::R6Class(
 
       private$questions_ <- questions
       private$responses_ <- responses
-      private$weights_ <- weights
+      private$weights_ <- wts
       private$design_ <- design
       private$survey_data_ <- data.frame(.key = 1:nrow(data), data)
       invisible(self)

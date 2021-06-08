@@ -1,6 +1,6 @@
 suppressWarnings({
-  samp <- SurveyData$new(data = feline_survey, weights = feline_survey$wt)
-  popn <- SurveyData$new(data = approx_popn, weights = approx_popn$wt)
+  samp <- SurveyData$new(data = feline_survey, weights = "wt")
+  popn <- SurveyData$new(data = approx_popn, weights = "wt")
 })
 q_age <- QuestionMap$new(
   name = "age",
@@ -63,7 +63,7 @@ test_that("initializing with >0 questions doesn't error", {
 })
 
 test_that("add() errors if name already exists", {
-  ex_map <- SurveyMap$new(samp, popn, q_age)
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
   expect_error(
     ex_map$add(q_age),
     "Survey label 'age' already defined"
@@ -73,7 +73,8 @@ test_that("add() errors if name already exists", {
 test_that("validate creates correct levels (example1)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("18-25", "26-45", "46+"), 10)),
-                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(30 ,0, 1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -82,18 +83,18 @@ test_that("validate creates correct levels (example1)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30 ,0, 1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50))),
+    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50)), wt = rnorm(100, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-45", "46+")
     ),
-    weights = rnorm(100, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -112,7 +113,8 @@ test_that("validate creates correct levels (example1)", {
 test_that("validate creates correct levels (example2)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("18-25","26-45","46+"), 10)),
-                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(30,0,1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -121,18 +123,19 @@ test_that("validate creates correct levels (example2)", {
       age1 = c("18-25","26-45","46+"),
       y = c("no","yes")
     ),
-    weights = rnorm(30,0,1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50))),
+    data = data.frame(age2 = factor(rep(c("18-45", "46+"), 50)),
+                      wt = rnorm(100, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-45","46+")
     ),
-    weights = rnorm(100, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -152,7 +155,8 @@ test_that("validate creates correct levels (example2)", {
 test_that("validate creates correct levels (example3)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("18-25", "26+"), 15)),
-                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(30, 0, 1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -161,18 +165,19 @@ test_that("validate creates correct levels (example3)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30)),
+                      wt = rnorm(90, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -191,7 +196,8 @@ test_that("validate creates correct levels (example3)", {
 test_that("validate creates correct levels (example4)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("18-25", "26+"), 15)),
-                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(30, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(30, 0, 1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -200,18 +206,19 @@ test_that("validate creates correct levels (example4)", {
       age1 = c("18-25", "26+"),
       y = c("no", "yes")
     ),
-    weights = rnorm(30, 0, 1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-34", "35+"), 30)),
+                      wt = rnorm(90, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-25", "26-34", "35+")
     ),
-    weights = rnorm(90, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -230,7 +237,8 @@ test_that("validate creates correct levels (example4)", {
 test_that("validate creates correct levels (example5)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("18-25", "26-30", "31-40", "41-55", "56+"), 20)),
-                      y = factor(rbinom(100, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(100, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(100, 0, 1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -239,18 +247,19 @@ test_that("validate creates correct levels (example5)", {
       age1 = c("18-25", "26-30", "31-40", "41-55", "56+"),
       y = c("no","yes")
     ),
-    weights = rnorm(100, 0, 1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep(c("18-25", "26-35", "36-45", "46-55", "56+"), 40))),
+    data = data.frame(age2 = factor(rep(c("18-25", "26-35", "36-45", "46-55", "56+"), 40)),
+                      wt = rnorm(200, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 = c("18-25", "26-35", "36-45", "46-55", "56+")
     ),
-    weights = rnorm(200, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -272,7 +281,8 @@ test_that("validate creates correct levels (example5)", {
 test_that("validate creates correct levels (example6)", {
   samp <- SurveyData$new(
     data = data.frame(age1 = factor(rep(c("A","A","B","C","D","D","E"), 20)),
-                      y = factor(rbinom(140, 1, .5), levels = c("no", "yes"))),
+                      y = factor(rbinom(140, 1, .5), levels = c("no", "yes")),
+                      wt = rnorm(140, 0, 1)),
     questions = list(
       age1 = "Please identify your age group",
       y = "Response"
@@ -281,18 +291,19 @@ test_that("validate creates correct levels (example6)", {
       age1 = c("A", "B", "C", "D", "E"),
       y = c("no", "yes")
     ),
-    weights = rnorm(140, 0, 1)
+    weights = "wt"
   )
 
   popn <- SurveyData$new(
-    data = data.frame(age2 = factor(rep( c("Z","Y","Y","C","X","Q","Q"), 40))),
+    data = data.frame(age2 = factor(rep( c("Z","Y","Y","C","X","Q","Q"), 40)),
+                      wt = rnorm(280, 0, 1)),
     questions = list(
       age2 = "Which age group are you?"
     ),
     responses = list(
       age2 =  c("Z","Y","C","X","Q")
     ),
-    weights = rnorm(280, 0, 1)
+    weights = "wt"
   )
 
   q_age <- QuestionMap$new(
@@ -323,7 +334,7 @@ test_that("validate errors if NAs in adjustment variables in sample data", {
 test_that("validate errors if NAs in population data", {
   d <- approx_popn
   d$age2[3] <- NA
-  suppressWarnings(popn_NA <- SurveyData$new(data = d))
+  suppressWarnings(popn_NA <- SurveyData$new(data = d, weights = "wt"))
   expect_error(
     SurveyMap$new(samp, popn_NA, q_age, q_pet, q_gender),
     "NAs not allowed in variables mapped between sample and population"
@@ -589,7 +600,7 @@ test_that("Warning if missingness in outcome", {
   suppressWarnings(
     samp2 <- SurveyData$new(
       data = d,
-      weights = feline_survey$wt
+      weights = "wt"
     )
   )
   ex_map <- SurveyMap$new(samp2, popn, q_age, q_pet, q_gender)
