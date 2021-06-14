@@ -40,7 +40,7 @@ The workflow to use `mrpkit` to implement MRP is:
 5. Fit the model.
 6. Predict the probability of the outcome using the post-stratification dataset.
 7. Estimate the probability of the outcome at a level of interest, for example, state/province level.
-8. Visualize the probability of the outcome
+8. Visualize the probability of the outcome.
 
 A more detailed example of this workflow follows.
 
@@ -69,7 +69,7 @@ The most important methods in `SurveyData` are `SurveyData$new` and `SurveyData$
 
 In this example, we will show the steps to create the `SurveyData` object using `SurveyData$new` method. `SurveyData` takes the argument of the metadata as mentioned previously, which are:
 
-1. `data` : Dataframe i.e. survey or post-stratifcation data that would be transformed to a `SurveyData` object.
+1. `data` : Data frame i.e. survey or post-stratification data that would be transformed to a `SurveyData` object.
 Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. If you want to use any numerical variables in `data`, we suggest that you set it in this method, or convert it into one of those data types. Otherwise, it would not be included in the object. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
