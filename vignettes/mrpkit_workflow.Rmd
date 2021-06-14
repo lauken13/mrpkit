@@ -38,9 +38,9 @@ The workflow to use `mrpkit` to implement MRP is:
 3. Match the values between the survey and post-stratification datasets for each question.
 4. Map the questions between the survey and post-stratification datasets.
 5. Fit the model.
-6. Get the estimated value of the response variable's probability based on the post-stratification dataset.
-7. Aggregate the estimated value to some level of instance, for example for state/province level.
-8. Visualize the estimated probability.
+6. Predict the probability of the outcome using the post-stratification dataset.
+7. Estimate the probability of the outcome at a level of interest, for example, state/province level.
+8. Visualize the probability of the outcome
 
 A more detailed example of this workflow follows.
 
@@ -321,7 +321,7 @@ In this stage, we already have the fitted model object i.e. `fit1` and `fit2`. T
 
 ### Get the prediction value of each post-stratification cell
 
-After creating the `SurveyFit` object, we are able to generate the predicted probability of each post-stratification cell using the `population_predict` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples.
+After creating the `SurveyFit` object, we are able to generate the predicted probability of the outcome of each post-stratification cell using the `population_predict` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples.
 
 Furthermore, if the model fitting is done with one of the built-in function (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes two argument. The first is the fitted model object, and the second is the post-stratification data frame. In this example, we will show how to use this method for the `fit1` object.
 
