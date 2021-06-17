@@ -2,7 +2,7 @@ suppressWarnings({
   samp <- SurveyData$new(data = feline_survey, weights = feline_survey$wt)
   popn <- SurveyData$new(data = approx_popn, weights = approx_popn$wt)
 })
-q_age <- SurveyQuestion$new(
+q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -10,12 +10,12 @@ q_age <- SurveyQuestion$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-q_pet <- SurveyQuestion$new(
+q_pet <- QuestionMap$new(
   name = "pet",
   col_names = c("pet_own","pet_pref"),
   values_map = list("cat" = "cat", "kitten" = "cat","dog" = "dog","puppy" = "dog")
 )
-q_gender <- SurveyQuestion$new(
+q_gender <- QuestionMap$new(
   name = "gender",
   col_names = c("gender","gender"),
   values_map = data.frame("male" = "m","female" = "f", "nonbinary" = "nb")
@@ -25,6 +25,21 @@ test_that("object has correct R6 class", {
   expect_r6_class(SurveyMap$new(samp, popn), "SurveyMap")
 })
 
+test_that("print output hasn't changed", {
+  expect_known_output(
+    print(SurveyMap$new(samp, popn)),
+    file = test_path("answers/SurveyMap-print-empty")
+  )
+
+  expect_known_output(
+    print(suppressWarnings(SurveyMap$new(samp, popn, q_age))),
+    file = test_path("answers/SurveyMap-print-1-question")
+  )
+  expect_known_output(
+    print(suppressWarnings(SurveyMap$new(samp, popn, q_age))),
+    file = test_path("answers/SurveyMap-print-1-question")
+  )
+})
 
 test_that("error thrown if inputs are not SurveyData objects", {
   expect_error(
@@ -81,7 +96,7 @@ test_that("validate creates correct levels (example1)", {
     weights = rnorm(100, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
@@ -120,7 +135,7 @@ test_that("validate creates correct levels (example2)", {
     weights = rnorm(100, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-45", "26-45" = "18-45", "46+" = "46+")
@@ -160,7 +175,7 @@ test_that("validate creates correct levels (example3)", {
     weights = rnorm(90, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1", "age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
@@ -199,7 +214,7 @@ test_that("validate creates correct levels (example4)", {
     weights = rnorm(90, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list("18-25" = "18-25", "26+" = "26-34","26+" = "35+")
@@ -238,7 +253,7 @@ test_that("validate creates correct levels (example5)", {
     weights = rnorm(200, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
@@ -280,7 +295,7 @@ test_that("validate creates correct levels (example6)", {
     weights = rnorm(280, 0, 1)
   )
 
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
@@ -654,7 +669,7 @@ test_that("tabulate doesn't error if no weights were specified", {
     samp <- SurveyData$new(feline_survey)
     popn <- SurveyData$new(approx_popn)
   })
-  q_age <- SurveyQuestion$new(
+  q_age <- QuestionMap$new(
     name = "age",
     col_names = c("age1","age2"),
     values_map = list(
@@ -668,4 +683,3 @@ test_that("tabulate doesn't error if no weights were specified", {
   expect_silent(ex_map$tabulate())
   expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
 })
-

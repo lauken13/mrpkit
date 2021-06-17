@@ -28,7 +28,7 @@ Multilevel regression with post-stratification (MRP) is a statistical approach i
 
 At its core, MRP is a mapping between a survey object and a population object. It is from this mapping that the power of MRP exists, but it can be difficult to establish this mapping in a reproducible way that fits into a typical applied statistics workflow. Making this implementation easier and more reproducible is important as interest in, and the use of, MRP increases. It can be difficult even for those experienced with MRP to ensure there are no mistakes in this mapping and creating a well-defined workflow for MRP is an important contribution to enhancing the reproducibility of MRP analysis.
 
-We first define a grammar of MRP, which we define as the underlying rules and principles that are common to every analysis based on MRP. This grammar is based around the following components: 'datasets'; 'correspondences'; and 'models'. Typically MRP requires at least two datasets - usually a survey object and a post-stratification object, which we implement using the `SurveyData` method. The questions in each datasets are then aligned by establishing a correspondence between each possible answer to a particular question, and we implement this using the `SurveyQuestion` method. Having linked each question, the surveys themselves can be  linked and we implement this using the `SurveyMap` method. Finally, that correspondence can be modelled, and used to generate estimates. In this way, our grammar and package implement an entire statistical workflow for MRP that is largely agnostic of the specifics of each component.
+We first define a grammar of MRP, which we define as the underlying rules and principles that are common to every analysis based on MRP. This grammar is based around the following components: 'datasets'; 'correspondences'; and 'models'. Typically MRP requires at least two datasets - usually a survey object and a post-stratification object, which we implement using the `SurveyData` method. The questions in each datasets are then aligned by establishing a correspondence between each possible answer to a particular question, and we implement this using the `QuestionMap` method. Having linked each question, the surveys themselves can be  linked and we implement this using the `SurveyMap` method. Finally, that correspondence can be modelled, and used to generate estimates. In this way, our grammar and package implement an entire statistical workflow for MRP that is largely agnostic of the specifics of each component.
 
 The survey object would typically be a regular survey, such as a political poll of, say, 1,000 respondents, but it could also be a larger survey, such as the Canadian Election Survey, or similar. The post-stratification object would typically be a larger survey, such as, in the case of the US, the American Community Surveys, or a census. The correspondences need to be established for each possible answer for each question, for instance, the age-groups used in both surveys need to be homogenized. Finally, the model would typically be a Bayesian hierarchical model, but in principle any variety could be used.
 
@@ -52,7 +52,7 @@ The main alternative approach is for MRP to be conducted on a case-specific basi
 
 # Components and grammar {#components}
 
-The `MRPKit` package has the following key components: `SurveyData` objects, which for most users will be a collection of two surveys where one is larger than the other; a `SurveyQuestion` object, that holds the mapping for one question or demographic between the survey and post-stratification dataset; and a `SurveyMap` object, which holds the mapping between a set of items in a survey and a post-stratification dataset. These are expanded on in the following sub-sections before being brought together.
+The `MRPKit` package has the following key components: `SurveyData` objects, which for most users will be a collection of two surveys where one is larger than the other; a `QuestionMap` object, that holds the mapping for one question or demographic between the survey and post-stratification dataset; and a `SurveyMap` object, which holds the mapping between a set of items in a survey and a post-stratification dataset. These are expanded on in the following sub-sections before being brought together.
 
 ## SurveyData objects
 
@@ -72,12 +72,12 @@ Some examples of survey designs include:
 These `SurveyData` objects are the surveys that MRP will bring together. A user can use the function `add` to create a survey object by providing a CSV file location. The user then needs to identify the data types of each column. Typically, there will need to be two survey objects, where one will be the survey that is of interest for its response variables, such as political opinion, and another will be a survey that is to be used for post-stratification.
 
 
-## SurveyQuestion objects
+## QuestionMap objects
 
-A `SurveyQuestion` object holds the mapping for one question or demographic between the survey and post-stratification dataset. For instance, if both the survey and post-stratification dataset contain a question about age, it may be that answers are expressed as a single integer representing years and so mapping them is relatively straight-forward. This is done with the function `new`, for instance:
+A `QuestionMap` object holds the mapping for one question or demographic between the survey and post-stratification dataset. For instance, if both the survey and post-stratification dataset contain a question about age, it may be that answers are expressed as a single integer representing years and so mapping them is relatively straight-forward. This is done with the function `new`, for instance:
 
 ```{r, eval = FALSE}
-SurveyQuestion$new(
+QuestionMap$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -91,7 +91,7 @@ SurveyQuestion$new(
 If ages have been aggregating into age-groups then it may not be the case that both the survey and the post-stratification dataset have groups that directly correspond. In that case, a user needs to specify how the age-groups fit together. This is also done with the function `new`, for instance:
 
 ```{r, eval = FALSE}
-SurveyQuestion$new(
+QuestionMap$new(
   name = "age",
   col_names = c("age1","age2"),
   values_map = list(
@@ -113,7 +113,7 @@ If there is not a clean correspondence between the survey and post-stratificatio
 
 ## SurveyMap objects
 
-A `SurveyMap` object holds the mapping between a set of items in a survey and a population dataset. That is, it draws on two `SurveyData` objects, and a `SurveyQuestion` object, and brings the two `SurveyData` objects together following the correspondences provided in the `SurveyQuestion` object. 
+A `SurveyMap` object holds the mapping between a set of items in a survey and a population dataset. That is, it draws on two `SurveyData` objects, and a `QuestionMap` object, and brings the two `SurveyData` objects together following the correspondences provided in the `QuestionMap` object. 
 
 The label is the item label in each dataset and the values is a list of all possible values. The values for the survey and post-stratification must be aligned, i.e., the lists must have the same number of elements and the values at index i in each list are equivalent. If there is a meaningful ordering over the values, they should be listed in that order, either descending or ascending.
 
