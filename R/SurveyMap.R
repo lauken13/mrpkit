@@ -111,8 +111,7 @@
 #'   family = "binomial",
 #'   seed = 1111,
 #'   # just to keep the example fast and small
-#'   chains = 1,
-#'   warmup = 200
+#'   chains = 1
 #' )
 #'
 #' # Example lme4 usage

@@ -106,10 +106,7 @@ fit_1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
-  seed = 1111,
-  # just to keep the example fast and small
-  chains = 1,
-  warmup = 200
+  seed = 1111
 )
 
 # Example lme4 usage
