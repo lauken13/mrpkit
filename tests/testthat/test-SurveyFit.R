@@ -12,7 +12,7 @@ samp_obj <- SurveyData$new(
     pet_own = levels(feline_survey$pet_own),
     y = c("no","yes")
   ),
-  weights = feline_survey$wt,
+  weights = "wt",
   design = list(ids =~1)
 )
 
@@ -28,7 +28,7 @@ popn_obj <- SurveyData$new(
     age2 = levels(approx_popn$age2),
     pet_pref = levels(approx_popn$pet_pref)
   ),
-  weights = approx_popn$wt,
+  weights = "wt",
   design = list(ids =~1))
 
 q_age <- QuestionMap$new(
