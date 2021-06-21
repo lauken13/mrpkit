@@ -77,17 +77,17 @@ SurveyFit <- R6::R6Class(
         if ("stanreg" %in% class(private$fit_)) {
           require_suggested_package("rstanarm", "2.21.0")
           return(
-            t(suppressMessages(rstanarm::posterior_linpred(
+            suppressMessages(rstanarm::posterior_linpred(
               object = private$fit_,
               newdata = poststrat,
               transform = TRUE,
               ...
-            )))
+            ))
           )
         } else if ("brmsfit" %in% class(private$fit_)) {
           require_suggested_package("brms")
           return(
-            t(brms::posterior_epred(
+            brms::posterior_epred(
               object = private$fit_,
               newdata = poststrat,
               dpar = "mu",
@@ -96,10 +96,11 @@ SurveyFit <- R6::R6Class(
                 if (!is.null(args$sample_new_levels)) args$sample_new_levels
                 else "gaussian",
               ...
-            ))
+            )
           )
         } else if ("glmerMod" %in% class(private$fit_)) {
           require_suggested_package("lme4")
+          # note:  might need to transpose this?
           return(
             sim_posterior_probs(
               object = private$fit_,
@@ -130,45 +131,49 @@ SurveyFit <- R6::R6Class(
     #'   variable each row corresponds to.
     aggregate = function(poststrat_estimates, by = NULL) {
       poststrat_data <- private$map_$poststrat_data()
-      if (!is.null(by)) {
-        if (length(by) != 1) {
-          stop("Currently only one variable can be named in 'by'.", call. = FALSE)
-        }
-        rotate_levels <- levels(private$map_$mapped_sample_data()[, by])
-        out <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_estimates), value = NA)
-        colnames(out)[1] <- by
-        for (focus_level in rotate_levels){
-          level_loc <- poststrat_data[by] == focus_level
-          out[out[by] == focus_level, "value"] <-
-            apply(poststrat_estimates[level_loc, ], 2, function(x) sum(poststrat_data$N_j[level_loc]*x)/sum(poststrat_data$N_j[level_loc]))
-        }
-      } else {
-        out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
+      if (is.null(by)) {
+        pop_draws <- data.frame(value = apply(poststrat_estimates, 1, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
+        return(pop_draws)
       }
-      out
+      if (length(by) != 1) {
+          stop("Currently only one variable can be named in 'by'.", call. = FALSE)
+      }
+      target_levels <- levels(private$map_$mapped_sample_data()[, by])
+      pop_draws <- expand.grid(draw = 1:nrow(poststrat_estimates), by = target_levels, value = NA)
+      colnames(pop_draws)[2] <- by
+      for (target_level in target_levels){
+          level_idx <- poststrat_data[by] == target_level
+          pop_draws[pop_draws[by] == target_level, "value"] <-
+              # for each draw from post pred sample, adjust variable of interest by proportion of population
+              apply(poststrat_estimates[, level_idx], 1,
+                    function(x) sum(poststrat_data$N_j[level_idx]*x)/sum(poststrat_data$N_j[level_idx]))
+      }
+      # pop_draws <- pivot_wider(pop_draws, names_from = by, values_from = "value")
+      pop_draws
     },
 
+
     plot = function(aggregated_estimates, weights = TRUE) {
-      if (ncol(aggregated_estimates) > 2) {
-        focus_var <- colnames(aggregated_estimates)[1]
-        which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
-        svy_q <- private$map_$sample()$questions()[[which_q]]
-        gg <- ggplot2::ggplot(aggregated_estimates) +
-          ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
-          ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
-          ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
-          ggplot2::xlab(svy_q)
-      } else {
-        model_fit <- private$fit_
-        lhs_var <- as.character(formula(model_fit))[[2]]
-        svy_q <- private$map_$sample()$questions()[[lhs_var]]
-        gg <- ggplot2::ggplot(aggregated_estimates) +
-          ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
-          ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
-          ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
-          ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
-          ggplot2::xlab(svy_q)
-      }
+        if (ncol(aggregated_estimates) > 2) {
+            focus_var <- colnames(aggregated_estimates)[1]
+            which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
+            svy_q <- private$map_$sample()$questions()[[which_q]]
+            gg <- ggplot2::ggplot(aggregated_estimates) +
+                ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
+                ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
+                ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
+                ggplot2::xlab(svy_q)
+        } else {
+            model_fit <- private$fit_
+            lhs_var <- as.character(formula(model_fit))[[2]]
+            svy_q <- private$map_$sample()$questions()[[lhs_var]]
+            gg <- ggplot2::ggplot(aggregated_estimates) +
+                ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
+                ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
+                ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+                ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
+                ggplot2::xlab(svy_q)
+        }
 
       if (weights) {
         model_fit <- private$fit_
