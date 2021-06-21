@@ -105,9 +105,9 @@ test_that("validate creates correct levels (example1)", {
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age,
-                  c('18-45', "46+"))
+                  c('18-25 + 26-45', "46+"))
   expect_setequal(ex_map$mapped_population_data()$age,
-                  c('18-45', "46+"))
+                  c('18-25 + 26-45', "46+"))
 })
 
 test_that("validate creates correct levels (example2)", {
@@ -146,9 +146,10 @@ test_that("validate creates correct levels (example2)", {
   expect_silent(ex_map <- SurveyMap$new(samp, popn, q_age))
   ex_map$mapping()
   expect_setequal(ex_map$mapped_sample_data()$age[1:10],
-                  c("18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45", "18-45", "46+", "18-45"))
+                  c("18-25 + 26-45", "18-25 + 26-45", "46+","18-25 + 26-45", "18-25 + 26-45", "46+", "18-25 + 26-45",
+                    "18-25 + 26-45", "46+", "18-25 + 26-45"))
   expect_setequal(ex_map$mapped_population_data()$age[1:10],
-                  c("18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+", "18-45", "46+"))
+                  c("18-25 + 26-45", "46+", "18-25 + 26-45", "46+", "18-25 + 26-45", "46+", "18-25 + 26-45", "46+", "18-25 + 26-45", "46+"))
 })
 
 
@@ -317,7 +318,7 @@ test_that("validate creates correct levels (example6)", {
   ex_map$mapping()
   expect_setequal(levels(ex_map$mapped_sample_data()$age),
                   c("A + B","C","D + E"))
-  expect_setequal(ex_map$mapped_population_data()$age,
+  expect_setequal(levels(ex_map$mapped_population_data()$age),
                   c("A + B","C","D + E"))
 })
 
