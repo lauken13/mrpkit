@@ -274,8 +274,8 @@ test_that("Populations are within acceptable tolerance of previous runs (+/- 2% 
   expect_gt(mean(x$value), .72 - .02)
 
   x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
-  expect_lt(mean(x$value), .72 + .02)
-  expect_gt(mean(x$value), .72 - .02)
+  expect_lt(mean(x$value), .58 + .02)
+  expect_gt(mean(x$value), .58 - .02)
 
 })
 
