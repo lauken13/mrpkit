@@ -30,7 +30,7 @@
 #'     vote_for = levels(shape_survey$vote_for),
 #'     y = c("no","yes")
 #'   ),
-#'   weights = shape_survey$wt,
+#'   weights = "wt",
 #'   design = list(ids =~1)
 #' )
 #' box_prefs$print()
@@ -51,7 +51,7 @@
 #'     age_group = levels(approx_voters_popn$age_group),
 #'     vote_pref = levels(approx_voters_popn$vote_pref)
 #'   ),
-#'   weights = approx_voters_popn$wt
+#'   weights = "wt"
 #' )
 #' popn_obj$print()
 #'
@@ -111,8 +111,7 @@
 #'   family = "binomial",
 #'   seed = 1111,
 #'   # just to keep the example fast and small
-#'   chains = 1,
-#'   warmup = 200
+#'   chains = 1
 #' )
 #'
 #' # Example lme4 usage
@@ -143,14 +142,16 @@
 #'   summarize(mean = mean(value), sd = sd(value))
 #'
 #' # plot estimates by age
-#' fit_1$plot(estimates_by_age)
+#' fit_1$plot(estimates_by_age, weights = FALSE)
+#' fit_1$plot(estimates_by_age, weights = TRUE)
 #'
 #' # population estimate
 #' estimates_popn <- fit_1$aggregate(poststrat_estimates)
 #' mean(estimates_popn$value)
 #'
 #' # plot population estimate
-#' fit_1$plot(estimates_popn)
+#' fit_1$plot(estimates_popn, weights = FALSE)
+#' fit_1$plot(estimates_popn, weights = TRUE)
 #'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
