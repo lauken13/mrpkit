@@ -65,12 +65,12 @@ head(approx_voters_popn)
 
 `SurveyData` are objects used to represent both the survey and the post-stratification datasets, along with their metadata. The survey metadata consists of the survey's variables, the questions that were asked, and the levels of the responses. It is also optionally to include the survey weight and its design formula to this object. 
 
-The most important methods in `SurveyData` are `SurveyData$new` and `SurveyData$print`. The `SurveyData$new` is used to transform a regular dataframe to a `SurveyData` object, whereas `SurveyData$print` is used to print the created `SurveyData` object.
+The most important methods in `SurveyData` are `SurveyData$new` and `SurveyData$print`. The `SurveyData$new` is used to transform a regular data frame to a `SurveyData` object, whereas `SurveyData$print` is used to print the created `SurveyData` object.
 
 In this example, we will show the steps to create the `SurveyData` object using `SurveyData$new` method. `SurveyData` takes the argument of the metadata as mentioned previously, which are:
 
 1. `data` : Data frame i.e. survey or post-stratification data that would be transformed to a `SurveyData` object.
-Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. If you want to use any numerical variables in `data`, we suggest that you set it in this method, or convert it into one of those data types. Otherwise, it would not be included in the object. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
+Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
 4. `weights`: The survey weights.
@@ -319,7 +319,7 @@ fit3 <- ex_map$fit(
 In this stage, we already have the fitted model object i.e. `fit1` and `fit2`. These objects have been automatically stored as `SurveyFit` objects. Further, using this object, we can generate the predicted probabilities for all post-stratification cell, aggregate the small area estimation, for example state or province estimates, and visualize the aggregated estimates. 
 
 
-### Get the prediction value of each post-stratification cell
+### Get the probability of the outcome from each poststratification cells
 
 After creating the `SurveyFit` object, we are able to generate the predicted probability of the outcome of each post-stratification cell using the `population_predict` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples.
 
@@ -331,7 +331,7 @@ poststrat_est_fit1 <- fit1$population_predict()
 ```
 
 
-### Aggregate the prediction to a higher level of estimate
+### Aggregate the probbility of the outcome to a higher level of estimate
 
 The next step is to generate the population estimate or group estimate using the `aggregate` method. This method takes two arguments, namely the post-stratification estimate data and the variable whose level to which the estimated value would be aggregated to. In this example, we want to aggregate the estimated value by the level of `age` and `state`. If the variable is not specified, then this method would generate a population estimate.
 
@@ -348,7 +348,7 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a dataframe with variable levels, the draw/iteration, and the probability of the `y`. In this example, `age_preds` represents the age-group, the draw, and the probability of voting for the Box Party for each age-group and each draw.
+This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_preds` represents the age-group and the probability of voting for the Box Party for each age-group and each draw.
 
 ```{r show-aggr}
 head(age_estimation)
