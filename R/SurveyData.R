@@ -101,8 +101,8 @@ SurveyData <- R6::R6Class(
     #' # Population poststratification matrix already known
     #' library(dplyr)
     #' popn_ps <- approx_voters_popn %>%
-    #'   group_by(age_group,gender_vote_pref) %>%
-    #'   summarise(N_j = sum(wts))
+    #'   group_by(age_group,gender) %>%
+    #'   summarise(N_j = sum(wt))
     #'
     #' popn_obj2 <- SurveyData$new(
     #'   data = popn_ps,
@@ -127,8 +127,7 @@ SurveyData <- R6::R6Class(
     #'   ),
     #'   responses = list(
     #'     gender = levels(approx_voters_popn$gender),
-    #'     age_group = levels(approx_voters_popn$age_group),
-    #'     vote_pref = levels(approx_voters_popn$vote_pref)
+    #'     age_group = levels(approx_voters_popn$age_group)
     #'   )
     #' )
     #' popn_obj1
