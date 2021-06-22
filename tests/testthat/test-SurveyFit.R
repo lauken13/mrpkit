@@ -69,7 +69,8 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
       family = "binomial",
       iter = 10,
       chains = 1,
-      refresh = 0
+      refresh = 0,
+      seed = 123
     )
   )
   suppressWarnings(
@@ -79,7 +80,8 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
       family = "binomial",
       iter = 10,
       chains = 1,
-      refresh = 0
+      refresh = 0,
+      seed = 123
     )
   )
 }
@@ -92,7 +94,8 @@ if (requireNamespace("brms", quietly = TRUE)) {
       family = "bernoulli",
       iter = 10,
       chains = 1,
-      refresh = 0
+      refresh = 0,
+      seed = 123
     )
   )
 }
