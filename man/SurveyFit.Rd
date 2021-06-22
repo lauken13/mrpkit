@@ -60,7 +60,7 @@ q_age <- QuestionMap$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-print(q1)
+print(q_age)
 
 q_party_pref <- QuestionMap$new(
   name = "party_pref",
@@ -106,7 +106,9 @@ fit_1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
-  seed = 1111
+  seed = 1111,
+  # just to keep the example fast and small
+  chains = 1
 )
 
 # Example lme4 usage

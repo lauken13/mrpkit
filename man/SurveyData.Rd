@@ -63,15 +63,13 @@ popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   # order doesn't matter (gender before age2 here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
-    age_group = levels(approx_voters_popn$age_group),
-    vote_pref = levels(approx_voters_popn$vote_pref)
+    age_group = levels(approx_voters_popn$age_group)
   ),
   weights = "wt" # use the wt column from approx_voters_popn data
 )
@@ -86,13 +84,11 @@ popn_obj2 <- SurveyData$new(
   data = popn_ps,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   responses = list(
     gender = levels(popn_ps$gender),
-    age_group = levels(popn_ps$age_group),
-    vote_pref = levels(popn_ps$vote_pref)
+    age_group = levels(popn_ps$age_group)
   ),
   weights = "N_j"# use N_j column from popn_ps data
 )
@@ -103,8 +99,7 @@ popn_obj3 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -112,6 +107,9 @@ popn_obj3 <- SurveyData$new(
     vote_pref = levels(approx_voters_popn$vote_pref)
   )
 )
+popn_obj1
+popn_obj2
+popn_obj3
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -178,15 +176,13 @@ popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   # order doesn't matter (gender before age2 here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
-    age_group = levels(approx_voters_popn$age_group),
-    vote_pref = levels(approx_voters_popn$vote_pref)
+    age_group = levels(approx_voters_popn$age_group)
   ),
   weights = "wt" # use the wt column from approx_voters_popn data
 )
@@ -201,13 +197,11 @@ popn_obj2 <- SurveyData$new(
   data = popn_ps,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   responses = list(
     gender = levels(popn_ps$gender),
-    age_group = levels(popn_ps$age_group),
-    vote_pref = levels(popn_ps$vote_pref)
+    age_group = levels(popn_ps$age_group)
   ),
   weights = "N_j"# use N_j column from popn_ps data
 )
@@ -218,8 +212,7 @@ popn_obj3 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
     age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
+    gender = "Gender?"
   ),
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -227,6 +220,9 @@ popn_obj3 <- SurveyData$new(
     vote_pref = levels(approx_voters_popn$vote_pref)
   )
 )
+popn_obj1
+popn_obj2
+popn_obj3
 }
 \if{html}{\out{</div>}}
 
