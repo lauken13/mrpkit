@@ -375,50 +375,37 @@ SurveyMap <- R6::R6Class(
         }
         tmp_mapped_levels <- mapped_levels
         mapped_levels_new <- mapped_levels
-        mapped_col_names <- colnames(mapped_levels)
-        mapped_col_names_new <- colnames(mapped_levels)
-        mapped_col_names_tmp <- colnames(mapped_levels)
         for (unique_samp_levels in 1:length(mapped_levels[,1])) {
           if(sum(mapped_levels[unique_samp_levels,],na.rm = TRUE)>1){
-            mapped_levels_new <- tmp_mapped_levels[,tmp_mapped_levels[unique_samp_levels,]!=1]
-            mapped_col_names_new <- mapped_col_names_tmp[tmp_mapped_levels[unique_samp_levels,]!=1]
+            mapped_levels_new <- tmp_mapped_levels[,tmp_mapped_levels[unique_samp_levels,]!=1, drop = FALSE]
             ll = ncol(mapped_levels_new)
             mapped_levels_new <- cbind(mapped_levels_new,ifelse(rowSums(tmp_mapped_levels[,tmp_mapped_levels[unique_samp_levels,]==1])>=1,1,0))
-            mapped_col_names_new <- c(mapped_col_names_new,paste0(mapped_col_names_tmp[tmp_mapped_levels[unique_samp_levels,]==1], collapse = " + "))
-            tmp_mapped_levels<- mapped_levels_new
-            mapped_col_names_tmp <- mapped_col_names_new
-          }
+            colnames(mapped_levels_new)[ll+1] <- paste0(colnames(tmp_mapped_levels[,tmp_mapped_levels[unique_samp_levels,,drop = FALSE]==1,drop = FALSE]), collapse = " + ")
+            tmp_mapped_levels<- mapped_levels_new        }
         }
 
         tmp_mapped_levels <- mapped_levels_new
         mapped_levels_fin <- mapped_levels_new
-        mapped_row_names <- row.names(mapped_levels)
-        mapped_row_names_new <- row.names(mapped_levels)
-        mapped_row_names_tmp <- row.names(mapped_levels)
         for (unique_popn_levels in 1:length(mapped_levels_fin[1,])) {
           if(sum(mapped_levels_new[,unique_popn_levels],na.rm = TRUE)>1){
-            mapped_levels_new <- tmp_mapped_levels[tmp_mapped_levels[,unique_popn_levels]!=1,]
-            mapped_row_names_new <- mapped_row_names_tmp[tmp_mapped_levels[,unique_popn_levels]!=1]
+            mapped_levels_new <- tmp_mapped_levels[tmp_mapped_levels[,unique_popn_levels]!=1,, drop = FALSE]
             ll = nrow(mapped_levels_new)
             mapped_levels_new <- rbind(mapped_levels_new,ifelse(colSums(mapped_levels_fin[mapped_levels_fin[,unique_popn_levels]==1,])>=1,1,0))
-            mapped_row_names_new <- c(mapped_row_names_new,paste0(mapped_row_names_tmp[tmp_mapped_levels[,unique_popn_levels]==1], collapse = " + "))
+            row.names(mapped_levels_new)[ll+1] <- paste0(row.names(tmp_mapped_levels[tmp_mapped_levels[,unique_popn_levels, drop = FALSE]==1,,drop = FALSE]), collapse = " + ")
             tmp_mapped_levels<- mapped_levels_new
-            mapped_row_names_tmp <- mapped_row_names_new
           }
         }
         mapped_levels_fin <- mapped_levels_new
-        mapped_rownames_fin <- mapped_row_names_new
-        mapped_colnames_fin <- mapped_col_names_new
 
         # Create the name remapping
         new_levels_samp_names <- length(new_levels_samp)
         for(samp_level in 1:length(levels_samp)){
-          if(length(grep(levels_samp[samp_level],mapped_rownames_fin))>1){
+          if(length(grep(levels_samp[samp_level],row.names(mapped_levels_fin)))>1){
             #specific match
-            new_levels_samp_names[samp_level] <- mapped_rownames_fin[grep(paste0("^",levels_samp[samp_level],"$"),mapped_rownames_fin)]
+            new_levels_samp_names[samp_level] <- row.names(mapped_levels_fin)[grep(paste0("^",levels_samp[samp_level],"$"),row.names(mapped_levels_fin))]
           }else{
             #partial match
-            new_levels_samp_names[samp_level] <- mapped_rownames_fin[grep(levels_samp[samp_level],mapped_rownames_fin)]
+            new_levels_samp_names[samp_level] <- row.names(mapped_levels_fin)[grep(levels_samp[samp_level],row.names(mapped_levels_fin))]
           }
         }
         new_levels_samp <- levels_samp
@@ -426,13 +413,13 @@ SurveyMap <- R6::R6Class(
 
         new_levels_popn_names <- length(new_levels_popn)
         for(popn_level in 1:length(levels_popn)){
-          if(length(grep(paste0(levels_popn[popn_level]),mapped_colnames_fin))>1){
-            popn_level_loc <- grep(paste0("^",levels_popn[popn_level],"$"),mapped_colnames_fin)
+          if(length(grep(paste0(levels_popn[popn_level]),colnames(mapped_levels_fin)))>1){
+            popn_level_loc <- grep(paste0("^",levels_popn[popn_level],"$"),colnames(mapped_levels_fin))
           } else{
-            popn_level_loc <- grep(levels_popn[popn_level],mapped_colnames_fin)
+            popn_level_loc <- grep(levels_popn[popn_level],colnames(mapped_levels_fin))
           }
           #name according to sample data
-          new_levels_popn_names[popn_level] <- mapped_rownames_fin[mapped_levels_fin[,popn_level_loc]==1]
+          new_levels_popn_names[popn_level] <- row.names(mapped_levels_fin)[popn_level_loc]
         }
         new_levels_popn <- levels_popn
         names(new_levels_popn) <- new_levels_popn_names
