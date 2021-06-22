@@ -16,7 +16,7 @@ q_age <- QuestionMap$new(
     "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
   )
 )
-print(q1)
+print(q_age)
 
 q_party_pref <- QuestionMap$new(
   name = "party_pref",
