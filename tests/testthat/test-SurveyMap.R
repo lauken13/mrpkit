@@ -344,9 +344,12 @@ test_that("validate errors if NAs in population data", {
 # This test is currently failing. Should it be?
 # Expected match: "Predictor variables not known in population."
 test_that("Error if predictor vars not included in poststrat matrix",{
-  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet,q_gender)
   ex_map$mapping()
   ex_map$tabulate()
+  #change the internal poststrat to trigger error
+  # This is a very unlikely thing to happen, but just in case!
+  ex_map$.__enclos_env__$private$poststrat_data_<-ex_map$.__enclos_env__$private$poststrat_data_[c("age","pet","N_j")]
   skip_if_not_installed("lme4")
   expect_error(
     ex_map$fit(
@@ -359,6 +362,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
   ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
+  ex_map$.__enclos_env__$private$poststrat_data_<-ex_map$.__enclos_env__$private$poststrat_data_[c("age","pet","N_j")]
   skip_if_not_installed("rstanarm")
   expect_error(
     ex_map$fit(
@@ -371,6 +375,7 @@ test_that("Error if predictor vars not included in poststrat matrix",{
   ex_map <-  SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
   ex_map$mapping()
   ex_map$tabulate()
+  ex_map$.__enclos_env__$private$poststrat_data_<-ex_map$.__enclos_env__$private$poststrat_data_[c("age","pet","N_j")]
   skip_if_not_installed("brms")
   expect_error(
     ex_map$fit(
@@ -694,3 +699,4 @@ test_that("tabulate doesn't error if no weights were specified", {
   expect_silent(ex_map$tabulate())
   expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
 })
+
