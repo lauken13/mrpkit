@@ -1,8 +1,8 @@
 ---
-title: "Getting Started with MRP-Kit"
+title: "Getting Started with mrpkit"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with MRP-Kit}
+  %\VignetteIndexEntry{Getting Started with mrpkit}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library(mrpkit)
 ```
 
-This vignette presents the typical workflow of MRP-Kit, an R package for implementing a "grammar" for multilevel regression with post-stratification.
+This vignette presents the typical workflow of `mrpkit`, an R package for implementing a multilevel regression with post-stratification.
 
 
 # Introduction
@@ -73,8 +73,8 @@ In this example, we will show the steps to create the `SurveyData` object using 
 Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
-4. `weights`: The survey weights.
-5. `design`: The design formula of the survey, specified using the survey package format
+4. `weights`: This is an optional argument of the survey or post-stratification/population weight. If the weight is specified as a column in the datasets, then this argument should be specify as string data type. in this case, it is "wt" for `shape_survey` and `approx_voters_popn`. Another example is if the population is summarized as a post-stratification matrix already, then the weight would be the size of each cell, denote by $N_j$. Further, if the entire individual level population is given, the the this argument should be omitted and it would be automatically specify as 1. 
+5. `design`: This is an optional argument of design formula of the survey, specified using the `survey` package notation.
 
 **Create the `SurveyData` object for the survey data set**
 
@@ -93,7 +93,7 @@ box_pref <- SurveyData$new(
                    highest_educ = levels(shape_survey$highest_educ),
                    state = levels(shape_survey$state),
                    y = c("no","yes")),
-  weights = shape_survey$wt,
+  weights = "wt",
   design = list(ids =~1))
 
 # print it
@@ -102,9 +102,10 @@ box_pref$print()
 
 **Create the `SurveyData` object for the post-stratification dataset**
 
+The following code is used to reate SurveyData object for post-stratification data when the weight is already specified in the datasets. Usually the post-stratification data is from large survey for example the ACS or DHS. 
+
 ```{r poststrat-object}
 
-# create SurveyData object for post-stratification data
 popn_obj <- SurveyData$new(
   data = approx_voters_popn,
   questions = c(age_group = "Which age group are you?",
@@ -117,17 +118,67 @@ popn_obj <- SurveyData$new(
                    vote_pref = levels(approx_voters_popn$vote_pref),
                    education = levels(approx_voters_popn$education),
                    state = levels(approx_voters_popn$state)),
-  weights = approx_voters_popn$wt,
+  weights = "wt",
   design = list(ids =~1))
 
 # print it
 popn_obj$print() 
 ```
 
+The following code is the example of weight specification as the summarized post-stratification matrix. Also, here the survey design is not specified as well. 
+
+```{r poststrat-example2}
+
+# Create the weight as the sum of each post-stratification cell
+library(dplyr)
+popn_poststrat <- approx_voters_popn %>%
+  group_by(age_group, gender, vote_pref, education, state) %>%
+  summarise(N_j = sum(wt))
+
+# create the SurveyData object and set the weight ast N_j
+popn_obj_poststrat <- SurveyData$new(
+  data = popn_poststrat,
+  questions = c(age_group = "Which age group are you?",
+                gender = "Which gender are you identified?",
+                vote_pref = "Which party do you prefer to vote?",
+                education = "What is the highest grade or level of school you have completed",
+                state = "Please identify the state where you live in"),
+  responses = list(age_group = levels(approx_voters_popn$age_group),
+                   gender = levels(approx_voters_popn$gender),
+                   vote_pref = levels(approx_voters_popn$vote_pref),
+                   education = levels(approx_voters_popn$education),
+                   state = levels(approx_voters_popn$state)),
+  weights = "N_j")
+
+popn_obj_poststrat$print()
+```
+
+If population data uses the entire individual level, then you should not specify the weight as shown in this example. 
+
+```{r poststrat-example3}
+
+popn_obj_entire_ind <- SurveyData$new(
+  data = popn_poststrat,
+  questions = c(age_group = "Which age group are you?",
+                gender = "Which gender are you identified?",
+                vote_pref = "Which party do you prefer to vote?",
+                education = "What is the highest grade or level of school you have completed",
+                state = "Please identify the state where you live in"),
+  responses = list(age_group = levels(approx_voters_popn$age_group),
+                   gender = levels(approx_voters_popn$gender),
+                   vote_pref = levels(approx_voters_popn$vote_pref),
+                   education = levels(approx_voters_popn$education),
+                   state = levels(approx_voters_popn$state)))
+
+popn_obj_entire_ind$print()
+```
+
+In addition, sometimes, we want to access the properties of the `SurveyData` object, for example the weights, the design, the questions and the number of questions, or the responses. The `SurveyData` object has methods that allow us to do so. They are `SurveyData$weights()` and `SurveyData$design()` to access the weight and the design, respectively. Further, the the questions, the number of questions, and the responses could be accessed using `SurveyData$questions()`, `SurveyData$n_questions()`, and `SurveyData$responses()`. 
+
 
 ## Match the value between survey and post-stratification object using `QuestionMap$new`
 
-From the metadata above, we can see that `box_pref` and `popn_obj` have different column labels and response level. For example, the column label for age in `box_pref` is `age`, whereas in `popn_obj`, the column label is `age_group`. This variable also has different levels, `box_pref` has seven levels of age, whereas `popn_obj` has only four levels of age. 
+From the metadata above, we can see that the survey (`box_pref`) and population (`popn_obj`) objects have different column labels and response level. For example, the column label for age in `box_pref` is `age`, whereas in `popn_obj`, the column label is `age_group`. This variable also has different levels, `box_pref` has seven levels of age, whereas `popn_obj` has only four levels of age. 
 
 These column labels and levels should be aligned to be able to perform MRP. With `QuestionMap$new` method, we are able to align the names of the columns and mapping their values.  
 
