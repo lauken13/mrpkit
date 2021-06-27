@@ -255,20 +255,24 @@ test_that("plot appearance hasn't changed", {
   )
 })
 
-# the objects in this test still need to be created
-# test_that("Populations are within acceptable tolerance of previous runs (+/- 2% points)",{
-#   skip_if_not_installed("rstanarm")
-#   expect_lt(mean(popn_ests_rstanarm$value), .72 + .02)
-#   expect_gt(mean(popn_ests_rstanarm$value), .72 - .02)
-#
-#   skip_if_not_installed("lme4")
-#   #Benchmark to a run from previous, so different benchmark values
-#   expect_lt(mean(popn_ests_lme4$value), .68 + .02)
-#   expect_gt(mean(popn_ests_lme4$value), .68 - .02)
-#
-#   skip_if_not_installed("brms")
-#   #Benchmark to a run from previous, so different benchmark values
-#   expect_lt(mean(popn_ests_brms$value), .85 + .02)
-#   expect_gt(mean(popn_ests_brms$value), .85 - .02)
-# })
+test_that("Populations are within acceptable tolerance of previous runs (+/- 2% points)",{
+
+  skip_if_not_installed("rstanarm")
+  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .05)
+
+  skip_if_not_installed("lme4")
+  #lme4 consistently lower
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
+  expect_equal(mean(x$value), expected = .68, tolerance = .05)
+
+  skip_if_not_installed("brms")
+  x <- fit_brms$aggregate(fit_brms$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .05)
+
+  #This is VERY noisy
+  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .15)
+
+})
 
