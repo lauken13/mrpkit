@@ -24,7 +24,7 @@ This vignette presents the typical workflow of `mrpkit`, an R package for implem
 
 # Introduction
 
-The aim of `mrpkit` is to use a grammar to perform multilevel regression with post-stratification (MRP). By using this package, you follow a specific workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping these objects to each other, fitting the model, getting predictions, aggregating values, and visualizing the results. Hence, it creates a more reproducible and accountable environment for conducting MRP.
+The aim of `mrpkit` is to perform multilevel regression with post-stratification (MRP). By using this package, you follow a specific workflow of MRP from creating the metadata of the survey and post-stratification objects, mapping these objects to each other, fitting the model, getting predictions, aggregating values, and visualizing the results. Hence, it creates a more reproducible and accountable environment for conducting MRP.
 
 Unlike many R packages, `mrpkit` uses [R6 objects](https://adv-r.hadley.nz/r6.html) (Chang, 2019). Thus, instead of calling a function to perform a task, we call a method that is embedded to an object using `object$method`. Typical usage of this package will create four objects: `SurveyData`, `QuestionMap`, `SurveyMap`, and `SurveyFit`. There are several methods in each of these objects that will be explained later in this vignette.     
 
@@ -343,7 +343,7 @@ ex_map$tabulate()
 # the example of using stan_glmer
 fit1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
-  formula = y ~ (1|age) + (1|gender),
+  formula = y ~ (1|age) + (1|gender) + (1|state) + (1|highest_educ),
   family = "binomial",
   refresh = 100,
   cores = 2)
@@ -351,7 +351,7 @@ fit1 <- ex_map$fit(
 # the example of using glmer
 fit2 <- ex_map$fit(
   fun = lme4::glmer,
-  formula = y ~ (1|age) + (1|gender),
+  formula = y ~ (1|age) + (1|gender) + (1|state) + (1|highest_educ),
   family = "binomial")
 
 ```
@@ -399,15 +399,21 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_preds` represents the age-group and the probability of voting for the Box Party for each age-group and each draw.
+This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_preds` represents the age-group and the probability of voting for the Box Party for each age-group.
 
 ```{r show-aggr}
-head(age_estimation)
+head(age_estimation) 
+
+# need to confirm whether we need this as draw will be removed.
+# age_estimation %>%
+#   group_by(age) %>%
+#   summarize(mean = mean(value), sd = sd(value))
 ```
 
 ### Visualize it
 
-Once we have the aggregated estimates, we are able to visualize them using the `plot` method. This method takes the aggregated data frame as the argument. It generates a violin plot of the aggregated estimate by level of certain variable, in this case `age` and `state` and a density plot for the population estimates. In the example below, we show estimates for different levels of the `age` and `state` variables.
+Once we have the aggregated estimates, we are able to visualize them using the `plot` method. This method takes the aggregated data frame and weights option (the default is TRUE) as its arguments. It generates a violin plot of the aggregated estimate by level of certain variable. When the weights is equal TRUE, the estimation is weighted. Also, the plot would display the 95% confidence interval of the weighted estimation. 
+In this example, we display the estimated plot for `age` and `state` and a density plot for the population estimates. 
 
 
 ```{r age-vis}
@@ -417,16 +423,20 @@ plot_age
 
 The plot above shows the distribution of people vote for the Box Party for each age-group. The plot implies that people who are aged 56-65 are most likely to vote for the BP.
 
-The next plot displays the probability of voting for the BP by state. We learn that the probability of the BP winning the election is high since the majority of people (around 75%) in all of the states in Shape World vote for that party. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot modified. For example, here, we can add title and change the theme of the plot.
+The next plot displays the probability of voting for the BP by state without using the wieght. We learn that the probability of the BP winning the election is high since the majority of people (around 75%) in all of the states in Shape World vote for that party. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot modified. For example, here, we can add title and change the theme of the plot.
 
 
 ```{r state-vis}
 library(ggplot2)
-plot_state <- fit1$plot(state_estimation) +
+plot_state <- fit1$plot(state_estimation, weights = FALSE) +
   ggtitle("Probability of voting the BP by state") +
   theme_bw()
 plot_state
 ```
 
+Lastly, we show the plot of the population estimate. 
 
+```{r}
+fit1$plot(popn_estimation, weights = TRUE)
+```
 
