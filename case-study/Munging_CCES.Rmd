@@ -1,0 +1,331 @@
+---
+title: "Processing large surveys with package MRP-KIT"
+author: "Mitzi Morris"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE)
+```
+
+<style type="text/css">
+.table { width: 40%; }
+div.quote-container blockquote {  font-size: small; }
+</style>
+
+The goal of this case study is to show how the MRP-KIT package
+can facilitate analysis of a large-scale survey sample.
+By large-scale, we mean surveys which have both a rich set
+of demographics and a large number of responses.
+The richer the set of demographics, the larger the number
+of possible sub-populations of interest; no matter how large
+or representative the survey, the combinatorics of the demographic
+categories are such that it is unlikely that the sample
+is representative for all subpopulations of interest.
+In order to correct this imbalance,
+we post-stratify to a truly representative
+sample drawn from the general population.
+This, in turn, requires obtaining a general population sample;
+one which is at least as large and which contains all the
+demographics of interest.
+
+In this case study, the survey sample is one year's worth of data
+from is Cooperative Congressional Election Study (CCES),
+a bi-annual survey of of 60,000 American adults from
+all 50 states and the District of Columbia.
+The CCES is designed to capture 
+the views and experiences of Amercians with respect to Congress
+and congressional (and presidential) elections.
+While this survey sample is representative at the national level
+it is not large enough to provide a representative sample for sub-populations
+of interest.
+The population sample is the 2018 American Community Survey, the
+annual micro-census conducted by the US Census Bureau.  It is designed
+to be a representative sample of the US population as a whole; data is
+collected from 3 million households.
+
+Big data is precious data, but a researcher's time is even more precious.
+A secondary goal of this case study is showing how to work effectively
+and efficiently with large samples to produce replicable results.
+
+### Survey sample: the 2018 CCES Common Content Dataset
+
+The 2018 CCES Common Content Dataset is 
+available from the Harvard Dataverse project:
+https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910/DVN/ZSBZ7K
+The raw survey data is distributed in several from the Harvard Dataverse
+as  [cces18_common_vv](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/C1YVSF&version=6.0).
+Although the tabular versions of the data file are smaller, we download the
+Stata file, as it contains metadata on all the questions; this is critical to
+being able to align the CCES sample to the US Census population sample.
+We also download the [2018 CCES Guide](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/WZWCZ1&version=6.0)
+which describes the survey questions, labels, and responses.
+
+We load the data into R using the [`readstata13`](https://sjewo.github.io/readstata13/) library function
+[`read.dta13`](https://sjewo.github.io/readstata13/reference/read.dta13.html) which returns a data.frame with attributes.
+```{r}
+library(readstata13)
+cces_2018 = read.dta13("cces18_common_vv.dta", convert.factors = T, nonint.factors = T, generate.factors=T)
+```
+
+Fist we check the type, shape and contents of the sample.
+```{r}
+str(cces_2018, max.level=2, list.len=12, give.attr=FALSE)
+dim(cces_2018)
+names(cces_2018)[1:12]
+```
+
+The Common Content portion of the survey consists of questions asked of all subjects.
+Profile questions provide demographic information,
+and opinion questions provide outcomes of interest.
+The demographic variables include
+gender, education level, employment status, race, and geographic location.
+```{r}
+table(cces_2018$gender[,drop=TRUE])
+table(cces_2018$educ[,drop=TRUE])
+table(cces_2018$race[,drop=TRUE])
+```
+The political opinion questions on the survey are labelled "Abortion", "Immigration", "Taxes", "Health Care".
+```{r}
+attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "Health Care"))[1]]
+health_care_1 <- which(startsWith(attr(cces_2018, "var.labels"), "Health Care"))[1]
+table(cces_2018[[health_care_1]][, drop=TRUE])
+```
+
+Of the 525 columns in the survey, we are interested in the set of political opinion questons
+and a subset of the demographics.  Although not strictly necessary, we create a new dataframe
+which contains just these columns of interest.
+The survey metadata includes column names, and question and response labels.
+We use the column names to select demographics and column labels to select political opinion questions.
+```{r}
+col_labels <- attr(cces_2018, "var.labels")
+col_names <- attr(cces_2018, "names")
+demo_cols <- c(1, which(col_names == "birthyr"),
+              which(col_names == "gender" ),
+              which(col_names == "educ"),
+              which(col_names == "race"),
+              which(col_names == "hispanic"),
+              which(col_names == "marstat"),
+              which(col_names == "region"),
+              which(col_names == "employ"),
+              which(col_names == "hadjob"),
+              which(col_names == "inputstate"))
+outcome_cols <- c(which(startsWith(col_labels, "Abortion --")),
+                 which(startsWith(col_labels, "Immigration --")),
+                 which(startsWith(col_labels, "Taxes --")),
+                 which(startsWith(col_labels, "Health Care --")),
+                 which(startsWith(col_labels, "President 20")))
+col_labels[demo_cols]
+col_labels[outcome_cols]
+keep_cols <- sort(c(demo_cols, outcome_cols))
+cces_2018_subset <- subset(cces_2018[keep_cols])
+```
+
+We inspect the subset to make sure that we have captured the question and response names.
+```{r}
+str(cces_2018_subset, max.level=2, list.len=12, give.attr=FALSE)
+```
+
+The CCES data is roughly representative of the state-level political sentiment as a whole; but if we seek to understand certain subsets of the population,
+the sample may well be unbalanced.
+There are only 60,000 survey responses,
+but there are over 20 million possible demographic subsets of interest,
+given all possible combinations of gender, education,
+race, marital status, employment, birthyear, and state of residence (51).
+
+```{r}
+cat(format((length(table(cces_2018_subset$gender[,drop=TRUE])) *
+length(table(cces_2018_subset$educ[,drop=TRUE])) *
+length(table(cces_2018_subset$race[,drop=TRUE])) *
+length(table(cces_2018_subset$marstat[,drop=TRUE])) *
+length(table(cces_2018_subset$employ[,drop=TRUE])) *
+length(table(cces_2018_subset$birthyr[,drop=TRUE])) *
+length(table(cces_2018_subset$inputstate[,drop=TRUE]))), big.mark=",",scientific=FALSE))
+```
+
+In order to correct this imbalance, we must poststratify to the general population.
+
+
+### Population sample:  the 2018 American Community Survey
+
+The US Census data is the largest and most representative population sample we have acces to.
+A full census is conducted every 10 years.
+The American Community Survey (ACS) is a micro-census conducted every year by the Census Bureau
+over 1% of the households in the US, i.e., it has 3 million respondants (as opposed to 300 million in the full census).
+
+The [Integrated Public Use Microdata Series (IPUMS)](https://ipums.org/what-is-ipums) (@ipums2020) is a service run by the University of Minnesota
+which allows easy access to census and survey data from around the world.
+IPUMS preserves and harmonizes US census microdata, including the American Community Survey.
+To use this service, you must register at https://uma.pop.umn.edu/usa/user/new.
+To get this data, we work through the IPUMS interface as follows:
+
+* From the ipums.org website, select [IPUMS USA](https://uma.pop.umn.edu/usa/user/new) and then click on “Get Data”.
+
+* Click the "SELECT SAMPLES" button and select the 2018 ACS survey, then click on "SUBMIT SAMPLE".
+
+* Select the variables that will be included in our poststratification table.
+The survey variables are categorized by HOUSEHOLD (household-level variables) and PERSON (individual-level variables).
+   + On PERSON > DEMOGRAPHIC select SEX and AGE
+   + On PERSON > RACE, ETHNICITY, AND NATIVITY select RACE, HISPAN, and CITIZEN
+   + On PERSON > EDUCATION select EDUC
+   + On HOUSEHOLD > GEOGRAPHIC select STATEFIP
+
+* The selected variables are added to a "data cart", along with a set of preselected variables.
+At "checkout", we uncheck the preselected variables, and then click on the "CREATE DATA EXTRACT" button.
+The following screenshot shows our selections, outlined
+in red.
+
+```{r ipumsExtract, echo=FALSE, out.width = "75%", fig.cap="IPUMS requested ACS variables"}
+library(knitr)
+include_graphics("ipums_acs_2018_match_cces.png")
+```
+
+* As even the US Census microdata files are extremely large, the IPUMS service queues this request for offline processing.
+When the data has been assembled, IPUMS sends an email with a link to the download page, shown below.
+
+```{r ipumsDownload, echo=FALSE, out.width = "75%", fig.cap="IPUMS service download page"}
+library(knitr)
+include_graphics("ipums_download.png")
+```
+
+You must download the data file and the DDI file for the codebook, as well as the R command file.
+The DDI file is an XML file which documents your data extract.  If you click on this link,
+the DDI file displays in the browser; you must download this file as XML.
+The IPUMS website provides [detailed instructions](https://usa.ipums.org/usa/extract_instructions.shtml).
+Both the data file and xml download file have the same base name;
+if you rename them, you must rename both of them accordingly.
+
+The following script is based on the R command script provided by IPUMS,
+which requires the [`ipumsr` package](https://cran.r-project.org/web/packages/ipumsr/vignettes/ipums.html).
+This package provides methods to read, extract, inspect, and otherwise query the downloaded sample.
+It also provides an excellent series of vignettes which describe how to work with the data.
+We recommend starting here: http://tech.popdata.org/ipumsr/articles/ipums.html
+
+```{r}
+# NOTE: To load data, you must download both the extract's data and the DDI
+# and also set the working directory to the folder with these files (or change the path below).
+
+if (!require("ipumsr")) stop("Reading IPUMS data into R requires the ipumsr package. It can be installed using the following command: install.packages('ipumsr')")
+
+# download dataset from IPUMS
+# xml and dat file should have same name, be in same directory
+acs_2018_subset_ddi <- read_ipums_ddi("usa_00007.xml")
+acs_2018_subset <- read_ipums_micro(acs_2018_subset_ddi)
+# save as R objects
+save(acs_2018_subset, acs_2018_subset_ddi, file= "acs_2018_subset.RData")
+```
+
+#### Inspecting the ACS sample
+
+The `ipumsr` package uses several [tidyverse](https://www.tidyverse.org/) packages
+including [`dplyr`](https://dplyr.tidyverse.org/) and [`haven`](https://haven.tidyverse.org/).
+The [`read_ipums_micro` function](http://tech.popdata.org/ipumsr/reference/read_ipums_micro.html)
+returns a single [`tbl_df`](https://tibble.tidyverse.org/reference/tbl_df-class.html) data frame, i.e., a "tibble".
+```{r}
+library(ipumsr)
+load("acs_2018_subset.RData")
+str(acs_2018_subset, max.level=2, list.len=6)
+dim(acs_2018_subset)
+names(acs_2018_subset)
+```
+We selected variables "RACE" and "HISPAN"; the extract contains two columns for each:
+"RACE" and "RACED", and "HISPAN" and "HISPAND".  The "D" columns provide an extremely fine-grained
+set of categories for race and hispanic origin.  As these go far beyond the categories from
+the CCES which are provided, we ignore them.
+
+The columns of this tibble are  [labelled](https://haven.tidyverse.org/reference/labelled.html) vectors.
+Labelled vectors can have text labels associated with specific values.
+To see how this works, we compare the values and labels for `AGE`.
+The 2018 ACS data spans ages 0 through 96,
+of these, only ages 0 and 90 have labels.
+```{r}
+length(table(acs_2018_subset$AGE))
+max(acs_2018_subset$AGE)
+```
+
+The function [`as_factor`](https://haven.tidyverse.org/reference/as_factor.html)
+allows us to treat labelled vectors as factors.
+
+### Aligning the Samples with MRP-KIT
+
+We need to align our demographics of interest; we will do so column-by-column.
+
+We note that information which must be aggregated from combinations of answers
+given to a series of questions in order to match demographics in the ACS
+is beyond the scope of what can be done with MRP-KIT, e.g.,
+it doesn't provide functions for combining survey variables.
+
+Also problematic: creating aggregate categories, e.g., binning age by decade.
+
+
+#### Variable CCES "gender" / ACS "sex"
+
+Both the CCES and ACS samples have variables for the sex of the respondant:
+in the CCES this is named "gender" and in the ACS this is named "SEX".
+In both, the response labels are "Male", "Female".
+Creating a mapping between the two is straightforward:
+we create a new SurveyQuestion object with name "sex",
+then create a mappng from the CCES to the ACS,
+both for column names and response labels
+where for both mappings, the first element
+is the survey sample name/label, and the second element
+is the population sample name/label.
+
+```{r}
+library(mrpkit)
+names(table(cces_2018_subset$gender))
+print(ipums_val_labels(acs_2018_subset$SEX))
+q_sex <- SurveyQuestion$new(name="sex",
+      col_names=c("gender", "SEX"),
+      values_map=list("Male" = "Male","Female" = "Female"))
+print(q_sex)
+```
+
+
+#### Variable CCES "inputstate" / ACS "STATEFIP"
+
+We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
+```{r}
+# CCES data is a factor, levels are the labels
+inputstate <- levels(cces_2018_subset$inputstate[,drop=TRUE])
+
+# ACS data are structured objects, ipums_val_labels returns a tibble
+STATEFIP <- ipums_val_labels(acs_2018_subset$STATEFIP)[[2]][1:51]
+
+cat(inputstate[1:5], sep=", "); cat(STATEFIP[1:5], sep=", ")
+
+table(inputstate == STATEFIP)
+```
+
+We need to create a SurveyQuestion object, as above,  but it would be
+extremely tedious to write out a pairlist, e.g.:
+```
+values_map=list("Alabama" = "Alabama", ..., "Wyoming" = "Wyoming")
+```
+[R Pairlists](https://github.com/hadley/r-internals/blob/master/pairlists.md) are
+a kind of linked list data structure where each element in the list has a name.
+In order to create a pairlist programmatically, we use the R function `setNames`,
+which takes as its first argument an object to be labelled
+and as its second argument the corresponding character vector of labels,
+i.e., the expression `as.list(c("value1", "value2"),  c("tag1", "tag2")`
+is equivalent to the expression `list("tag1" = "value1", "tag2" = "value2").
+```{r}
+mapping = as.list(setNames(STATEFIP, inputstate))
+mapping[1:3]
+```
+
+Having established the values map, we create the corresponding SurveyQuestion object.
+We use accessor methods `name()`, `col_names()` and `values()` to check our work.
+```{r}
+q_state <- SurveyQuestion$new(name = "state",
+	col_names = c("inputstate", "STATEFIP"),
+	values_map= mapping)
+q_state$name()
+q_state$col_names()
+head(q_state$values())
+```
+
+
