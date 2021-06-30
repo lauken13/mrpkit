@@ -8,29 +8,36 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE)
+knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE, prompt=TRUE)
 ```
 
 <style type="text/css">
-.table { width: 40%; }
+.table { width: 85%; }
 div.quote-container blockquote {  font-size: small; }
 </style>
 
+Multi-level Regresssion and Postrativication (MRP)
+is a two-step process for correcting model estimates
+obtained from a survey sample when the survey population is not
+the same as the target population over which we wish to do inference.
+The first step is the doing a multilevel regression on the survey sample;
+the second step is poststratification to the target population.
+Conceptually, MRP is relatively simple.
+In practice, it requires more than twice as much data processing.
+In addition to managing the survey data, you must also obtain
+and manage the target population data, in addition you must
+develop a mapping between information in these two datasets.
+In order to produce verifiable, replicable results, it is
+critical that this mapping be documented and scripted.
+
 The goal of this case study is to show how the MRP-KIT package
-can facilitate analysis of a large-scale survey sample.
-By large-scale, we mean surveys which have both a rich set
-of demographics and a large number of responses.
-The richer the set of demographics, the larger the number
-of possible sub-populations of interest; no matter how large
-or representative the survey, the combinatorics of the demographic
-categories are such that it is unlikely that the sample
-is representative for all subpopulations of interest.
-In order to correct this imbalance,
-we post-stratify to a truly representative
-sample drawn from the general population.
-This, in turn, requires obtaining a general population sample;
-one which is at least as large and which contains all the
-demographics of interest.
+can facilitate this process for large-scale surveys.
+By large-scale surveys, we mean surveys which have both
+a large number of respondants and detailed demographic profiles for each respondant.
+The larger the number of demographics, the larger the number
+of possible sub-populations of interest and the more difficult it becomes
+to collect a representative sample for all such subpopulations,
+thus even well-designed surveys can require use of MRP.
 
 In this case study, the survey sample is one year's worth of data
 from is Cooperative Congressional Election Study (CCES),
@@ -42,7 +49,7 @@ and congressional (and presidential) elections.
 While this survey sample is representative at the national level
 it is not large enough to provide a representative sample for sub-populations
 of interest.
-The population sample is the 2018 American Community Survey, the
+The population sample is the 2018 American Community Survey (ACS), the
 annual micro-census conducted by the US Census Bureau.  It is designed
 to be a representative sample of the US population as a whole; data is
 collected from 3 million households.
@@ -56,16 +63,25 @@ and efficiently with large samples to produce replicable results.
 The 2018 CCES Common Content Dataset is 
 available from the Harvard Dataverse project:
 https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910/DVN/ZSBZ7K
-The raw survey data is distributed in several from the Harvard Dataverse
+The raw survey data is distributed in several formats from the Harvard Dataverse
 as  [cces18_common_vv](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/C1YVSF&version=6.0).
-Although the tabular versions of the data file are smaller, we download the
-Stata file, as it contains metadata on all the questions; this is critical to
-being able to align the CCES sample to the US Census population sample.
-We also download the [2018 CCES Guide](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/WZWCZ1&version=6.0)
-which describes the survey questions, labels, and responses.
+While the tabular versions of the data file are smaller, the Stata version `cces18_common_vv.dta`
+contains metadata on all the questions: the question name, label, description, response labels and values.
+The corresponding 
+[2018 CCES Guide](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/WZWCZ1&version=6.0)
+provides a human-readable version of this metadata as well.
 
-We load the data into R using the [`readstata13`](https://sjewo.github.io/readstata13/) library function
-[`read.dta13`](https://sjewo.github.io/readstata13/reference/read.dta13.html) which returns a data.frame with attributes.
+```{r ccesDownload, echo=FALSE, out.width = "75%", fig.cap="Harvard Dataverse download page"}
+library(knitr)
+include_graphics("dataverse_cces_2018_download.png")
+```
+
+
+
+We download the Stata file because we will need the metatdata to map the CCES sample to the ACS using MRP-KIT,
+then use the [`readstata13`](https://sjewo.github.io/readstata13/) library function
+[`read.dta13`](https://sjewo.github.io/readstata13/reference/read.dta13.html) to load the Stata file into R.
+The result is an R data.frame with attributes containing the metadata.
 ```{r}
 library(readstata13)
 cces_2018 = read.dta13("cces18_common_vv.dta", convert.factors = T, nonint.factors = T, generate.factors=T)
@@ -82,7 +98,7 @@ The Common Content portion of the survey consists of questions asked of all subj
 Profile questions provide demographic information,
 and opinion questions provide outcomes of interest.
 The demographic variables include
-gender, education level, employment status, race, and geographic location.
+gender, education level, race, and geographic location, among others.
 ```{r}
 table(cces_2018$gender[,drop=TRUE])
 table(cces_2018$educ[,drop=TRUE])
@@ -109,9 +125,6 @@ demo_cols <- c(1, which(col_names == "birthyr"),
               which(col_names == "race"),
               which(col_names == "hispanic"),
               which(col_names == "marstat"),
-              which(col_names == "region"),
-              which(col_names == "employ"),
-              which(col_names == "hadjob"),
               which(col_names == "inputstate"))
 outcome_cols <- c(which(startsWith(col_labels, "Abortion --")),
                  which(startsWith(col_labels, "Immigration --")),
@@ -129,29 +142,23 @@ We inspect the subset to make sure that we have captured the question and respon
 str(cces_2018_subset, max.level=2, list.len=12, give.attr=FALSE)
 ```
 
-The CCES data is roughly representative of the state-level political sentiment as a whole; but if we seek to understand certain subsets of the population,
+The CCES data is roughly representative of the state-level political sentiment as a whole,
+but if we seek to understand certain subsets of the population,
 the sample may well be unbalanced.
 There are only 60,000 survey responses,
-but there are over 20 million possible demographic subsets of interest,
-given all possible combinations of gender, education,
-race, marital status, employment, birthyear, and state of residence (51).
-
-```{r}
-cat(format((length(table(cces_2018_subset$gender[,drop=TRUE])) *
-length(table(cces_2018_subset$educ[,drop=TRUE])) *
-length(table(cces_2018_subset$race[,drop=TRUE])) *
-length(table(cces_2018_subset$marstat[,drop=TRUE])) *
-length(table(cces_2018_subset$employ[,drop=TRUE])) *
-length(table(cces_2018_subset$birthyr[,drop=TRUE])) *
-length(table(cces_2018_subset$inputstate[,drop=TRUE]))), big.mark=",",scientific=FALSE))
-```
-
-In order to correct this imbalance, we must poststratify to the general population.
+but there are over 2 million
+possible combinations of gender, education,
+race, marital status, birthyear, and state of residence.
+If we bin ages by decade, there are a mere 200,000 combinations,
+binning states by region further reduces this to 16,000, etc., etc.
+However, if we wish to consider state-level subpopulations of interest,
+the survey data is likely to be sparse and not representative of the general population.
+To address the former we do multi-level modeling; for the latter, poststratification.
 
 
 ### Population sample:  the 2018 American Community Survey
 
-The US Census data is the largest and most representative population sample we have acces to.
+The US Census data is the largest representative population sample that we have access to.
 A full census is conducted every 10 years.
 The American Community Survey (ACS) is a micro-census conducted every year by the Census Bureau
 over 1% of the households in the US, i.e., it has 3 million respondants (as opposed to 300 million in the full census).
@@ -183,7 +190,7 @@ library(knitr)
 include_graphics("ipums_acs_2018_match_cces.png")
 ```
 
-* As even the US Census microdata files are extremely large, the IPUMS service queues this request for offline processing.
+The IPUMS service queues this request for offline processing.
 When the data has been assembled, IPUMS sends an email with a link to the download page, shown below.
 
 ```{r ipumsDownload, echo=FALSE, out.width = "75%", fig.cap="IPUMS service download page"}
@@ -192,9 +199,9 @@ include_graphics("ipums_download.png")
 ```
 
 You must download the data file and the DDI file for the codebook, as well as the R command file.
+The IPUMS website provides [detailed instructions](https://usa.ipums.org/usa/extract_instructions.shtml) on how to do this.
 The DDI file is an XML file which documents your data extract.  If you click on this link,
 the DDI file displays in the browser; you must download this file as XML.
-The IPUMS website provides [detailed instructions](https://usa.ipums.org/usa/extract_instructions.shtml).
 Both the data file and xml download file have the same base name;
 if you rename them, you must rename both of them accordingly.
 
@@ -241,29 +248,45 @@ Labelled vectors can have text labels associated with specific values.
 To see how this works, we compare the values and labels for `AGE`.
 The 2018 ACS data spans ages 0 through 96,
 of these, only ages 0 and 90 have labels.
+The function [`ipums_val_labels`](https://tech.popdata.org/ipumsr/reference/ipums_var_info.html)
+allows us to inspect these labels.
 ```{r}
 length(table(acs_2018_subset$AGE))
-max(acs_2018_subset$AGE)
+ipums_val_labels(acs_2018_subset$AGE)
 ```
 
 The function [`as_factor`](https://haven.tidyverse.org/reference/as_factor.html)
 allows us to treat labelled vectors as factors.
+See the vignette https://tech.popdata.org/ipumsr/reference/ipums_var_info.html for more details.
+
+
+
 
 ### Aligning the Samples with MRP-KIT
 
-We need to align our demographics of interest; we will do so column-by-column.
+We use MRP-KIT to map demographics of interest on a column-by-column basis.^[
+If information is spread across multiple columns in either the survey sample
+or the target population sample, it must be combined into a single column's
+worth of information as MRP-KIT doesn't provide functions to do this.
+*Note: all pre-processing should be documented, scripted, and **tested**!*]
 
-We note that information which must be aggregated from combinations of answers
-given to a series of questions in order to match demographics in the ACS
-is beyond the scope of what can be done with MRP-KIT, e.g.,
-it doesn't provide functions for combining survey variables.
+In the following sections we examine each variable in turn.
+This is a tedious process, therefore, we provide the following
+summary of the demographic construct and the kinds of challenge each mapping presents
 
-Also problematic: creating aggregate categories, e.g., binning age by decade.
+Construct | CCES | ACS | Challenge
+--------- | ---- | --- | ---------
+Sex | gender | SEX | (none)
+State | inputstate | STATEFIP | specify 1-1 mapping programatically
+Marital status | marstat | MARST | choice of mapping
+Education | educ | EDUC | choice of mapping
+Race/Hispanic ethnicity | race, hispan | RACE, HISPAN | cannot align CCES race to ACS RACE
+Age | birthyr | AGE | different units, too fine-grained
 
 
-#### Variable CCES "gender" / ACS "sex"
+#### Trivial mapping: respondant sex, 2 categories
 
-Both the CCES and ACS samples have variables for the sex of the respondant:
+The CCES and ACS samples record the sex of the respondant;
 in the CCES this is named "gender" and in the ACS this is named "SEX".
 In both, the response labels are "Male", "Female".
 Creating a mapping between the two is straightforward:
@@ -277,15 +300,15 @@ is the population sample name/label.
 ```{r}
 library(mrpkit)
 names(table(cces_2018_subset$gender))
-print(ipums_val_labels(acs_2018_subset$SEX))
+ipums_val_labels(acs_2018_subset$SEX)
 q_sex <- SurveyQuestion$new(name="sex",
       col_names=c("gender", "SEX"),
       values_map=list("Male" = "Male","Female" = "Female"))
-print(q_sex)
+q_sex
 ```
 
 
-#### Variable CCES "inputstate" / ACS "STATEFIP"
+#### 1-1 mapping on a long list: state of residence, 51 categories
 
 We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
 ```{r}
@@ -328,4 +351,119 @@ q_state$col_names()
 head(q_state$values())
 ```
 
+#### Choice of mapping: education, marital status
 
+The CCES and ACS samples record the education level of the respondant
+in variables `educ` and `EDUC`, respectively.
+Both the CCES and ACS record the highest level of education completed,
+but the CCES records the degree obtained whereas the ACS records the year completed.
+```{r}
+names(table(cces_2018_subset$educ))
+ipums_val_labels(acs_2018_subset$EDUC)
+```
+We choose to align these categories as follows:
+
+CCES | ACS
+---- | ---
+"No HS" | "Nursery school to grade 4"
+"No HS" | "Grade 5, 6, 7, or 8"
+"No HS" | "Grade 9"
+"No HS" | "Grade 10"
+"No HS" | "Grade 11"
+"High School Graduate" | "Grade 12"
+"Some College" | "1 year of college"
+"2-year" | "2 years of college"
+"2-year" | "3 years of college"
+"4-year" | "4 years of college"
+"Post-grad" | "5+ years of college"
+"skipped" | "N/A or no schooling"
+"not asked" | "N/A or no schooling"
+
+Alternative mappings are equally viable.
+With MRP-KIT, the choice of mappings is recorded and
+easily accessible.
+```{r}
+educ_mapping = list(
+    "No HS" = "Nursery school to grade 4",
+    "No HS" = "Grade 5, 6, 7, or 8",
+    "No HS" = "Grade 9",
+    "No HS" = "Grade 10",
+    "No HS" = "Grade 11",
+    "High School Graduate" = "Grade 12",
+    "Some College" = "1 year of college",
+    "2-year" = "2 years of college",
+    "2-year" = "3 years of college",
+    "4-year" = "4 years of college",
+    "Post-grad" = "5+ years of college",
+    "skipped" = "N/A or no schooling",
+    "not asked" = "N/A or no schooling"
+)
+q_educ <- SurveyQuestion$new(name = "educ",
+    col_names = c("educ", "EDUC"),
+    values_map= educ_mapping)
+q_educ$name()
+q_educ$col_names()
+head(q_educ$values())
+```
+
+As with eduction, the CCES and ACS samples record the marital status
+of the respondant differently and we have to use our judgement as to how best
+to align the two.
+```{r}
+names(table(cces_2018_subset$marstat))
+ipums_val_labels(acs_2018_subset$MARST)
+```
+
+CCES | ACS
+---- | ---
+"Married" | "Married, spouse present"
+"Married" | "Married, spouse absent"
+"Separated" | "Separated"
+"Divorced" | "Divorced"
+"Widowed" | "Widowed"
+"Never married" | "Never married"
+"Domestic / civil partnership" | "Never married"
+"skipped" | "Never married"
+"not asked" | "Never married"
+
+We note that for the 2018 CCES survey, the marital status of all respondants is known; nonetheless,
+we provide a complete mapping.
+
+```{r}
+marstat_mapping = list(
+    "Married" = "Married, spouse present",
+    "Married" = "Married, spouse absent",
+    "Separated" = "Separated",
+    "Divorced" = "Divorced",
+    "Widowed" = "Widowed",
+    "Never married" = "Never married",
+    "Domestic / civil partnership" = "Never married",
+    "skipped" = "Never married",
+    "not asked" = "Never married"
+)
+q_marstat <- SurveyQuestion$new(name = "marstat",
+    col_names = c("marstat", "MARST"),
+    values_map= marstat_mapping)
+q_marstat$name()
+q_marstat$col_names()
+head(q_marstat$values())
+```
+
+#### Information split across survey columns:  race and ethnicity.
+
+We ignore the politics of race and racial categories
+and instead focus on how best to map the CCES information to the ACS information.
+Both surveys have multiple variables which provide information about race and ethnicity,
+and both record race and hispanic origin separately.
+However the CCES treats hispanic origin as race as well as ethnic origin; the ACS does not.
+```{r}
+names(table(cces_2018_subset$race))
+names(table(cces_2018_subset$hispan))
+ipums_val_labels(acs_2018_subset$RACE)
+ipums_val_labels(acs_2018_subset$HISPAN)
+```
+In this case, munging the raw survey data is unavoidable.
+For each survey we create a new variable which blends race and hispanic ethnicity.
+We are scripting everyting, so we add this to our processing scripts.
+
+ 
