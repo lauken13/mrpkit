@@ -9,11 +9,17 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE, prompt=TRUE)
+options(digits=2)
+if (!require("ipumsr")) stop("This case study requires ipumsr package. It can be installed using the following command: install.packages('ipumsr')")
+if (!require("labelled")) stop("This case study requires labelled package. It can be installed using the following command: install.packages('labelled')")
+library(ipumsr)
+library(labelled)
 ```
 
 <style type="text/css">
 .table { width: 85%; }
 div.quote-container blockquote {  font-size: small; }
+blockquote {  font-size: small; }
 </style>
 
 Multi-level Regresssion and Postrativication (MRP)
@@ -25,8 +31,9 @@ the second step is poststratification to the target population.
 Conceptually, MRP is relatively simple.
 In practice, it requires more than twice as much data processing.
 In addition to managing the survey data, you must also obtain
-and manage the target population data, in addition you must
-develop a mapping between information in these two datasets.
+and manage the target population data.
+Most importantly, you must develop a mapping between information
+in these two datasets.
 In order to produce verifiable, replicable results, it is
 critical that this mapping be documented and scripted.
 
@@ -39,26 +46,28 @@ of possible sub-populations of interest and the more difficult it becomes
 to collect a representative sample for all such subpopulations,
 thus even well-designed surveys can require use of MRP.
 
-In this case study, the survey sample is one year's worth of data
-from is Cooperative Congressional Election Study (CCES),
+In this case study, the survey data comes from
+the 2018 Cooperative Congressional Election Study (CCES),
 a bi-annual survey of of 60,000 American adults from
 all 50 states and the District of Columbia.
 The CCES is designed to capture 
 the views and experiences of Amercians with respect to Congress
 and congressional (and presidential) elections.
-While this survey sample is representative at the national level
-it is not large enough to provide a representative sample for sub-populations
-of interest.
-The population sample is the 2018 American Community Survey (ACS), the
-annual micro-census conducted by the US Census Bureau.  It is designed
+The population data comes from the 2018 American Community Survey (ACS),
+the annual micro-census conducted by the US Census Bureau.  It is designed
 to be a representative sample of the US population as a whole; data is
 collected from 3 million households.
 
 Big data is precious data, but a researcher's time is even more precious.
 A secondary goal of this case study is showing how to work effectively
-and efficiently with large samples to produce replicable results.
+and efficiently with large surveys to produce replicable results.
 
-### Survey sample: the 2018 CCES Common Content Dataset
+### Survey data: the 2018 CCES Common Content Dataset
+
+The zero-th step in any data analysis is obtaining the data and checking its contents.
+When working with your own data, you have already done this.
+When working with someone else's data, you need to understand
+both the contents of the dataset and its structure.
 
 The 2018 CCES Common Content Dataset is 
 available from the Harvard Dataverse project:
@@ -68,7 +77,7 @@ as  [cces18_common_vv](https://dataverse.harvard.edu/file.xhtml?persistentId=doi
 While the tabular versions of the data file are smaller, the Stata version `cces18_common_vv.dta`
 contains metadata on all the questions: the question name, label, description, response labels and values.
 The corresponding 
-[2018 CCES Guide](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/WZWCZ1&version=6.0)
+[2018 CCES Guide](https://sda.berkeley.edu/sdaweb/docs/cces2018/DOC/CCES+Guide+2018.pdf)
 provides a human-readable version of this metadata as well.
 
 ```{r ccesDownload, echo=FALSE, out.width = "75%", fig.cap="Harvard Dataverse download page"}
@@ -76,11 +85,10 @@ library(knitr)
 include_graphics("dataverse_cces_2018_download.png")
 ```
 
-
-
 We download the Stata file because we will need the metatdata to map the CCES sample to the ACS using MRP-KIT,
-then use the [`readstata13`](https://sjewo.github.io/readstata13/) library function
-[`read.dta13`](https://sjewo.github.io/readstata13/reference/read.dta13.html) to load the Stata file into R.
+then use the package [`readstata13`](https://www.rdocumentation.org/packages/readstata13/versions/0.10.0)
+function [`read.dta13`](https://www.rdocumentation.org/packages/readstata13/versions/0.10.0/topics/read.dta13)
+to load the Stata file into R.
 The result is an R data.frame with attributes containing the metadata.
 ```{r}
 library(readstata13)
@@ -92,6 +100,19 @@ Fist we check the type, shape and contents of the sample.
 str(cces_2018, max.level=2, list.len=12, give.attr=FALSE)
 dim(cces_2018)
 names(cces_2018)[1:12]
+names(attributes(cces_2018))
+```
+
+The `read.dta13` creates attributes corresponding to the Stata file metadata.
+The attribute `names` corresponds to the dataframe column names and
+the attribute `val.labels` provides a short description of that columns.
+For questions which have categorical responses, the attribute `data.label`
+provides the category name and interger code used for that survey question.
+```{r}
+names(attributes(cces_2018))
+attr(cces_2018, "names")[1:10]
+attr(cces_2018, "var.labels")[1:10]
+attr(cces_2018, "label.table")[["gender"]]
 ```
 
 The Common Content portion of the survey consists of questions asked of all subjects.
@@ -104,37 +125,56 @@ table(cces_2018$gender[,drop=TRUE])
 table(cces_2018$educ[,drop=TRUE])
 table(cces_2018$race[,drop=TRUE])
 ```
-The political opinion questions on the survey are labelled "Abortion", "Immigration", "Taxes", "Health Care".
+
+The political opinion questions on the survey are labelled "President 2016", "Abortion", "Immigration", "Taxes", "Health Care".
 ```{r}
-attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "Health Care"))[1]]
-health_care_1 <- which(startsWith(attr(cces_2018, "var.labels"), "Health Care"))[1]
-table(cces_2018[[health_care_1]][, drop=TRUE])
+attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "President 20"))]
+pres_vote <- which(startsWith(attr(cces_2018, "var.labels"), "President 20"))
+table(cces_2018[[pres_vote]][,drop=TRUE], useNA="always")
+
+attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "Health Care --"))[1]]
+health_care_Q1 <- which(startsWith(attr(cces_2018, "var.labels"), "Health Care --"))[1]
+table(cces_2018[[health_care_Q1]][,drop=TRUE], useNA="always")
 ```
 
 Of the 525 columns in the survey, we are interested in the set of political opinion questons
-and a subset of the demographics.  Although not strictly necessary, we create a new dataframe
+and a subset of the demographics.  We create a new dataframe
 which contains just these columns of interest.
-The survey metadata includes column names, and question and response labels.
-We use the column names to select demographics and column labels to select political opinion questions.
+Using the survey metadata, we select demographics by column names and political opinion questions by the column labels.
+In order to properly postratify, we remove any record where there is missing demographic information.
+In addition, so that we can easily align the CCES variables with the ACS variables
+we removed unused category labels.
+
 ```{r}
 col_labels <- attr(cces_2018, "var.labels")
 col_names <- attr(cces_2018, "names")
-demo_cols <- c(1, which(col_names == "birthyr"),
+demo_cols <- c(which(col_names == "birthyr"),
               which(col_names == "gender" ),
               which(col_names == "educ"),
               which(col_names == "race"),
               which(col_names == "hispanic"),
               which(col_names == "marstat"),
               which(col_names == "inputstate"))
+# don't allow missing demographics
+keep_rows <- complete.cases(cces_2018[, demo_cols])
+
 outcome_cols <- c(which(startsWith(col_labels, "Abortion --")),
                  which(startsWith(col_labels, "Immigration --")),
                  which(startsWith(col_labels, "Taxes --")),
                  which(startsWith(col_labels, "Health Care --")),
                  which(startsWith(col_labels, "President 20")))
-col_labels[demo_cols]
-col_labels[outcome_cols]
 keep_cols <- sort(c(demo_cols, outcome_cols))
-cces_2018_subset <- subset(cces_2018[keep_cols])
+
+cces_2018_subset <- subset(cces_2018, keep_rows, keep_cols)
+# `subset` drops attributes, keep attribute "var.labels"
+attr(cces_2018_subset, "var.labels") <- attr(cces_2018, "var.labels")
+
+# cleanup factor variables; drop unused category labels
+for (name in names(cces_2018_subset)) {
+    if (is.factor(cces_2018_subset[[name]]))  {
+        cces_2018_subset[[name]] = droplevels(cces_2018_subset[[name]])
+    }
+}
 ```
 
 We inspect the subset to make sure that we have captured the question and response names.
@@ -142,11 +182,15 @@ We inspect the subset to make sure that we have captured the question and respon
 str(cces_2018_subset, max.level=2, list.len=12, give.attr=FALSE)
 ```
 
-The CCES data is roughly representative of the state-level political sentiment as a whole,
-but if we seek to understand certain subsets of the population,
-the sample may well be unbalanced.
-There are only 60,000 survey responses,
-but there are over 2 million
+The CCES has 60,000 respondants.
+According to the [Guide to the 2018 Cooperative Congressional Election Survey](https://sda.berkeley.edu/sdaweb/docs/cces2018/DOC/CCES+Guide+2018.pdf)
+
+>This study constructed a very large sample capable of capturing variation across a wide variety of legislative constituencies. In fact, the state-level samples are sufficiently large as to measure with a reasonable degree of precision the distribution of voters’ preferences within most states.
+
+While the CCES data may be roughly representative of the state-level political sentiment as a whole,
+if we seek to understand certain subsets of the population,
+it is unlikely to be representative of those groups.
+There are over 2 million
 possible combinations of gender, education,
 race, marital status, birthyear, and state of residence.
 If we bin ages by decade, there are a mere 200,000 combinations,
@@ -156,9 +200,9 @@ the survey data is likely to be sparse and not representative of the general pop
 To address the former we do multi-level modeling; for the latter, poststratification.
 
 
-### Population sample:  the 2018 American Community Survey
+### Population data:  the 2018 American Community Survey
 
-The US Census data is the largest representative population sample that we have access to.
+The US Census data is the largest representative survey of the US population that we have access to.
 A full census is conducted every 10 years.
 The American Community Survey (ACS) is a micro-census conducted every year by the Census Bureau
 over 1% of the households in the US, i.e., it has 3 million respondants (as opposed to 300 million in the full census).
@@ -232,6 +276,7 @@ including [`dplyr`](https://dplyr.tidyverse.org/) and [`haven`](https://haven.ti
 The [`read_ipums_micro` function](http://tech.popdata.org/ipumsr/reference/read_ipums_micro.html)
 returns a single [`tbl_df`](https://tibble.tidyverse.org/reference/tbl_df-class.html) data frame, i.e., a "tibble".
 ```{r}
+library(labelled)
 library(ipumsr)
 load("acs_2018_subset.RData")
 str(acs_2018_subset, max.level=2, list.len=6)
@@ -253,44 +298,59 @@ allows us to inspect these labels.
 ```{r}
 length(table(acs_2018_subset$AGE))
 ipums_val_labels(acs_2018_subset$AGE)
+ipums_val_labels(acs_2018_subset$AGE)
 ```
 
 The function [`as_factor`](https://haven.tidyverse.org/reference/as_factor.html)
 allows us to treat labelled vectors as factors.
-See the vignette https://tech.popdata.org/ipumsr/reference/ipums_var_info.html for more details.
+See the vignette https://tech.popdata.org/ipumsr/reference/ipums_var_info.html for further information.
+```{r}
+head(table(acs_2018_subset$AGE))
+head(table(as_factor(acs_2018_subset$AGE)))
+```
 
 
+### Aligning the survey and target population data with MRP-KIT
 
+We use MRP-KIT to allow us to do inference on subpopulations of interest
+using the following demographics:
+sex, state of residence, education, race, marital status, and age.
 
-### Aligning the Samples with MRP-KIT
-
-We use MRP-KIT to map demographics of interest on a column-by-column basis.^[
-If information is spread across multiple columns in either the survey sample
+MRP-KIT allows mappings that are one-to-one, many-to-one, one-to-many.
+All mappings must be completely deterministic based on category label alone.
+If this is not possible then you must create new, synthetic variables which can be
+cleanly aligned.  Likewise, 
+when information is spread across multiple columns in either the survey sample
 or the target population sample, it must be combined into a single column's
-worth of information as MRP-KIT doesn't provide functions to do this.
-*Note: all pre-processing should be documented, scripted, and **tested**!*]
+worth of information.
+If a demographic is recorded at too fine a level of granularity
+and should be aggregated, e.g., binning date years into decades,
+this much also be done beforehand.
+MRP-KIT doesn't and cannot provide functions to do this; only you know
+the data and what it means.
+All such data pre-processing should be documented, srcipted, and *tested*
+to insure replicability and/or use in production pipelines.
 
-In the following sections we examine each variable in turn.
-This is a tedious process, therefore, we provide the following
-summary of the demographic construct and the kinds of challenge each mapping presents
+The MRP-KIT class `SurveyQuestion` is used to map the survey data demographic
+information to the corresponding population data demographics.
+The mapping process is both tedious and challenging.
+The following table provides a summary of the demographic constructs
+that we wish to use in analyzing the CCES dataset,
+and challenges involved in mapping the CCES to the ACS.
 
 Construct | CCES | ACS | Challenge
 --------- | ---- | --- | ---------
 Sex | gender | SEX | (none)
 State | inputstate | STATEFIP | specify 1-1 mapping programatically
-Marital status | marstat | MARST | choice of mapping
-Education | educ | EDUC | choice of mapping
-Race/Hispanic ethnicity | race, hispan | RACE, HISPAN | cannot align CCES race to ACS RACE
+Education | educ | EDUC | different possible mappings
+Race/Hispanic ethnicity | race, hispan | RACE, HISPAN | information spread across categories
+Marital status | marstat | MARST | many-to-many mapping
 Age | birthyr | AGE | different units, too fine-grained
 
 
-#### Trivial mapping: respondant sex, 2 categories
+#### Simple one-to-one mapping:  CCES "gender" / ACS "sex"
 
-The CCES and ACS samples record the sex of the respondant;
-in the CCES this is named "gender" and in the ACS this is named "SEX".
-In both, the response labels are "Male", "Female".
-Creating a mapping between the two is straightforward:
-we create a new SurveyQuestion object with name "sex",
+We create a new SurveyQuestion object with name "sex",
 then create a mappng from the CCES to the ACS,
 both for column names and response labels
 where for both mappings, the first element
@@ -313,7 +373,7 @@ q_sex
 We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
 ```{r}
 # CCES data is a factor, levels are the labels
-inputstate <- levels(cces_2018_subset$inputstate[,drop=TRUE])
+inputstate <- levels(cces_2018_subset$inputstate)
 
 # ACS data are structured objects, ipums_val_labels returns a tibble
 STATEFIP <- ipums_val_labels(acs_2018_subset$STATEFIP)[[2]][1:51]
@@ -324,25 +384,37 @@ table(inputstate == STATEFIP)
 ```
 
 We need to create a SurveyQuestion object, as above,  but it would be
-extremely tedious to write out a pairlist, e.g.:
+extremely tedious to do this as a long list of tag, value pairs:
 ```
 values_map=list("Alabama" = "Alabama", ..., "Wyoming" = "Wyoming")
 ```
-[R Pairlists](https://github.com/hadley/r-internals/blob/master/pairlists.md) are
-a kind of linked list data structure where each element in the list has a name.
-In order to create a pairlist programmatically, we use the R function `setNames`,
-which takes as its first argument an object to be labelled
-and as its second argument the corresponding character vector of labels,
-i.e., the expression `as.list(c("value1", "value2"),  c("tag1", "tag2")`
-is equivalent to the expression `list("tag1" = "value1", "tag2" = "value2").
+The `values_map` is stored as an [R Pairlists](https://github.com/hadley/r-internals/blob/master/pairlists.md).
+This is actually a labelled list, not a list of pairs, i.e.,
+the expression `list("tag1" = "value1", "tag2" = "value2")`
+creates a list of length 2 where each element is a single named item.
 ```{r}
-mapping = as.list(setNames(STATEFIP, inputstate))
+foo <- list("tag1" = "value1", "tag2" = "value2")
+foo
+```
+To create this list programmatically,
+you must create a list of values and a list of labels,
+then set the names of the values list to the labels.
+```{r}
+# create list, then set names (uppercase)
+mapping <- as.list(STATEFIP)
+names(mapping) <- toupper(inputstate)
+mapping[1:3]
+
+# the one-liner (lowercase)
+
+mapping = as.list(setNames(STATEFIP, tolower(inputstate)))
 mapping[1:3]
 ```
 
 Having established the values map, we create the corresponding SurveyQuestion object.
 We use accessor methods `name()`, `col_names()` and `values()` to check our work.
 ```{r}
+mapping = as.list(setNames(STATEFIP, inputstate))
 q_state <- SurveyQuestion$new(name = "state",
 	col_names = c("inputstate", "STATEFIP"),
 	values_map= mapping)
@@ -351,7 +423,7 @@ q_state$col_names()
 head(q_state$values())
 ```
 
-#### Choice of mapping: education, marital status
+#### Choice of mapping: education
 
 The CCES and ACS samples record the education level of the respondant
 in variables `educ` and `EDUC`, respectively.
@@ -361,10 +433,11 @@ but the CCES records the degree obtained whereas the ACS records the year comple
 names(table(cces_2018_subset$educ))
 ipums_val_labels(acs_2018_subset$EDUC)
 ```
-We choose to align these categories as follows:
+We choose to align these categories as follows.
 
 CCES | ACS
 ---- | ---
+"No HS" | "N/A or no schooling"
 "No HS" | "Nursery school to grade 4"
 "No HS" | "Grade 5, 6, 7, or 8"
 "No HS" | "Grade 9"
@@ -376,14 +449,15 @@ CCES | ACS
 "2-year" | "3 years of college"
 "4-year" | "4 years of college"
 "Post-grad" | "5+ years of college"
-"skipped" | "N/A or no schooling"
-"not asked" | "N/A or no schooling"
 
-Alternative mappings are equally viable.
-With MRP-KIT, the choice of mappings is recorded and
-easily accessible.
+Mpping "Some College" to both 1 year and 3 years of college is also possible,
+reasoning that the goal of a 4-year college degree wasn't obtained.
+The choice depends on both an understanding of the survey data and the particular goals
+of your analysis.
+MRP-KIT can only provide the mechanism for recording and carrying out the mapping.
 ```{r}
 educ_mapping = list(
+    "No HS" = "N/A or no schooling",
     "No HS" = "Nursery school to grade 4",
     "No HS" = "Grade 5, 6, 7, or 8",
     "No HS" = "Grade 9",
@@ -394,42 +468,172 @@ educ_mapping = list(
     "2-year" = "2 years of college",
     "2-year" = "3 years of college",
     "4-year" = "4 years of college",
-    "Post-grad" = "5+ years of college",
-    "skipped" = "N/A or no schooling",
-    "not asked" = "N/A or no schooling"
+    "Post-grad" = "5+ years of college"
 )
 q_educ <- SurveyQuestion$new(name = "educ",
     col_names = c("educ", "EDUC"),
     values_map= educ_mapping)
 q_educ$name()
 q_educ$col_names()
-head(q_educ$values())
+q_educ$values()
 ```
 
-As with eduction, the CCES and ACS samples record the marital status
-of the respondant differently and we have to use our judgement as to how best
-to align the two.
+
+#### Survey variable cannot be mapped to single census variable:  Race
+
+The [IPUMS description of the ACS variable RACE](https://usa.ipums.org/usa-action/variables/RACE#description_section)
+says:
+
+>Currently, the Census Bureau and others consider race to be a sociopolitical construct,
+not a scientific or anthropological one.  Many detailed RACE categories consist of national origin groups.
+
+This is borne out by the CCES, where the question for variable "race" is
+"What racial or ethnic group best describes you?",
+and includes "Hispanic" as a possible response.
+The ACS variable "RACE" has a different set of responses:
+```{r}
+names(table(cces_2018_subset$race))
+ipums_val_labels(acs_2018_subset$RACE)
+````
+
+In order to use the ACS for poststratification, we need to create a variable
+corresponding to the CCES variable "race" from a combination of ACS variables.
+Both surveys contain variable "Hispanic Origin".
+For the CCES, this is a "Yes/No" question:
+"Are you of Spanish, Latino, or Hispanic origin or descent?".
+In the ACS, the variable HISPAN identifies persons of Hispanic/Spanish/Latino origin and
+classifies them according to their country of origin.
+```{r}
+names(table(cces_2018_subset$hispan))
+ipums_val_labels(acs_2018_subset$HISPAN)
+```
+
+We propose to add a column to the ACS survey which combines information present in the `RACE` and `HISPAN` variables.
+```{r}
+# create column which blends "race" "hispan"
+acs_race2 <- as_factor(acs_2018_subset$RACE)
+
+# population percentages by label
+prop.table(table(acs_race2))
+
+# if "hispan" is "Yes", "race" label is "Hispanic".
+is_hispan <- acs_2018_subset$HISPAN > 0 & acs_2018_subset$HISPAN < 5
+length(is_hispan[is_hispan == TRUE]) / length(is_hispan)
+levels(acs_race2) = c(levels(acs_race2), "Hispanic")
+acs_race2[is_hispan==TRUE] <- "Hispanic"
+
+# adjusted percentages
+prop.table(table(acs_race2))
+
+# add to acs_2018_subset data.frame - respect column types
+acs_2018_subset$race2 = to_labelled(acs_race2)
+```
+
+A further possibility is to similarly combine the CCES variables "race" and "hispan" 
+so that the question of "Hispanic origin" is "Yes", the race-hispan label is "Hispanic".
+Were we to do this, we would create a new variable "race2" and add it to the
+CCES subset so that we could evaluate both classifications.
+```{r}
+# Population percentages in CCES variable "race"
+prop.table(table(cces_2018_subset$race))
+
+# Intersection (and) vs. union (or) of race == "Hispanic" and hispanic == "Yes"
+length(which(cces_2018_subset$race == "Hispanic" & cces_2018_subset$hispan == "Yes"))
+length(which(cces_2018_subset$race == "Hispanic" | cces_2018_subset$hispan == "Yes"))
+
+# create column which adjusts race labels
+cces_race2 <- cces_2018_subset$race
+cces_race2[cces_2018_subset$hispan == "Yes"] <- "Hispanic"
+prop.table(table(cces_race2))
+
+# add to acs_2018_subset data.frame - respect column types
+cces_2018_subset$race2 = cces_race2
+```
+
+Once comparable variables are present in both surveys,
+MRP-KIT can handle the mapping.
+We choose to align CCES "race" with new ACS variable "race2" as follows
+
+CCES "race" | ACS "race2"
+----------- | -----------
+"White" | "White"
+"Black" | "Black/African American/Negro"
+"Native American" | "American Indian or Alaska Native"
+"Asian" | "Chinese"
+"Asian" | "Japanese"
+"Asian" | "Other Asian or Pacific Islander"
+"Other" | "Other race, nec"
+"Middle Eastern" | "Other race, nec"
+"Mixed" | "Two major races"     
+"Mixed" | "Three or more major races"
+"Hispanic" | "Hispanic"        
+
+```{r}
+race_mapping = list(
+    "White" = "White",
+    "Black" = "Black/African American/Negro",
+    "Native American" = "American Indian or Alaska Native",
+    "Asian" = "Chinese",
+    "Asian" = "Japanese",
+    "Asian" = "Other Asian or Pacific Islander",
+    "Other" = "Other race, nec",
+    "Middle Eastern" = "Other race, nec",
+    "Mixed" = "Two major races",
+    "Mixed" = "Three or more major races",
+    "Hispanic" = "Hispanic"
+)
+q_race <- SurveyQuestion$new(name = "race",
+    col_names = c("race", "race2"),
+    values_map= race_mapping)
+q_race$name()
+q_race$col_names()
+q_race$values()
+```
+
+This is yet another example of the inherent challenges of MRP.
+The work of creating a mapping is an extension
+of data assembly, validation, and exploratory data analysis,
+all of which requires researcher domain knowledge.
+ 
+
+#### Many-to-many mapping: marital status
+
+The CCES variable "marstat" and ACS variable "MARST" record the marital status of the respondant.
+
+
 ```{r}
 names(table(cces_2018_subset$marstat))
 ipums_val_labels(acs_2018_subset$MARST)
 ```
 
-CCES | ACS
----- | ---
-"Married" | "Married, spouse present"
-"Married" | "Married, spouse absent"
-"Separated" | "Separated"
-"Divorced" | "Divorced"
-"Widowed" | "Widowed"
-"Never married" | "Never married"
-"Domestic / civil partnership" | "Never married"
-"skipped" | "Never married"
-"not asked" | "Never married"
+For the 2018 CCES survey, the marital status of all respondants is known,
+therefore categories "skipped" and "not asked" are not problematic.
+The ACS variable ["MARST"](https://usa.ipums.org/usa-action/variables/MARST#comparability_section)
+has two categories for corresponding to CCES category "Married":
+"Married, spouse present", "Married, spouse absent".
+Mapping both ACS categories to CCES category "Married" is a one-to-many mapping
+which is allowed by MRP-KIT.
+The CCES has category "Domestic / civil partnership",
+for which there is no corresponding ACS category.
+Mapping both partnerships and "Never married" to the ACS category "Never married/single"
+is a many-to-one mapping from CCES to ACS, also allowed by MRP-KIT.
+However, if we map CES category  "Domestic / civil partnership"
+to either ACS category "Married, spouse present" or "Married, spouse absent",
+we create a many-to-many mapping.
 
-We note that for the 2018 CCES survey, the marital status of all respondants is known; nonetheless,
-we provide a complete mapping.
+OK             |                | NOT OK         | 
+-------------- | -------------- | -------------- | --------------
+CCES | ACS | CCES | ACS
+Married | Married, spouse present |Married | Married, spouse present 
+Married | Married, spouse absent |Married | Married, spouse absent 
+Separated | Separated |Separated | Separated 
+Divorced | Divorced |Divorced | Divorced 
+Widowed | Widowed |Widowed | Widowed 
+Never married | Never married/single |Never married | Never married/single 
+*Domestic / civil partnership* | *Never married/single* | *Domestic / civil partnership* | **Married, spouse present**
 
-```{r}
+```{r, error=TRUE}
+# This is OK
 marstat_mapping = list(
     "Married" = "Married, spouse present",
     "Married" = "Married, spouse absent",
@@ -437,33 +641,69 @@ marstat_mapping = list(
     "Divorced" = "Divorced",
     "Widowed" = "Widowed",
     "Never married" = "Never married",
-    "Domestic / civil partnership" = "Never married",
-    "skipped" = "Never married",
-    "not asked" = "Never married"
+    "Domestic / civil partnership" = "Never married"
 )
 q_marstat <- SurveyQuestion$new(name = "marstat",
     col_names = c("marstat", "MARST"),
     values_map= marstat_mapping)
 q_marstat$name()
 q_marstat$col_names()
-head(q_marstat$values())
+q_marstat$values()
+
+# This is NOT
+marstat_mapping = list(
+    "Married" = "Married, spouse present",
+    "Married" = "Married, spouse absent",
+    "Separated" = "Separated",
+    "Divorced" = "Divorced",
+    "Widowed" = "Widowed",
+    "Never married" = "Never married",
+    "Domestic / civil partnership" = "Married, spouse present"
+)
+q_marstat <- SurveyQuestion$new(name = "marstat",
+    col_names = c("marstat", "MARST"),
+    values_map= marstat_mapping)
+
 ```
+Here we propose to add yet another column to the ACS which conflates "Married, spouse present" and "Married, spouse absent".
 
-#### Information split across survey columns:  race and ethnicity.
-
-We ignore the politics of race and racial categories
-and instead focus on how best to map the CCES information to the ACS information.
-Both surveys have multiple variables which provide information about race and ethnicity,
-and both record race and hispanic origin separately.
-However the CCES treats hispanic origin as race as well as ethnic origin; the ACS does not.
 ```{r}
-names(table(cces_2018_subset$race))
-names(table(cces_2018_subset$hispan))
-ipums_val_labels(acs_2018_subset$RACE)
-ipums_val_labels(acs_2018_subset$HISPAN)
-```
-In this case, munging the raw survey data is unavoidable.
-For each survey we create a new variable which blends race and hispanic ethnicity.
-We are scripting everyting, so we add this to our processing scripts.
+# create column which conflates spouse present, absent
+acs_marst2 <- as_factor(acs_2018_subset$MARST)
+levels(acs_marst2) = c(levels(acs_marst2), "Married")
+acs_marst2[acs_marst2 =="Married, spouse present"] <- "Married"
+acs_marst2[acs_marst2 =="Married, spouse absent"] <- "Married"
 
- 
+# add to acs_2018_subset data.frame - respect column types
+acs_2018_subset$marst2 = to_labelled(droplevels(acs_marst2))
+ipums_val_labels(acs_2018_subset$marst2)
+```
+Now we can create a mapping which maps both "Married" and ""Domestic / civil partnership"
+to the the (new) ACS label "Married".^[
+Alternatively, we could try to access more ACS variables which account for
+same sex marriages and civil unions and use this information to code new variable "marst2".]
+
+```{r}
+marstat_mapping = list(
+    "Married" = "Married",
+    "Separated" = "Separated",
+    "Divorced" = "Divorced",
+    "Widowed" = "Widowed",
+    "Never married" = "Never married",
+    "Domestic / civil partnership" = "Married"
+)
+q_marstat <- SurveyQuestion$new(name = "marstat",
+    col_names = c("marstat", "marst2"),
+    values_map= marstat_mapping)
+q_marstat$name()
+q_marstat$col_names()
+q_marstat$values()
+```
+
+#### Aligned demographics
+
+We have created 5 questions:  `q_sex`, `q_state`, `q_educ`, `q_race`, `q_marstat`.
+This will allow us to slice and dice our surveys to a ridiculous level of granularity.
+Excelsior!
+
+
