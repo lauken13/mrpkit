@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE, prompt=TRUE)
+knitr::opts_chunk$set(cache=TRUE, message=FALSE, error=FALSE, warning=FALSE, comment=NA, out.width='95%', collapse=TRUE, prompt=TRUE, highlight=FALSE)
 options(digits=2)
 if (!require("ipumsr")) stop("This case study requires ipumsr package. It can be installed using the following command: install.packages('ipumsr')")
 if (!require("labelled")) stop("This case study requires labelled package. It can be installed using the following command: install.packages('labelled')")
@@ -116,6 +116,7 @@ attr(cces_2018, "label.table")[["gender"]]
 ```
 
 The Common Content portion of the survey consists of questions asked of all subjects.
+
 Profile questions provide demographic information,
 and opinion questions provide outcomes of interest.
 The demographic variables include
@@ -148,6 +149,7 @@ we removed unused category labels.
 ```{r}
 col_labels <- attr(cces_2018, "var.labels")
 col_names <- attr(cces_2018, "names")
+
 demo_cols <- c(which(col_names == "birthyr"),
               which(col_names == "gender" ),
               which(col_names == "educ"),
@@ -155,8 +157,7 @@ demo_cols <- c(which(col_names == "birthyr"),
               which(col_names == "hispanic"),
               which(col_names == "marstat"),
               which(col_names == "inputstate"))
-# don't allow missing demographics
-keep_rows <- complete.cases(cces_2018[, demo_cols])
+keep_rows <- complete.cases(cces_2018[, demo_cols]) # no missing demographics
 
 outcome_cols <- c(which(startsWith(col_labels, "Abortion --")),
                  which(startsWith(col_labels, "Immigration --")),
@@ -298,7 +299,6 @@ allows us to inspect these labels.
 ```{r}
 length(table(acs_2018_subset$AGE))
 ipums_val_labels(acs_2018_subset$AGE)
-ipums_val_labels(acs_2018_subset$AGE)
 ```
 
 The function [`as_factor`](https://haven.tidyverse.org/reference/as_factor.html)
@@ -308,6 +308,21 @@ See the vignette https://tech.popdata.org/ipumsr/reference/ipums_var_info.html f
 head(table(acs_2018_subset$AGE))
 head(table(as_factor(acs_2018_subset$AGE)))
 ```
+
+The CCES is a survey of _national adults_, i.e., eligible
+voters over the age of 18 but the ACS is a survey over the entire
+US population, including non-citizens.
+In order to use the ACS for poststratification, we drop all
+records for individuals under the age of 18 and non-citizens.
+
+```{r}
+table(as_factor(acs_2018_subset$CITIZEN))
+# drop underage, non-citizens
+citizen = as_factor(acs_2018_subset$CITIZEN) != "Not a citizen"
+over_18 = acs_2018_subset$AGE > 17
+acs_2018_subset = acs_2018_subset[(over_18 & citizen) , ]  
+```
+
 
 
 ### Aligning the survey and target population data with MRP-KIT
@@ -368,7 +383,7 @@ q_sex
 ```
 
 
-#### 1-1 mapping on a long list: state of residence, 51 categories
+#### One-to-one mapping over many labels: state of residence, 51 categories
 
 We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
 ```{r}
@@ -433,7 +448,12 @@ but the CCES records the degree obtained whereas the ACS records the year comple
 names(table(cces_2018_subset$educ))
 ipums_val_labels(acs_2018_subset$EDUC)
 ```
-We choose to align these categories as follows.
+We choose to align these categories so that the CCES label "2-year"
+maps to the ACS labels for 2 and 3 years of college.
+Mpping "Some College" to both 1 year and 3 years of college is also possible,
+on the rationale that the goal was a 4-year college degree, and that it wasn't obtained.
+The choice depends on both an understanding of the survey data and the particular goals
+of your analysis.
 
 CCES | ACS
 ---- | ---
@@ -450,11 +470,6 @@ CCES | ACS
 "4-year" | "4 years of college"
 "Post-grad" | "5+ years of college"
 
-Mpping "Some College" to both 1 year and 3 years of college is also possible,
-reasoning that the goal of a 4-year college degree wasn't obtained.
-The choice depends on both an understanding of the survey data and the particular goals
-of your analysis.
-MRP-KIT can only provide the mechanism for recording and carrying out the mapping.
 ```{r}
 educ_mapping = list(
     "No HS" = "N/A or no schooling",
@@ -512,19 +527,15 @@ We propose to add a column to the ACS survey which combines information present 
 ```{r}
 # create column which blends "race" "hispan"
 acs_race2 <- as_factor(acs_2018_subset$RACE)
-
 # population percentages by label
 prop.table(table(acs_race2))
-
 # if "hispan" is "Yes", "race" label is "Hispanic".
 is_hispan <- acs_2018_subset$HISPAN > 0 & acs_2018_subset$HISPAN < 5
 length(is_hispan[is_hispan == TRUE]) / length(is_hispan)
 levels(acs_race2) = c(levels(acs_race2), "Hispanic")
 acs_race2[is_hispan==TRUE] <- "Hispanic"
-
 # adjusted percentages
 prop.table(table(acs_race2))
-
 # add to acs_2018_subset data.frame - respect column types
 acs_2018_subset$race2 = to_labelled(acs_race2)
 ```
@@ -536,16 +547,13 @@ CCES subset so that we could evaluate both classifications.
 ```{r}
 # Population percentages in CCES variable "race"
 prop.table(table(cces_2018_subset$race))
-
 # Intersection (and) vs. union (or) of race == "Hispanic" and hispanic == "Yes"
 length(which(cces_2018_subset$race == "Hispanic" & cces_2018_subset$hispan == "Yes"))
 length(which(cces_2018_subset$race == "Hispanic" | cces_2018_subset$hispan == "Yes"))
-
 # create column which adjusts race labels
 cces_race2 <- cces_2018_subset$race
 cces_race2[cces_2018_subset$hispan == "Yes"] <- "Hispanic"
 prop.table(table(cces_race2))
-
 # add to acs_2018_subset data.frame - respect column types
 cces_2018_subset$race2 = cces_race2
 ```
@@ -611,37 +619,48 @@ therefore categories "skipped" and "not asked" are not problematic.
 The ACS variable ["MARST"](https://usa.ipums.org/usa-action/variables/MARST#comparability_section)
 has two categories for corresponding to CCES category "Married":
 "Married, spouse present", "Married, spouse absent".
-Mapping both ACS categories to CCES category "Married" is a one-to-many mapping
-which is allowed by MRP-KIT.
+
 The CCES has category "Domestic / civil partnership",
 for which there is no corresponding ACS category.
-Mapping both partnerships and "Never married" to the ACS category "Never married/single"
-is a many-to-one mapping from CCES to ACS, also allowed by MRP-KIT.
-However, if we map CES category  "Domestic / civil partnership"
-to either ACS category "Married, spouse present" or "Married, spouse absent",
-we create a many-to-many mapping.
+We could try to access additional columns of the ACS, as there
+is some information on same-sex partnerships and civil unions.
+Otherwise, we have a choice of mapping partnerships to either
+of the ACS married categories, or to the "Never married/single" category.
+
+If we do the former, we create a many-to-many mapping:
+CCES category "Married" maps to two ACS categories: spouse present/absent;
+ACS category "Married, spouse present" maps to two CCES categories: married and partnerships.
+This is not allowed by MRP-KIT.
+If we do the latter, we create two many-to-one mappings:
+CCES category "Married" maps to two ACS categories: spouse present/absent;
+ACS category "Never married/single" maps to two CCES categories:
+never married and civil partnership.  This perfectly OK.
+
+*question: implication of many-to-one mappings between the survey population and the
+target population - do we get separate postratification cells?*
+
 
 OK             |                | NOT OK         | 
 -------------- | -------------- | -------------- | --------------
-CCES | ACS | CCES | ACS
+**CCES** | **ACS** | **CCES** | **ACS**
+Never married | Never married/single |Never married | Never married/single 
+*Domestic / civil partnership* | *Never married/single* | *Domestic / civil partnership* | **Married, spouse present**
 Married | Married, spouse present |Married | Married, spouse present 
 Married | Married, spouse absent |Married | Married, spouse absent 
 Separated | Separated |Separated | Separated 
 Divorced | Divorced |Divorced | Divorced 
 Widowed | Widowed |Widowed | Widowed 
-Never married | Never married/single |Never married | Never married/single 
-*Domestic / civil partnership* | *Never married/single* | *Domestic / civil partnership* | **Married, spouse present**
 
 ```{r, error=TRUE}
-# This is OK
+# OK
 marstat_mapping = list(
+    "Never married" = "Never married/single",
+    "Domestic / civil partnership" = "Never married/single",
     "Married" = "Married, spouse present",
     "Married" = "Married, spouse absent",
     "Separated" = "Separated",
     "Divorced" = "Divorced",
-    "Widowed" = "Widowed",
-    "Never married" = "Never married",
-    "Domestic / civil partnership" = "Never married"
+    "Widowed" = "Widowed"
 )
 q_marstat <- SurveyQuestion$new(name = "marstat",
     col_names = c("marstat", "MARST"),
@@ -650,22 +669,25 @@ q_marstat$name()
 q_marstat$col_names()
 q_marstat$values()
 
-# This is NOT
+# NOT OK
 marstat_mapping = list(
+    "Never married" = "Never married/single",
+    "Domestic / civil partnership" = "Married, spouse present",
     "Married" = "Married, spouse present",
     "Married" = "Married, spouse absent",
     "Separated" = "Separated",
     "Divorced" = "Divorced",
-    "Widowed" = "Widowed",
-    "Never married" = "Never married",
-    "Domestic / civil partnership" = "Married, spouse present"
+    "Widowed" = "Widowed"
 )
 q_marstat <- SurveyQuestion$new(name = "marstat",
     col_names = c("marstat", "MARST"),
     values_map= marstat_mapping)
 
 ```
-Here we propose to add yet another column to the ACS which conflates "Married, spouse present" and "Married, spouse absent".
+Since the distinction in the ACS data between spouse present and spouse absent isn't useful,
+we can solve the many-to-many mapping problem by adding a new column to the ACS
+which conflates "Married, spouse present" and "Married, spouse absent".
+
 
 ```{r}
 # create column which conflates spouse present, absent
@@ -681,7 +703,8 @@ ipums_val_labels(acs_2018_subset$marst2)
 Now we can create a mapping which maps both "Married" and ""Domestic / civil partnership"
 to the the (new) ACS label "Married".^[
 Alternatively, we could try to access more ACS variables which account for
-same sex marriages and civil unions and use this information to code new variable "marst2".]
+same sex marriages and civil unions and combine information across multiple columns, as we did
+for ACS variable race2.]
 
 ```{r}
 marstat_mapping = list(
@@ -700,10 +723,34 @@ q_marstat$col_names()
 q_marstat$values()
 ```
 
-#### Aligned demographics
 
-We have created 5 questions:  `q_sex`, `q_state`, `q_educ`, `q_race`, `q_marstat`.
-This will allow us to slice and dice our surveys to a ridiculous level of granularity.
-Excelsior!
+#### Measurement recorded in different units and not binned:  age
+
+The CCES is records age as birthyear but the ACS records age in years.
+In both surveys, this is an integer, not a categorical measurement but
+MRP-KIT mappings operate over a finite set of categories.
+
+```{r}
+acs_birthyear = 2018 - acs_2018_subset$AGE
+summary(acs_birthyear)
+summary(cces_2018$birthyr)
+```
+We have to decide how many bins and which years they should span.
+We seek to bin the population in ways that respects what we know about
+US generational cohorts (citation?), e.g., "baby-boomers" born between 1945 an 1965.
+
+* 7 10-year+ cohorts: 1920-1935, 1936-1945, 1946-1955, 1956-1965, 1966-1975, 1976-1985, 1986-2000
+* 4 20-year+ cohorts: 1920-1945, 1946-1965, 1966-1985, 1986-2000
+
+Choosing the former will result in more postratification cells (57% more, to be precise).
+
+
+### Mapping the survey and target population data with MRP-KIT
+
+
+We now have mappings for our 6 postratification variables:
+`q_sex`, `q_state`, `q_educ`, `q_race`, `q_marstat`, `q_age`;
+allowing for (at least) `2 * 51 * 6 * 8 * 6 * 4`  possible subsets of interest.
+
 
 
