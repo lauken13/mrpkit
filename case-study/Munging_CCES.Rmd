@@ -68,8 +68,11 @@ When working with someone else's data, you need to understand
 both the contents of the dataset and its structure.
 
 The 2018 CCES Common Content Dataset is 
-available from the Harvard Dataverse project:
-https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910/DVN/ZSBZ7K
+available from the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi%3A10.7910/DVN/ZSBZ7K).
+The Common Content portion of the survey consists of questions asked of all subjects.
+Profile questions provide demographic information
+and opinion questions provide outcomes of interest.
+
 The raw survey data is distributed in several formats from the Harvard Dataverse
 as  [cces18_common_vv](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/ZSBZ7K/C1YVSF&version=6.0).
 While the tabular versions of the data file are smaller, the Stata version `cces18_common_vv.dta`
@@ -98,25 +101,25 @@ Fist we check the type, shape and contents of the sample.
 str(cces_2018, max.level=2, list.len=12, give.attr=FALSE)
 dim(cces_2018)
 names(cces_2018)[1:12]
-names(attributes(cces_2018))
 ```
 
 The `read.dta13` creates attributes corresponding to the Stata file metadata.
-The attribute `names` corresponds to the dataframe column names and
-the attribute `val.labels` provides a short description of that columns.
-For questions which have categorical responses, the attribute `data.label`
-provides the category name and interger code used for that survey question.
 ```{r}
 names(attributes(cces_2018))
+```
+The attribute `names` corresponds to the dataframe column names.
+```{r}
 attr(cces_2018, "names")[1:10]
+```
+The attribute `val.labels` provides a short description of that columns.
+```{r}
 attr(cces_2018, "var.labels")[1:10]
+```
+For questions which have categorical responses, the attribute `label.table`
+provides the category name and interger code used for that survey question.
+```{r}
 attr(cces_2018, "label.table")[["gender"]]
 ```
-
-The Common Content portion of the survey consists of questions asked of all subjects.
-
-Profile questions provide demographic information,
-and opinion questions provide outcomes of interest.
 The demographic variables include
 gender, education level, race, and geographic location, among others.
 ```{r}
@@ -130,7 +133,6 @@ The political opinion questions on the survey are labelled "President 2016", "Ab
 attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "President 20"))]
 pres_vote <- which(startsWith(attr(cces_2018, "var.labels"), "President 20"))
 table(cces_2018[[pres_vote]][,drop=TRUE], useNA="always")
-
 attr(cces_2018, "var.labels")[which(startsWith(attr(cces_2018, "var.labels"), "Health Care --"))[1]]
 health_care_Q1 <- which(startsWith(attr(cces_2018, "var.labels"), "Health Care --"))[1]
 table(cces_2018[[health_care_Q1]][,drop=TRUE], useNA="always")
@@ -390,9 +392,7 @@ inputstate <- levels(cces_2018_subset$inputstate)
 
 # ACS data are structured objects, ipums_val_labels returns a tibble
 STATEFIP <- ipums_val_labels(acs_2018_subset$STATEFIP)[[2]][1:51]
-
 cat(inputstate[1:5], sep=", "); cat(STATEFIP[1:5], sep=", ")
-
 table(inputstate == STATEFIP)
 ```
 
@@ -417,9 +417,7 @@ then set the names of the values list to the labels.
 mapping <- as.list(STATEFIP)
 names(mapping) <- toupper(inputstate)
 mapping[1:3]
-
-# the one-liner (lowercase)
-
+# combine the two steps into a one-liner (lowercase)
 mapping = as.list(setNames(STATEFIP, tolower(inputstate)))
 mapping[1:3]
 ```
@@ -427,10 +425,10 @@ mapping[1:3]
 Having established the values map, we create the corresponding SurveyQuestion object.
 We use accessor methods `name()`, `col_names()` and `values()` to check our work.
 ```{r}
-mapping = as.list(setNames(STATEFIP, inputstate))
+state_mapping = as.list(setNames(STATEFIP, inputstate))
 q_state <- SurveyQuestion$new(name = "state",
 	col_names = c("inputstate", "STATEFIP"),
-	values_map= mapping)
+	values_map= state_mapping)
 q_state$name()
 q_state$col_names()
 head(q_state$values())
