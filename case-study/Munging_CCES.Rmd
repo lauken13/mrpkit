@@ -2,9 +2,7 @@
 title: "Processing large surveys with package MRP-KIT"
 author: "Mitzi Morris"
 output:
-  html_document:
-    toc: true
-    toc_depth: 2
+  rmdformats::robobook
 ---
 
 ```{r setup, include=FALSE}
@@ -62,7 +60,7 @@ Big data is precious data, but a researcher's time is even more precious.
 A secondary goal of this case study is showing how to work effectively
 and efficiently with large surveys to produce replicable results.
 
-### Survey data: the 2018 CCES Common Content Dataset
+# Survey data: the 2018 CCES Common Content Dataset
 
 The zero-th step in any data analysis is obtaining the data and checking its contents.
 When working with your own data, you have already done this.
@@ -201,7 +199,7 @@ the survey data is likely to be sparse and not representative of the general pop
 To address the former we do multi-level modeling; for the latter, poststratification.
 
 
-### Population data:  the 2018 American Community Survey
+# Population data:  the 2018 American Community Survey
 
 The US Census data is the largest representative survey of the US population that we have access to.
 A full census is conducted every 10 years.
@@ -270,7 +268,7 @@ acs_2018_subset <- read_ipums_micro(acs_2018_subset_ddi)
 save(acs_2018_subset, acs_2018_subset_ddi, file= "acs_2018_subset.RData")
 ```
 
-#### Inspecting the ACS sample
+## Inspecting the ACS sample
 
 The `ipumsr` package uses several [tidyverse](https://www.tidyverse.org/) packages
 including [`dplyr`](https://dplyr.tidyverse.org/) and [`haven`](https://haven.tidyverse.org/).
@@ -325,7 +323,7 @@ acs_2018_subset = acs_2018_subset[(over_18 & citizen) , ]
 
 
 
-### Aligning the survey and target population data with MRP-KIT
+# Aligning the survey and target population data with MRP-KIT
 
 We use MRP-KIT to allow us to do inference on subpopulations of interest
 using the following demographics:
@@ -363,7 +361,7 @@ Marital status | marstat | MARST | many-to-many mapping
 Age | birthyr | AGE | different units, too fine-grained
 
 
-#### Simple one-to-one mapping:  CCES "gender" / ACS "sex"
+## Simple one-to-one mapping:  CCES "gender" / ACS "sex"
 
 We create a new SurveyQuestion object with name "sex",
 then create a mappng from the CCES to the ACS,
@@ -383,7 +381,7 @@ q_sex
 ```
 
 
-#### One-to-one mapping over many labels: state of residence, 51 categories
+## One-to-one mapping over many labels: state of residence, 51 categories
 
 We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
 ```{r}
@@ -438,7 +436,7 @@ q_state$col_names()
 head(q_state$values())
 ```
 
-#### Choice of mapping: education
+## Choice of mapping: education
 
 The CCES and ACS samples record the education level of the respondant
 in variables `educ` and `EDUC`, respectively.
@@ -494,7 +492,7 @@ q_educ$values()
 ```
 
 
-#### Survey variable cannot be mapped to single census variable:  Race
+## Survey variable cannot be mapped to single census variable:  Race
 
 The [IPUMS description of the ACS variable RACE](https://usa.ipums.org/usa-action/variables/RACE#description_section)
 says:
@@ -604,7 +602,7 @@ of data assembly, validation, and exploratory data analysis,
 all of which requires researcher domain knowledge.
  
 
-#### Many-to-many mapping: marital status
+## Many-to-many mapping: marital status
 
 The CCES variable "marstat" and ACS variable "MARST" record the marital status of the respondant.
 
@@ -724,7 +722,7 @@ q_marstat$values()
 ```
 
 
-#### Measurement recorded in different units and not binned:  age
+## Measurement recorded in different units and not binned:  age
 
 The CCES is records age as birthyear but the ACS records age in years.
 In both surveys, this is an integer, not a categorical measurement but
@@ -742,15 +740,18 @@ US generational cohorts (citation?), e.g., "baby-boomers" born between 1945 an 1
 * 7 10-year+ cohorts: 1920-1935, 1936-1945, 1946-1955, 1956-1965, 1966-1975, 1976-1985, 1986-2000
 * 4 20-year+ cohorts: 1920-1945, 1946-1965, 1966-1985, 1986-2000
 
-Choosing the former will result in more postratification cells (57% more, to be precise).
+
+## Possible subpopulations of interest
+
+The size of the postratification table is the product of the number of categories per demographic.
+The more fine-grained the classification, the larger the postratification table.
+In this example, we have variables:
+`q_sex` (2 values), `q_state` (51 values), `q_educ` (6 values), `q_race` (8 values), `q_marstat` (5 values), `q_age` (many possible values - e.g. 4 or 7).
+The resultng poststratification table will have at least 97,920 cells.
+
+# Mapping the survey and target population data with MRP-KIT
 
 
-### Mapping the survey and target population data with MRP-KIT
-
-
-We now have mappings for our 6 postratification variables:
-`q_sex`, `q_state`, `q_educ`, `q_race`, `q_marstat`, `q_age`;
-allowing for (at least) `2 * 51 * 6 * 8 * 6 * 4`  possible subsets of interest.
 
 
 
