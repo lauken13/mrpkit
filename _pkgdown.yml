@@ -1,0 +1,55 @@
+template:
+  params:
+    bootswatch: cosmo
+
+
+navbar:
+  title: "mrpkit"
+  left:
+    - icon: fa-home fa-lg
+      href: index.html
+    - text: "Object and Methods"
+      href: reference/index.html
+    - text: "Articles"
+      menu:
+      - text: "Getting Started"
+        href: articles/mrpkit_workflow.html
+      - text: "Case Study using Large Survey"
+        href: articles/Munging_CCES.html
+    - text: "News"
+      href: news/index.html
+  right:
+    - icon: fa-github
+      href: https://github.com/mitzimorris/mrp-kit
+
+reference:
+  - title: Prepare the datasets
+    desc:  An object represents the survey and population datasets and its metadata.
+    contents:
+      - SurveyData
+  - title: Question mapping
+    desc: An object to map the demographic/question in the survey to population object.
+    contents:
+      - QuestionMap
+  - title: Model fitting preparation
+    desc: An object that holds the mapping between a set of items in a survey and a population dataset before performing the model fitting.
+    contents:
+      - SurveyMap
+  - title: Playing with the fitted model
+    desc: Predict, aggregate, and plot the probability of outcome.
+    contents:
+      - SurveyFit
+  - title: Datasets
+    desc: Datasets used in the vignette, example, and test set.
+    contents:
+      - data
+
+
+
+
+
+
+
+
+
+
