@@ -260,9 +260,9 @@ if (!require("ipumsr")) stop("Reading IPUMS data into R requires the ipumsr pack
 # download dataset from IPUMS
 # xml and dat file should have same name, be in same directory
 acs_2018_subset_ddi <- read_ipums_ddi("usa_00007.xml")
-acs_2018_subset <- read_ipums_micro(acs_2018_subset_ddi)
+acs_2018_subset_tbl <- read_ipums_micro(acs_2018_subset_ddi)
 # save as R objects
-save(acs_2018_subset, acs_2018_subset_ddi, file= "acs_2018_subset.RData")
+save(acs_2018_subset_tbl, acs_2018_subset_ddi, file= "acs_2018_subset.RData")
 ```
 
 ## Inspecting the ACS sample
@@ -275,9 +275,9 @@ returns a single [`tbl_df`](https://tibble.tidyverse.org/reference/tbl_df-class.
 library(labelled)
 library(ipumsr)
 load("acs_2018_subset.RData")
-str(acs_2018_subset, max.level=2, list.len=6)
-dim(acs_2018_subset)
-names(acs_2018_subset)
+str(acs_2018_subset_tbl, max.level=2, list.len=6)
+dim(acs_2018_subset_tbl)
+names(acs_2018_subset_tbl)
 ```
 We selected variables "RACE" and "HISPAN"; the extract contains two columns for each:
 "RACE" and "RACED", and "HISPAN" and "HISPAND".  The "D" columns provide an extremely fine-grained
@@ -292,16 +292,19 @@ of these, only ages 0 and 90 have labels.
 The function [`ipums_val_labels`](https://tech.popdata.org/ipumsr/reference/ipums_var_info.html)
 allows us to inspect these labels.
 ```{r}
-length(table(acs_2018_subset$AGE))
-ipums_val_labels(acs_2018_subset$AGE)
+length(table(acs_2018_subset_tbl$AGE))
+ipums_val_labels(acs_2018_subset_tbl$AGE)
 ```
 
 The function [`as_factor`](https://haven.tidyverse.org/reference/as_factor.html)
 allows us to treat labelled vectors as factors.
-See the vignette https://tech.popdata.org/ipumsr/reference/ipums_var_info.html for further information.
+The function [`zap_labels`](https://haven.tidyverse.org/reference/zap_labels.html)
+allows us to treat labelled vectors as vectors.
+See https://haven.tidyverse.org/articles/semantics.html for further information.
 ```{r}
-head(table(acs_2018_subset$AGE))
-head(table(as_factor(acs_2018_subset$AGE)))
+head(table(acs_2018_subset_tbl$AGE))
+head(table(as_factor(acs_2018_subset_tbl$AGE)))
+head(table(zap_labels(acs_2018_subset_tbl$AGE)))
 ```
 
 The CCES is a survey of _national adults_, i.e., eligible
@@ -310,19 +313,36 @@ US population, including non-citizens.
 We would like to poststratify to a representative survey population,
 i.e., the ACS micro-census, but that subset of the general population
 who meet the CCES survey criteria, i.e., elibible voters living in
-one of the 50 states or Washington DC.
-Therefore,  we drop all records for individuals under the age of 18,
-non-citizens, or residing outside of the 50 states or DC.
-
+one of the 50 states or Washington DC.  (Note: STATEFIP codes have gaps, Wyoming has STATEFIP code 56).
+Therefore,  we drop all records for individuals under the age of 18 and non-citizens, or citizens not
+living in the 50 states or DC.
 ```{r}
-table(as_factor(acs_2018_subset$CITIZEN))
-# drop underage, non-citizens
-citizen = as_factor(acs_2018_subset$CITIZEN) != "Not a citizen"
-over_18 = acs_2018_subset$AGE > 17
-state_or_DC = acs_2018_subset$STATEFIP < 52
-acs_2018_subset = acs_2018_subset[(over_18 & citizen & state_or_DC) , ]  
+# using the level name here
+table(as_factor(acs_2018_subset_tbl$CITIZEN))
+citizen = as_factor(acs_2018_subset_tbl$CITIZEN) != "Not a citizen"
+# using the column value
+over_18 = acs_2018_subset_tbl$AGE > 17
+state_or_DC = acs_2018_subset_tbl$STATEFIP < 57  
+acs_2018_subset_tbl = acs_2018_subset_tbl[(over_18 & citizen & state_or_DC) , ]  
 ```
 
+The metadata is in the object `acs_2018_subset_ddi`.
+Working with the `tbl_df` object is awkward, as the MRP-KIT API expects to work with simple dataframes.
+Therefore we create a data.frame object which contains only the columns of interest as factors,
+excepting "AGE" which is count, not categorical, data.
+```{r}
+acs_2018_subset <- data.frame(
+    "STATEFIP" = droplevels(as_factor(acs_2018_subset_tbl$STATEFIP)),
+    "SEX" = droplevels(as_factor(acs_2018_subset_tbl$SEX)),
+    "AGE" = zap_labels(acs_2018_subset_tbl$AGE),
+    "MARST" = droplevels(as_factor(acs_2018_subset_tbl$MARST)),
+    "RACE" = droplevels(as_factor(acs_2018_subset_tbl$RACE)),
+    "HISPAN" = droplevels(as_factor(acs_2018_subset_tbl$HISPAN)),
+    "CITIZEN" = droplevels(as_factor(acs_2018_subset_tbl$CITIZEN)),
+    "EDUC" = droplevels(as_factor(acs_2018_subset_tbl$EDUC))
+)
+str(acs_2018_subset, max.level=2, list.len=12, give.attr=FALSE)
+```
 
 # Aligning the survey and target population data with MRP-KIT
 
@@ -373,8 +393,8 @@ is the population sample name/label.
 
 ```{r}
 library(mrpkit)
-names(table(cces_2018_subset$gender))
-ipums_val_labels(acs_2018_subset$SEX)
+levels(cces_2018_subset$gender)
+levels(acs_2018_subset$SEX)
 q_sex <- SurveyQuestion$new(name="sex",
       col_names=c("gender", "SEX"),
       values_map=list("Male" = "Male","Female" = "Female"))
@@ -386,14 +406,9 @@ q_sex
 
 We examine the state names from both the CCES and ACS; the same labels are used in both surveys.
 ```{r}
-# CCES data is a factor, levels are the labels
-inputstate <- levels(cces_2018_subset$inputstate)
-
-# ACS dataframe is haven_labelled, treat as factor, only keep states and DC
-STATEFIP_levels <- levels(as_factor(acs_2018_subset$STATEFIP))[1:51]
-cat("CCES:", inputstate[1:5], sep=", ");
-cat("ACS:", STATEFIP_levels[1:5], sep=", ")
-table(inputstate == STATEFIP_levels)
+cat("CCES:", levels(cces_2018_subset$inputstate)[1:5], "\n", sep=", ");
+cat("ACS:", levels(acs_2018_subset$STATEFIP)[1:5], "\n", sep=", ");
+table(levels(cces_2018_subset$inputstate) == levels(acs_2018_subset$STATEFIP))
 ```
 
 We need to create a SurveyQuestion object, as above,  but it would be
@@ -413,19 +428,21 @@ To create this list programmatically,
 you must create a list of values and a list of labels,
 then set the names of the values list to the labels.
 ```{r}
-# create list, then set names (uppercase)
-mapping <- as.list(STATEFIP_levels)
-names(mapping) <- toupper(inputstate)
+state_names <- levels(cces_2018_subset$inputstate)
+state_values <- levels(acs_2018_subset$STATEFIP)
+# create named list in two steps
+mapping <- as.list(state_values)
+names(mapping) <- state_names 
 mapping[1:3]
-# combine the two steps into a one-liner (lowercase)
-mapping = as.list(setNames(STATEFIP_levels, tolower(inputstate)))
+# one-liner using `setNames`
+mapping = as.list(setNames(state_values, state_names))
 mapping[1:3]
 ```
 
 Having established the values map, we create the corresponding SurveyQuestion object.
 We use accessor methods `name()`, `col_names()` and `values()` to check our work.
 ```{r}
-state_mapping = as.list(setNames(STATEFIP_levels, inputstate))
+state_mapping = as.list(setNames(state_values, state_names))
 q_state <- SurveyQuestion$new(name = "state",
 	col_names = c("inputstate", "STATEFIP"),
 	values_map= state_mapping)
@@ -441,8 +458,8 @@ in variables `educ` and `EDUC`, respectively.
 Both the CCES and ACS record the highest level of education completed,
 but the CCES records the degree obtained whereas the ACS records the year completed.
 ```{r}
-names(table(cces_2018_subset$educ))
-ipums_val_labels(acs_2018_subset$EDUC)
+levels(cces_2018_subset$educ)
+levels(acs_2018_subset$EDUC)
 ```
 We choose to align these categories so that the CCES label "2-year"
 maps to the ACS labels for 2 and 3 years of college.
@@ -503,8 +520,8 @@ This is borne out by the CCES, where the question for variable "race" is
 and includes "Hispanic" as a possible response.
 The ACS variable "RACE" has a different set of responses:
 ```{r}
-names(table(cces_2018_subset$race))
-ipums_val_labels(acs_2018_subset$RACE)
+levels(cces_2018_subset$race)
+levels(acs_2018_subset$RACE)
 ```
 
 In order to use the ACS for poststratification, we need to create a variable
@@ -515,25 +532,25 @@ For the CCES, this is a "Yes/No" question:
 In the ACS, the variable HISPAN identifies persons of Hispanic/Spanish/Latino origin and
 classifies them according to their country of origin.
 ```{r}
-names(table(cces_2018_subset$hispan))
-ipums_val_labels(acs_2018_subset$HISPAN)
+levels(cces_2018_subset$hispan)
+levels(acs_2018_subset$HISPAN)
 ```
 
 We propose to add a column to the ACS survey which combines information present in the `RACE` and `HISPAN` variables.
 ```{r}
 # create column which blends "race" "hispan"
-acs_race2 <- as_factor(acs_2018_subset$RACE)
+acs_race2 <- acs_2018_subset$RACE
 # population percentages by label
 prop.table(table(acs_race2))
 # if "hispan" is "Yes", "race" label is "Hispanic".
-is_hispan <- acs_2018_subset$HISPAN > 0 & acs_2018_subset$HISPAN < 5
+is_hispan <- acs_2018_subset$HISPAN != "Not Hispanic"
 length(is_hispan[is_hispan == TRUE]) / length(is_hispan)
 levels(acs_race2) = c(levels(acs_race2), "Hispanic")
 acs_race2[is_hispan==TRUE] <- "Hispanic"
 # adjusted percentages
 prop.table(table(acs_race2))
 # add to acs_2018_subset data.frame - respect column types
-acs_2018_subset$race2 = to_labelled(acs_race2)
+acs_2018_subset$race2 = acs_race2
 ```
 
 A further possibility is to similarly combine the CCES variables "race" and "hispan" 
@@ -606,8 +623,8 @@ The CCES variable "marstat" and ACS variable "MARST" record the marital status o
 
 
 ```{r}
-names(table(cces_2018_subset$marstat))
-ipums_val_labels(acs_2018_subset$MARST)
+levels(cces_2018_subset$marstat)
+levels(acs_2018_subset$MARST)
 ```
 
 For the 2018 CCES survey, the marital status of all respondants is known,
@@ -687,14 +704,13 @@ which conflates "Married, spouse present" and "Married, spouse absent".
 
 ```{r}
 # create column which conflates spouse present, absent
-acs_marst2 <- as_factor(acs_2018_subset$MARST)
+acs_marst2 <- acs_2018_subset$MARST
 levels(acs_marst2) = c(levels(acs_marst2), "Married")
 acs_marst2[acs_marst2 =="Married, spouse present"] <- "Married"
 acs_marst2[acs_marst2 =="Married, spouse absent"] <- "Married"
 
-# add to acs_2018_subset data.frame - respect column types
-acs_2018_subset$marst2 = to_labelled(droplevels(acs_marst2))
-ipums_val_labels(acs_2018_subset$marst2)
+# add to acs_2018_subset data.frame
+acs_2018_subset$marst2 = acs_marst2
 ```
 Now we can create a mapping which maps both "Married" and ""Domestic / civil partnership"
 to the the (new) ACS label "Married".^[
@@ -755,7 +771,7 @@ attr(cces_2018_subset, "var.labels")[['birthyr_cohort']] <- "Birthyear cohort"
 
 # transform ACS age to birthyr, then add to ACS
 acs_2018_subset$birthyr = 2018 - acs_2018_subset$AGE
-acs_2018_subset$birthyr_cohort = to_labelled(cut(acs_2018_subset$birthyr, cohort_breaks, cohort_labels))
+acs_2018_subset$birthyr_cohort = cut(acs_2018_subset$birthyr, cohort_breaks, cohort_labels)
 ```
 
 This is a straightforward 1:1 mapping
@@ -768,7 +784,6 @@ q_birthyr$name()
 q_birthyr$col_names()
 head(q_birthyr$values())
 ```
-
 
 ## Possible subpopulations of interest
 
@@ -784,12 +799,13 @@ A SurveyData object requires a dataframe, a question list, and a response list.
 A question list is a list of tag-value pairs where the tag (name) is the dataframe column name and the value is a description of corresponding survey question.
 For the CCES, the dataframe column descriptions are lists in the attrbute "var.labels".
 As before, we create this list programatically using the `as.list(setNames(tags,values))` trick.
-```{r}
+```{r, EVAL=FALSE}
 cces_2018_questions <- as.list(setNames(attr(cces_2018_subset,"var.labels"), names(cces_2018_subset)))
 head(cces_2018_questions)
 ```
-For the ACS, we use the function `ipumsr::ipums_var_label` to get a short description of the variable.
-```{r}
+For the ACS, we use function `ipumsr::ipums_var_label` to get a short description of the variable
+from the metadata in the DDI object.
+```{r, EVAL=FALSE}
 acs_2018_var_labels <- c()
 for (name in names(acs_2018_subset)) {
     acs_2018_var_labels <- c(acs_2018_var_labels, ipums_var_label(acs_2018_subset[[name]]))
@@ -801,7 +817,7 @@ head(acs_2018_questions)
 A response list is a list of name-value pairs which map the column name to the set of
 possible response values.
 We can create this list using a for loop, or by using R's `apply` function.
-```{r}
+```{r, EVAL=FALSE}
 # create response list using a for loop
 cces_2018_responses <- list()
 for (name in names(cces_2018_subset)) {
@@ -824,9 +840,14 @@ acs_2018_responses[["birthyr_cohort"]]
 ```
 
 We use these lists to create SurveyData objects for both the CCES and ACS.
-```{r}
+```{r, EVAL=FALSE}
 cces_2018_data <- SurveyData$new(cces_2018_subset, cces_2018_questions, cces_2018_responses)
 cces_2018_data
 acs_2018_data <- SurveyData$new(acs_2018_subset, acs_2018_questions, acs_2018_responses)
 acs_2018_data
+```
+Now we can create the mapping object from the CCES to the ACS.
+```{r, EVAL=FALSE}
+cces_acs_mapping <- SurveyMap$new(cces_2018_data, acs_2018_data, q_sex, q_state, q_race, q_educ)
+# poststrat table size: 2 * 51 * 8 * 6
 ```
