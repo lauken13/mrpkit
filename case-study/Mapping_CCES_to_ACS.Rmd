@@ -461,10 +461,12 @@ but the CCES records the degree obtained whereas the ACS records the year comple
 levels(cces_2018_subset$educ)
 levels(acs_2018_subset$EDUC)
 ```
-We choose to align these categories so that the CCES label "2-year"
-maps to the ACS labels for 2 and 3 years of college.
-Mpping "Some College" to both 1 year and 3 years of college is also possible,
-on the rationale that the goal was a 4-year college degree, and that it wasn't obtained.
+
+For the ACS data, a possible label is "3 years of college" however
+in the ACS subset used here, this label isn't used.
+If it were used, we would have a choice between mapping it to CCES
+labels "Some college" or "2-year", on the rational that if the
+ goal was a 4-year college degree, and that it wasn't obtained.
 The choice depends on both an understanding of the survey data and the particular goals
 of your analysis.
 
@@ -476,10 +478,9 @@ CCES | ACS
 "No HS" | "Grade 9"
 "No HS" | "Grade 10"
 "No HS" | "Grade 11"
-"High School Graduate" | "Grade 12"
-"Some College" | "1 year of college"
+"High school graduate" | "Grade 12"
+"Some college" | "1 year of college"
 "2-year" | "2 years of college"
-"2-year" | "3 years of college"
 "4-year" | "4 years of college"
 "Post-grad" | "5+ years of college"
 
@@ -491,10 +492,9 @@ educ_mapping = list(
     "No HS" = "Grade 9",
     "No HS" = "Grade 10",
     "No HS" = "Grade 11",
-    "High School Graduate" = "Grade 12",
-    "Some College" = "1 year of college",
+    "High school graduate" = "Grade 12",
+    "Some college" = "1 year of college",
     "2-year" = "2 years of college",
-    "2-year" = "3 years of college",
     "4-year" = "4 years of college",
     "Post-grad" = "5+ years of college"
 )
@@ -708,7 +708,7 @@ acs_marst2 <- acs_2018_subset$MARST
 levels(acs_marst2) = c(levels(acs_marst2), "Married")
 acs_marst2[acs_marst2 =="Married, spouse present"] <- "Married"
 acs_marst2[acs_marst2 =="Married, spouse absent"] <- "Married"
-
+acs_marst2 <- droplevels(acs_marst2)  # unused levels not allowed
 # add to acs_2018_subset data.frame
 acs_2018_subset$marst2 = acs_marst2
 ```
@@ -724,7 +724,7 @@ marstat_mapping = list(
     "Separated" = "Separated",
     "Divorced" = "Divorced",
     "Widowed" = "Widowed",
-    "Never married" = "Never married",
+    "Never married" = "Never married/single",
     "Domestic / civil partnership" = "Married"
 )
 q_marstat <- SurveyQuestion$new(name = "marstat",
@@ -795,20 +795,31 @@ The resultng poststratification table will have at least 97,920 cells.
 
 # Mapping the survey and target population data with MRP-KIT
 
-A SurveyData object requires a dataframe, a question list, and a response list.
-A question list is a list of tag-value pairs where the tag (name) is the dataframe column name and the value is a description of corresponding survey question.
+The components of an MRP-KIT mapping are the survey data, the target population data,
+and one or more mappings between demographics of interest.  In the previous sections
+we assembled the sample and target population datasets and defined the SurveyQuestion
+objects for to each demographic, adjusting the datasets accordingly.
+Next we create SurveyData objects for each dataset.
+
+A SurveyData object records the contents of a dataset in terms of questions and
+responses.  Every column is (potentially) a question, and the responses are the set
+of category labels for that column.  (*what about continuous variables?*)
+The question and responses are name-value pair lists.
+For the question list, the name is the dataframe column name and the value is the description of the variable or the survey question asked.
+For the response list, the name is also the dataframe column name and the value is the set of possible responses.
+
 For the CCES, the dataframe column descriptions are lists in the attrbute "var.labels".
-As before, we create this list programatically using the `as.list(setNames(tags,values))` trick.
-```{r, EVAL=FALSE}
+As before, we create this list programatically using the `as.list(setNames(tags,values))` one-liner.
+```{r}
 cces_2018_questions <- as.list(setNames(attr(cces_2018_subset,"var.labels"), names(cces_2018_subset)))
 head(cces_2018_questions)
 ```
 For the ACS, we use function `ipumsr::ipums_var_label` to get a short description of the variable
-from the metadata in the DDI object.
-```{r, EVAL=FALSE}
+from the metadata in the `acs_2018_subset_tbl` object.
+```{r}
 acs_2018_var_labels <- c()
 for (name in names(acs_2018_subset)) {
-    acs_2018_var_labels <- c(acs_2018_var_labels, ipums_var_label(acs_2018_subset[[name]]))
+    acs_2018_var_labels <- c(acs_2018_var_labels, ipums_var_label(acs_2018_subset_tbl[[name]]))
 }
 acs_2018_questions <- as.list(setNames(acs_2018_var_labels, names(acs_2018_subset)))
 head(acs_2018_questions)
@@ -816,38 +827,40 @@ head(acs_2018_questions)
 
 A response list is a list of name-value pairs which map the column name to the set of
 possible response values.
-We can create this list using a for loop, or by using R's `apply` function.
-```{r, EVAL=FALSE}
-# create response list using a for loop
-cces_2018_responses <- list()
-for (name in names(cces_2018_subset)) {
-    cces_2018_responses[[name]] <- levels(as.factor(cces_2018_subset[[name]]))
-}
+We create this list by using R's `apply` function.
+```{r}
+cces_2018_responses <- apply(cces_2018_subset, 2, function(x) levels(as.factor(x)))
 head(cces_2018_responses)
-
-acs_2018_responses <- list()
-for (name in names(acs_2018_subset)) {
-    acs_2018_responses[[name]] <- levels(as_factor(acs_2018_subset[[name]]))
-}
-acs_2018_responses[["MARST"]]
-acs_2018_responses[["race2"]]
-acs_2018_responses[["birthyr_cohort"]]
-
-# cces_2018_subset is a dataframe; R's `apply` function would also work
-# cces_2018_responses <- apply(cces_2018_subset, 2, function(x) levels(as.factor(x)))
-# if we coerce acs_2018_subset to dataframe, can do the same
-# acs_2018_responses <- apply(as.data.frame(cces_2018_subset), 2, function(x) levels(as.factor(x)))
+acs_2018_responses <- apply(acs_2018_subset, 2, function(x) levels(as.factor(x)))
+head(acs_2018_responses)
 ```
 
 We use these lists to create SurveyData objects for both the CCES and ACS.
-```{r, EVAL=FALSE}
+```{r}
 cces_2018_data <- SurveyData$new(cces_2018_subset, cces_2018_questions, cces_2018_responses)
 cces_2018_data
 acs_2018_data <- SurveyData$new(acs_2018_subset, acs_2018_questions, acs_2018_responses)
 acs_2018_data
 ```
 Now we can create the mapping object from the CCES to the ACS.
-```{r, EVAL=FALSE}
-cces_acs_mapping <- SurveyMap$new(cces_2018_data, acs_2018_data, q_sex, q_state, q_race, q_educ)
-# poststrat table size: 2 * 51 * 8 * 6
+The `print` function displays the mappings between the survey data and target population data.
+```{r}
+cces_acs_mapping <- SurveyMap$new(cces_2018_data, acs_2018_data, q_sex, q_state, q_educ, q_race, q_marstat, q_birthyr)
+print(cces_acs_mapping)
 ```
+The `validate` function identifies mapped/unmapped columns and validates the mappings defined by the SurveyQuestion objects
+against the levels defined on the datasets.
+```{r}
+cces_acs_mapping$validate()
+```
+
+The `tabulate` function creates the post-stratification table.
+```{r}
+cces_acs_mapping$tabulate()
+```
+
+# MRP Part One:  Multi-level regression
+
+Given the survey data, we fit a model to the survey data, using our favorite R package of choice.
+
+# MRP Part Two:  Post-stratification
