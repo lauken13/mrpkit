@@ -143,9 +143,11 @@ SurveyData <- R6::R6Class(
       }
 
       if (length(questions) == 0 && length(responses) == 0) {
-        keep <- function(x) is.factor(x) || is.character(x) || length(unique(x)) == 2
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(x)) == 2 || class(x)[1] == "haven_labelled"
         data_use <- data[, sapply(data, keep), drop = FALSE]
-        questions <- setNames(as.list(colnames(data_use)), colnames(data_use))
+        questions <- lapply(data_use, function(x) if (class(x)[1] == "haven_labelled")
+          setNames(attributes(x)$label, colnames(x)) else
+            setNames(as.list(colnames(x)), colnames(x)))
         responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(x))
         warning(
           "No 'questions' and 'responses' provided. ",
