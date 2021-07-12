@@ -14,8 +14,6 @@ navbar:
       menu:
       - text: "Getting Started"
         href: articles/mrpkit_workflow.html
-      - text: "Case Study using Large Survey"
-        href: articles/Munging_CCES.html
     - text: "News"
       href: news/index.html
   right:
@@ -42,7 +40,8 @@ reference:
   - title: Datasets
     desc: Datasets used in the vignette, example, and test set.
     contents:
-      - data
+      - approx_voters_popn
+      - shape_survey
 
 
 
