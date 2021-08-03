@@ -8,6 +8,13 @@
 
 <title>SurveyMap — SurveyMap • mrpkit</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -48,6 +55,7 @@ and population must be aligned, i.e., the lists must have the
 same number of elements and the values at index i in each list
 are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending." />
+<meta property="og:image" content="/logo.png" />
 
 
 
@@ -234,7 +242,12 @@ they should be listed in that order, either descending or ascending.</p>
 
 <p><hr>
 <a id="method-mapping"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>mapping()</code></h3>
-<p>Prepare the mapped data</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p>The mapping method uses the given maps between questions to create new sample and population data
+that has unified variable names (i.e., if the underlying construct is called <code>age</code>, both sample and population will have
+an <code>age</code> column, even if in the the raw data both had different variable names). The method also unifies the levels of each
+variable in the sample and population so that the maximum set of consistent levels is created. Names of these new levels are
+made according the the sample level names. If multiple levels are combined, the new name will be existing levels seperated by a
+<code><a href='https://rdrr.io/r/base/Arithmetic.html'>+</a></code>.</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
 <p><div class="r"></p><pre><span class='va'>SurveyMap</span><span class='op'>$</span><span class='fu'>mapping</span><span class='op'>(</span><span class='op'>)</span></pre><p></div></p>
 
 <p><hr>
@@ -544,8 +557,8 @@ for internal use.</p></dd>
 </div><div class='output co'>#&gt; 
 #&gt; SAMPLING FOR MODEL 'bernoulli' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000114 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.14 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000255 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.55 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -562,9 +575,9 @@ for internal use.</p></dd>
 #&gt; Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 5.14409 seconds (Warm-up)
-#&gt; Chain 1:                5.1763 seconds (Sampling)
-#&gt; Chain 1:                10.3204 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 4.85325 seconds (Warm-up)
+#&gt; Chain 1:                4.92033 seconds (Sampling)
+#&gt; Chain 1:                9.77358 seconds (Total)
 #&gt; Chain 1: </div><div class='input'>
 <span class='co'># Example lme4 usage</span>
 <span class='co'># fit_2 &lt;- ex_map$fit(</span>
@@ -589,22 +602,22 @@ for internal use.</p></dd>
 <span class='co'># estimates by age level</span>
 <span class='va'>estimates_by_age</span> <span class='op'>&lt;-</span> <span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>aggregate</span><span class='op'>(</span><span class='va'>poststrat_estimates</span>, by <span class='op'>=</span> <span class='st'>"age"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>estimates_by_age</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;     age draw     value
-#&gt; 1 18-35    1 0.7584347
-#&gt; 2 36-55    1 0.7567402
-#&gt; 3 56-65    1 0.7712137
-#&gt; 4   66+    1 0.7644404
-#&gt; 5 18-35    2 0.7344509
-#&gt; 6 36-55    2 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
+</div><div class='output co'>#&gt;             age draw     value
+#&gt; 1 18-25 + 26-35    1 0.7584347
+#&gt; 2 36-45 + 46-55    1 0.7567402
+#&gt; 3         56-65    1 0.7712137
+#&gt; 4 66-75 + 76-90    1 0.7644404
+#&gt; 5 18-25 + 26-35    2 0.7344509
+#&gt; 6 36-45 + 46-55    2 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>age</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span>, sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 4 x 3</span>
-#&gt;   age    mean     sd
-#&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span> <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>  <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
-#&gt; <span style='color: #BCBCBC;'>1</span> 18-35 0.707 0.061<span style='text-decoration: underline;'>6</span>
-#&gt; <span style='color: #BCBCBC;'>2</span> 36-55 0.762 0.030<span style='text-decoration: underline;'>8</span>
-#&gt; <span style='color: #BCBCBC;'>3</span> 56-65 0.753 0.027<span style='text-decoration: underline;'>9</span>
-#&gt; <span style='color: #BCBCBC;'>4</span> 66+   0.731 0.033<span style='text-decoration: underline;'>4</span></div><div class='input'>
+#&gt;   age            mean     sd
+#&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>         <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>  <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
+#&gt; <span style='color: #BCBCBC;'>1</span> 18-25 + 26-35 0.707 0.061<span style='text-decoration: underline;'>6</span>
+#&gt; <span style='color: #BCBCBC;'>2</span> 36-45 + 46-55 0.762 0.030<span style='text-decoration: underline;'>8</span>
+#&gt; <span style='color: #BCBCBC;'>3</span> 56-65         0.753 0.027<span style='text-decoration: underline;'>9</span>
+#&gt; <span style='color: #BCBCBC;'>4</span> 66-75 + 76-90 0.731 0.033<span style='text-decoration: underline;'>4</span></div><div class='input'>
 <span class='co'># plot estimates by age</span>
 <span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>plot</span><span class='op'>(</span><span class='va'>estimates_by_age</span>, weights <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 </div><div class='img'><img src='SurveyMap-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>plot</span><span class='op'>(</span><span class='va'>estimates_by_age</span>, weights <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>

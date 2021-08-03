@@ -8,6 +8,13 @@
 
 <title>SurveyFit — SurveyFit • mrpkit</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -44,6 +51,7 @@
 object and provides methods for generating predicted probabilities for all
 poststrat cells, generating population and group estimates, and visualizing
 results." />
+<meta property="og:image" content="/logo.png" />
 
 
 
@@ -474,8 +482,8 @@ variable each row corresponds to.</p>
 </div><div class='output co'>#&gt; 
 #&gt; SAMPLING FOR MODEL 'bernoulli' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000209 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.09 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000197 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.97 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -492,9 +500,9 @@ variable each row corresponds to.</p>
 #&gt; Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 5.17697 seconds (Warm-up)
-#&gt; Chain 1:                5.32926 seconds (Sampling)
-#&gt; Chain 1:                10.5062 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 4.80556 seconds (Warm-up)
+#&gt; Chain 1:                4.87632 seconds (Sampling)
+#&gt; Chain 1:                9.68189 seconds (Total)
 #&gt; Chain 1: </div><div class='input'>
 <span class='co'># Example lme4 usage</span>
 <span class='co'># fit_2 &lt;- ex_map$fit(</span>
@@ -519,22 +527,22 @@ variable each row corresponds to.</p>
 <span class='co'># estimates by age level</span>
 <span class='va'>estimates_by_age</span> <span class='op'>&lt;-</span> <span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>aggregate</span><span class='op'>(</span><span class='va'>poststrat_estimates</span>, by <span class='op'>=</span> <span class='st'>"age"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>estimates_by_age</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;     age draw     value
-#&gt; 1 18-35    1 0.7584347
-#&gt; 2 36-55    1 0.7567402
-#&gt; 3 56-65    1 0.7712137
-#&gt; 4   66+    1 0.7644404
-#&gt; 5 18-35    2 0.7344509
-#&gt; 6 36-55    2 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
+</div><div class='output co'>#&gt;             age draw     value
+#&gt; 1 18-25 + 26-35    1 0.7584347
+#&gt; 2 36-45 + 46-55    1 0.7567402
+#&gt; 3         56-65    1 0.7712137
+#&gt; 4 66-75 + 76-90    1 0.7644404
+#&gt; 5 18-25 + 26-35    2 0.7344509
+#&gt; 6 36-45 + 46-55    2 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>age</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span>, sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 4 x 3</span>
-#&gt;   age    mean     sd
-#&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span> <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>  <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
-#&gt; <span style='color: #BCBCBC;'>1</span> 18-35 0.707 0.061<span style='text-decoration: underline;'>6</span>
-#&gt; <span style='color: #BCBCBC;'>2</span> 36-55 0.762 0.030<span style='text-decoration: underline;'>8</span>
-#&gt; <span style='color: #BCBCBC;'>3</span> 56-65 0.753 0.027<span style='text-decoration: underline;'>9</span>
-#&gt; <span style='color: #BCBCBC;'>4</span> 66+   0.731 0.033<span style='text-decoration: underline;'>4</span></div><div class='input'>
+#&gt;   age            mean     sd
+#&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>         <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>  <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
+#&gt; <span style='color: #BCBCBC;'>1</span> 18-25 + 26-35 0.707 0.061<span style='text-decoration: underline;'>6</span>
+#&gt; <span style='color: #BCBCBC;'>2</span> 36-45 + 46-55 0.762 0.030<span style='text-decoration: underline;'>8</span>
+#&gt; <span style='color: #BCBCBC;'>3</span> 56-65         0.753 0.027<span style='text-decoration: underline;'>9</span>
+#&gt; <span style='color: #BCBCBC;'>4</span> 66-75 + 76-90 0.731 0.033<span style='text-decoration: underline;'>4</span></div><div class='input'>
 <span class='co'># plot estimates by age</span>
 <span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>plot</span><span class='op'>(</span><span class='va'>estimates_by_age</span>, weights <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 </div><div class='img'><img src='SurveyFit-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>plot</span><span class='op'>(</span><span class='va'>estimates_by_age</span>, weights <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
