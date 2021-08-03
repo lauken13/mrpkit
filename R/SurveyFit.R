@@ -142,6 +142,8 @@ SurveyFit <- R6::R6Class(
           out[out[by] == focus_level, "value"] <-
             apply(poststrat_estimates[level_loc, ], 2, function(x) sum(poststrat_data$N_j[level_loc]*x)/sum(poststrat_data$N_j[level_loc]))
         }
+        out <- out %>%
+          dplyr::select(-"draw")
       } else {
         out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }
