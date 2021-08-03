@@ -5,9 +5,8 @@
 ###############################################################################
 
 test_that("Complete run through w/o weights produces only expected warnings", {
-  library(dplyr)
   shape_survey <- shape_survey %>%
-    select(-c("wt","highest_educ","state"))
+    dplyr::select(-c("wt","highest_educ","state"))
   expect_warning(
   box_prefs <- SurveyData$new(
     data = shape_survey,
@@ -27,7 +26,7 @@ test_that("Complete run through w/o weights produces only expected warnings", {
   'Weights have not been provided, assume all data weighted with weight 1')
 
   approx_voters_popn <- approx_voters_popn %>%
-    select(-c("wt","education","state"))
+    dplyr::select(-c("wt","education","state"))
   expect_warning(popn_obj <- SurveyData$new(
     data = approx_voters_popn,
     questions = list(
@@ -88,14 +87,10 @@ test_that("Complete run through w/o weights produces only expected warnings", {
 
   # predicted probabilities
   # returns matrix with rows for poststrat cells, cols for posterior draws
-  poststrat_estimates <- fit_2$population_predict()
+  suppressWarnings(poststrat_estimates <- fit_2$population_predict())
 
   # estimates by age level
   estimates_by_age <- fit_2$aggregate(poststrat_estimates, by = "age")
-
-  estimates_by_age %>%
-    group_by(age) %>%
-    summarize(mean = mean(value), sd = sd(value))
 
   # plot estimates by age
   fit_2$plot(estimates_by_age, weights = FALSE)
