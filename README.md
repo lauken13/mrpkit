@@ -1,3 +1,5 @@
+# mrpkit <img src='man/figures/logo.png' align="right" height="120" />
+
 **NOTE: This package is still a work in progress and is yet not released or officially supported**
 
 # mrpkit
