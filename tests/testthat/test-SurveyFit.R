@@ -182,8 +182,8 @@ test_that("Aggregate (to population) returns correct objects", {
 })
 
 test_that("Aggregate (by variable level) returns correct objects", {
-  expected_dims <- c(5 * nlevels(popn_obj$survey_data()$age), 3) # 5 = 10 iter / 2
-  expected_names <- c("age", "draw", "value")
+  expected_dims <- c(5 * nlevels(popn_obj$survey_data()$age), 2) # 5 = 10 iter / 2
+  expected_names <- c("age", "value")
 
   skip_if_not_installed("rstanarm")
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
