@@ -291,10 +291,21 @@ variable each row corresponds to.
 \if{html}{\out{<a id="method-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-plot}{}}}
 \subsection{Method \code{plot()}}{
+Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{aggregated_estimates}}{The object returned by \code{aggregate}}
+
+\item{\code{weights}}{TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95\% interval.
+If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

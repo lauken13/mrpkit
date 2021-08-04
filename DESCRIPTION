@@ -33,7 +33,8 @@ Imports:
     dplyr,
     forcats,
     ggplot2,
-    survey
+    survey,
+    R6
 Suggests:
     testthat,
     rstanarm (>= 2.21.0),
