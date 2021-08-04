@@ -260,7 +260,7 @@ ex_map <- SurveyMap$new(sample = box_pref, population = popn_obj, q_age)
 #                        q_age, q_educ, q_gender, q_party_pref, q_state)
 ```
 
-3. `SurveyMap$add`
+2. `SurveyMap$add`
 
     To get rid of the warning above, we could use this method to add other `QuestionMap` objects to the map.
     
@@ -272,7 +272,7 @@ ex_map$add(q_gender, q_party_pref, q_state)
 print(ex_map)
 ```
 
-4. `SurveyMap$delete`
+3. `SurveyMap$delete`
 
     Now, we already have all of the questions in the post-stratification object mapped. Sometimes, we do not want to include all of the variables in the post-stratification matrix. For example, in this case, we want to exclude `party_pref` from the matrix using `delete` method.
 
@@ -282,7 +282,7 @@ ex_map$delete("party_pref")
 print(ex_map)
 ```
 
-5. `SurveyMap$replace`
+4. `SurveyMap$replace`
 
     Suppose that you changed your mind and want to use another level of matching for a certain question. For example, in question regarding education, q4, you want to change the "associates" level to be equal to "4-years college". To do this, you can firstly create a new `QuestionMap` object corresponding to that new level mapping. Secondly, you can use the `replace` method to change the question object. This method takes two arguments, namely `old question` as the first argument and the `new question` as the second argument.
     
@@ -303,7 +303,7 @@ ex_map$replace(q_educ, q_educ_new)
 print(ex_map)
 ```
     
-6. `SurveyMap$mapping`
+5. `SurveyMap$mapping`
 
     Once you are happy with your map object, you can prepare the mapped data for model fitting with the `mapping` method.
 
@@ -312,7 +312,7 @@ ex_map$mapping()
 ```
 
 
-7. `SurveyMap$tabulate`
+6. `SurveyMap$tabulate`
 
     The next step is to prepare the post-stratification table using the `tabulate` method. If you want to only use a certain variable in the post-stratification matrix, then you should put that variable as the argument. For instance, here, we only use `age` in the post-stratification matrix.
 
@@ -328,7 +328,7 @@ ex_map$tabulate()
 ```
 
 
-8. `SurveyMap$fit`
+7. `SurveyMap$fit`
 
     Finally, we are able to fit the model using `fit` method. Currently, this package supports `rstanarm::stan_glmer` and `rstanarm::stan_glm` (Goodrich, Gabry, Ali, & Brilleman, 2020), `lme4::glmer` (Bates, Maechler, Bolker, & Walker, 2015) , `brms::brm` (Bürkner, 2018) as the built-in functions. However, you could also specify your own function. In this case, you should give a `data` argument that accepts a data frame. In this example, we fit three models using `fun=rstanarm::stan_glmer`, `fun=lme4::glmer`, and `fun=brms:brm` with `age`, `gender`, and `education` as the predictors.
 
