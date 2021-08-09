@@ -142,12 +142,17 @@ SurveyFit <- R6::R6Class(
           out[out[by] == focus_level, "value"] <-
             apply(poststrat_estimates[level_loc, ], 2, function(x) sum(poststrat_data$N_j[level_loc]*x)/sum(poststrat_data$N_j[level_loc]))
         }
+        out <- out %>%
+          dplyr::select(-"draw")
       } else {
         out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }
       out
     },
-
+    #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
+    #' @param aggregated_estimates The object returned by `aggregate`
+    #' @param weights TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95% interval.
+    #'  If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.
     plot = function(aggregated_estimates, weights = TRUE) {
       if (ncol(aggregated_estimates) > 2) {
         focus_var <- colnames(aggregated_estimates)[1]

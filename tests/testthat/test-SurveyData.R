@@ -37,11 +37,11 @@ test_that("error if weights have NAs", {
 })
 
 test_that("weights equal to 1 if not specified", {
-  x <- SurveyData$new(
+  suppressWarnings(x <- SurveyData$new(
     data = feline_survey,
     questions = list(age1 = "Please identify your age group"),
     responses = list(age1 = levels(feline_survey$age1))
-  )
+  ))
   expect_true(all(x$weights() == 1))
 })
 

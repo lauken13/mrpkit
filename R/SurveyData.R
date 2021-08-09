@@ -200,6 +200,7 @@ SurveyData <- R6::R6Class(
 
       if (length(weights) == 0) {
         wts <- rep(1, nrow(data))
+        warning("'Weights have not been provided, assume all data weighted with weight 1.", call. = FALSE)
       } else {
         if (!is.character(weights) || !weights %in% colnames(data)) {
           stop("'weights' must be a string naming a column in 'data'.", call. = FALSE)
