@@ -96,7 +96,7 @@ results." />
   </a>
 </li>
 <li>
-  <a href="../reference/index.html">Object and Methods</a>
+  <a href="../reference/index.html">Objects and Methods</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -248,10 +248,17 @@ and there will be an extra column indicating which level of the <code>by</code>
 variable each row corresponds to.</p>
 <p><hr>
 <a id="method-plot"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code><a href='https://rdrr.io/r/graphics/plot.default.html'>plot()</a></code></h3>
-
-<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
+<p>Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
 <p><div class="r"></p><pre><span class='va'>SurveyFit</span><span class='op'>$</span><span class='fu'>plot</span><span class='op'>(</span><span class='va'>aggregated_estimates</span>, weights <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre><p></div></p>
 
+<h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Arguments</h4>
+<p><div class="arguments"></p><dl>
+<dt><code>aggregated_estimates</code></dt><dd><p>The object returned by <code>aggregate</code></p></dd>
+
+<dt><code>weights</code></dt><dd><p>TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95% interval.
+If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.</p></dd>
+
+</dl><p></div></p>
 <p><hr>
 <a id="method-clone"></a></p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Method <code>clone()</code></h3>
 <p>The objects of this class are cloneable with this method.</p><h4 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>Usage</h4>
@@ -482,8 +489,8 @@ variable each row corresponds to.</p>
 </div><div class='output co'>#&gt; 
 #&gt; SAMPLING FOR MODEL 'bernoulli' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000187 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.87 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000209 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.09 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -500,9 +507,9 @@ variable each row corresponds to.</p>
 #&gt; Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 4.8443 seconds (Warm-up)
-#&gt; Chain 1:                4.97986 seconds (Sampling)
-#&gt; Chain 1:                9.82415 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 4.80773 seconds (Warm-up)
+#&gt; Chain 1:                4.89123 seconds (Sampling)
+#&gt; Chain 1:                9.69896 seconds (Total)
 #&gt; Chain 1: </div><div class='input'>
 <span class='co'># Example lme4 usage</span>
 <span class='co'># fit_2 &lt;- ex_map$fit(</span>
