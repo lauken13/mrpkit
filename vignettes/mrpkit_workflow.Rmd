@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
 
 ```{r setup, message = FALSE}
 library(mrpkit)
-library(dplyr)
 ```
 
 This vignette presents the typical workflow of `mrpkit`, an R package for implementing a multilevel regression with post-stratification.
@@ -77,7 +76,9 @@ In this example, we will show the steps to create the `SurveyData` object using 
 Note that this method will automatically use each of the factor, character, and binary variables to create questions and responses if you do not specify the list of questions and responses. After `SurveyData` is initialized, we can print it using the `print` method as shown below.
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
-4. `weights`: This is an optional argument of the survey or post-stratification/population weight. If the weight is specified as a column in the datasets, then this argument should be specify as string data type. in this case, it is "wt" for `shape_survey` and `approx_voters_popn`. Another example is if the population is summarized as a post-stratification matrix already, then the weight would be the size of each cell, denote by $N_j$. Further, if the entire individual level population is given, the the this argument should be omitted and it would be automatically specify as 1. 
+4. `weights`: This is an optional argument of the survey or post-stratification/population weight. If the weight is specified as a column in the datasets, then this argument should be specify as string data type. in this case, it is "wt" for `shape_survey` and `approx_voters_popn`.
+It is also possible to have an already summarized post-stratification. If it is the case, then the weight would be the size of each cell. Further, if the entire individual level population is given, the the this argument should be omitted and it would be automatically specify as 1. 
+
 5. `design`: This is an optional argument of the design formula of the survey, specified using the `survey` (Lumley, 2020) package notation.
 
 #### Create the `SurveyData` object for the survey data set 
@@ -127,56 +128,6 @@ popn_obj <- SurveyData$new(
 
 # print it
 popn_obj$print() 
-```
-
-The following code demonstrates (optional) weights specification if weights are
-not included in the dataset via summarizing the post-stratification matrix.
-Also, here the survey design is not specified.
-
-```{r poststrat-example2}
-
-# Create the weight as the sum of each post-stratification cell
-popn_poststrat <- approx_voters_popn %>%
-  group_by(age_group, gender, vote_pref, education, state) %>%
-  summarise(N_j = sum(wt))
-
-# create the SurveyData object and set the weight as N_j
-popn_obj_poststrat <- SurveyData$new(
-  data = popn_poststrat,
-  questions = c(age_group = "Which age group are you?",
-                gender = "Which gender are you identified?",
-                vote_pref = "Which party do you prefer to vote?",
-                education = "What is the highest grade or level of school you have completed",
-                state = "Please identify the state where you live in"),
-  responses = list(age_group = levels(approx_voters_popn$age_group),
-                   gender = levels(approx_voters_popn$gender),
-                   vote_pref = levels(approx_voters_popn$vote_pref),
-                   education = levels(approx_voters_popn$education),
-                   state = levels(approx_voters_popn$state)),
-  weights = "N_j"
-)
-
-popn_obj_poststrat$print()
-```
-
-If the population data uses the entire individual level, then the weight should not be specified, as shown in this example. 
-
-```{r poststrat-example3}
-popn_obj_entire_ind <- SurveyData$new(
-  data = popn_poststrat,
-  questions = c(age_group = "Which age group are you?",
-                gender = "Which gender are you identified?",
-                vote_pref = "Which party do you prefer to vote?",
-                education = "What is the highest grade or level of school you have completed",
-                state = "Please identify the state where you live in"),
-  responses = list(age_group = levels(approx_voters_popn$age_group),
-                   gender = levels(approx_voters_popn$gender),
-                   vote_pref = levels(approx_voters_popn$vote_pref),
-                   education = levels(approx_voters_popn$education),
-                   state = levels(approx_voters_popn$state))
-)
-
-popn_obj_entire_ind$print()
 ```
 
 In addition, sometimes, we want to access the properties of the `SurveyData` object, for example, the weights, the design, the questions and the number of questions, or the responses. The `SurveyData` object has methods that allow us to do so. They are `SurveyData$weights()`, `SurveyData$design()`, `SurveyData$questions()`, `SurveyData$n_questions()`, `SurveyData$responses()`. 
@@ -336,7 +287,7 @@ ex_map$tabulate()
 # example of using rstanarm::stan_glmer
 fit1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
-  formula = y ~ (1|age) + (1|gender) + (1|highest_educ),
+  formula = y ~ (1|age) + (1|gender) + (1|highest_educ) + (1|state),
   family = "binomial",
   refresh = 100,
   cores = 2)
@@ -344,10 +295,11 @@ fit1 <- ex_map$fit(
 # example of using lme4::glmer
 fit2 <- ex_map$fit(
   fun = lme4::glmer,
-  formula = y ~ (1|age) + (1|gender) + (1|highest_educ),
+  formula = y ~ (1|age) + (1|gender) + (1|highest_educ) + (1|state),
   family = "binomial")
 
 ```
+
 ```{r fit-brm, eval = FALSE}
 # example using brms::brm
 fit3 <- ex_map$fit(
@@ -365,7 +317,6 @@ provides useful methods for working with it.
 ## Using the `SurveyFit` object
 
 In this stage, we already have the fitted model object, i.e., `fit1` and `fit2`. These objects have been automatically stored as `SurveyFit` objects. Using this object we can generate the predicted probabilities for all post-stratification cells, aggregate the small area estimation, for example, state or province estimates, and visualize the aggregated estimates. 
-
 
 ### Get the probability of the outcome from each poststratification cells
 
