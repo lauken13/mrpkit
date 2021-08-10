@@ -322,6 +322,8 @@
                    vote_pref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">approx_voters_popn</span><span class="op">$</span><span class="va">vote_pref</span><span class="op">)</span>,
                    education <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">approx_voters_popn</span><span class="op">$</span><span class="va">education</span><span class="op">)</span>,
                    state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">approx_voters_popn</span><span class="op">$</span><span class="va">state</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; Warning: 'Weights have not been provided, assume all data weighted with weight</span>
+<span class="co">#&gt; 1.</span>
 
 <span class="va">popn_obj_entire_ind</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; Survey with 428 observations, 5 questions </span>
@@ -627,6 +629,9 @@
   family <span class="op">=</span> <span class="st">"binomial"</span>,
   refresh <span class="op">=</span> <span class="fl">100</span>,
   cores <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+<span class="co">#&gt; Warning: There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.95 may help. See</span>
+<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
+<span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span>
 
 <span class="co"># the example of using glmer</span>
 <span class="va">fit2</span> <span class="op">&lt;-</span> <span class="va">ex_map</span><span class="op">$</span><span class="fu">fit</span><span class="op">(</span>
@@ -672,13 +677,13 @@
 <p>This method then will return a data frame with the variable levels and probability of the outcome, <code>y</code>. In this example, <code>age_preds</code> represents the age group and the probability of voting for the Box Party for each age group. You can also get the mean of the probability of voting the BP by age group and its standard deviation with the help of <code>sumarrize</code> function from <code>dplyr</code> (Wickham, François, Henry &amp; Müller, 2020) using the code as follows.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">age_estimation</span><span class="op">)</span> 
-<span class="co">#&gt;             age draw     value</span>
-<span class="co">#&gt; 1 18-25 + 26-35    1 0.5861380</span>
-<span class="co">#&gt; 2 36-45 + 46-55    1 0.7641624</span>
-<span class="co">#&gt; 3         56-65    1 0.7851015</span>
-<span class="co">#&gt; 4 66-75 + 76-90    1 0.6734566</span>
-<span class="co">#&gt; 5 18-25 + 26-35    2 0.7138429</span>
-<span class="co">#&gt; 6 36-45 + 46-55    2 0.8146399</span>
+<span class="co">#&gt;             age     value</span>
+<span class="co">#&gt; 1 18-25 + 26-35 0.6996915</span>
+<span class="co">#&gt; 2 36-45 + 46-55 0.7289689</span>
+<span class="co">#&gt; 3         56-65 0.7151088</span>
+<span class="co">#&gt; 4 66-75 + 76-90 0.7175657</span>
+<span class="co">#&gt; 5 18-25 + 26-35 0.7278468</span>
+<span class="co">#&gt; 6 36-45 + 46-55 0.7133401</span>
 
 <span class="co"># get the mean and sd for each age group</span>
 
@@ -688,10 +693,10 @@
 <span class="co">#&gt; # A tibble: 4 x 3</span>
 <span class="co">#&gt;   age            mean     sd</span>
 <span class="co">#&gt;   &lt;fct&gt;         &lt;dbl&gt;  &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 18-25 + 26-35 0.693 0.0644</span>
-<span class="co">#&gt; 2 36-45 + 46-55 0.755 0.0319</span>
-<span class="co">#&gt; 3 56-65         0.747 0.0295</span>
-<span class="co">#&gt; 4 66-75 + 76-90 0.718 0.0354</span></pre></div>
+<span class="co">#&gt; 1 18-25 + 26-35 0.693 0.0626</span>
+<span class="co">#&gt; 2 36-45 + 46-55 0.755 0.0318</span>
+<span class="co">#&gt; 3 56-65         0.746 0.0293</span>
+<span class="co">#&gt; 4 66-75 + 76-90 0.718 0.0351</span></pre></div>
 </div>
 <div id="visualize-it" class="section level3">
 <h3 class="hasAnchor">

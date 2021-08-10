@@ -2,13 +2,12 @@ template:
   params:
     bootswatch: cosmo
 
-
 navbar:
   title: "mrpkit"
   left:
     - icon: fa-home fa-lg
       href: index.html
-    - text: "Object and Methods"
+    - text: "Objects and Methods"
       href: reference/index.html
     - text: "Articles"
       menu:

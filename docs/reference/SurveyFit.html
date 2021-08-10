@@ -482,8 +482,8 @@ variable each row corresponds to.</p>
 </div><div class='output co'>#&gt; 
 #&gt; SAMPLING FOR MODEL 'bernoulli' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000197 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.97 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000187 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.87 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -500,9 +500,9 @@ variable each row corresponds to.</p>
 #&gt; Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 4.80556 seconds (Warm-up)
-#&gt; Chain 1:                4.87632 seconds (Sampling)
-#&gt; Chain 1:                9.68189 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 4.8443 seconds (Warm-up)
+#&gt; Chain 1:                4.97986 seconds (Sampling)
+#&gt; Chain 1:                9.82415 seconds (Total)
 #&gt; Chain 1: </div><div class='input'>
 <span class='co'># Example lme4 usage</span>
 <span class='co'># fit_2 &lt;- ex_map$fit(</span>
@@ -527,13 +527,13 @@ variable each row corresponds to.</p>
 <span class='co'># estimates by age level</span>
 <span class='va'>estimates_by_age</span> <span class='op'>&lt;-</span> <span class='va'>fit_1</span><span class='op'>$</span><span class='fu'>aggregate</span><span class='op'>(</span><span class='va'>poststrat_estimates</span>, by <span class='op'>=</span> <span class='st'>"age"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>estimates_by_age</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;             age draw     value
-#&gt; 1 18-25 + 26-35    1 0.7584347
-#&gt; 2 36-45 + 46-55    1 0.7567402
-#&gt; 3         56-65    1 0.7712137
-#&gt; 4 66-75 + 76-90    1 0.7644404
-#&gt; 5 18-25 + 26-35    2 0.7344509
-#&gt; 6 36-45 + 46-55    2 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
+</div><div class='output co'>#&gt;             age     value
+#&gt; 1 18-25 + 26-35 0.7584347
+#&gt; 2 36-45 + 46-55 0.7567402
+#&gt; 3         56-65 0.7712137
+#&gt; 4 66-75 + 76-90 0.7644404
+#&gt; 5 18-25 + 26-35 0.7344509
+#&gt; 6 36-45 + 46-55 0.7304963</div><div class='input'><span class='va'>estimates_by_age</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>age</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span>, sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 4 x 3</span>
