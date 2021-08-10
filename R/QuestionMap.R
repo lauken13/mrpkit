@@ -20,7 +20,10 @@
 #' q_party_pref <- QuestionMap$new(
 #'   name = "party_pref",
 #'   col_names = c("vote_for","vote_pref"),
-#'   values_map = list("Box Party" = "The BP", "The BP" = "The BP","The Circle Party" = "The Circles","The Circles" = "The Circles")
+#'   values_map = list("Box Party" = "The BP",
+#'                     "The BP" = "The BP",
+#'                     "The Circle Party" = "The Circles",
+#'                     "The Circles" = "The Circles")
 #' )
 #' q_gender <- QuestionMap$new(
 #'   name = "gender",
