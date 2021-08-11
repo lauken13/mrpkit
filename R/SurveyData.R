@@ -157,9 +157,6 @@ SurveyData <- R6::R6Class(
         stop("Mismatch between number of survey questions and responses.",
              call. = FALSE)
       }
-      if (length(responses) != length(unique(responses))) {
-        stop("All elements of 'responses' must be unique.")
-      }
       if (length(questions) != length(unique(questions))) {
         stop("All elements of 'questions' must be unique.")
       }
