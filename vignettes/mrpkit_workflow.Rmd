@@ -354,7 +354,7 @@ This method then will return a data frame with the variable levels and probabili
 head(age_estimation) 
 
 # get the mean and sd for each age group
-
+library(dplyr)
 age_estimation %>%
   group_by(age) %>%
   summarize(mean = mean(value), sd = sd(value))
