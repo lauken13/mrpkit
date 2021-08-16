@@ -154,7 +154,7 @@ SurveyFit <- R6::R6Class(
     #' @param weights TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95% interval.
     #'  If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.
     plot = function(aggregated_estimates, weights = TRUE) {
-      if (ncol(aggregated_estimates) > 2) {
+      if (ncol(aggregated_estimates) > 1) {
         focus_var <- colnames(aggregated_estimates)[1]
         which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         svy_q <- private$map_$sample()$questions()[[which_q]]
@@ -178,7 +178,7 @@ SurveyFit <- R6::R6Class(
       if (weights) {
         model_fit <- private$fit_
         lhs_var <- as.character(formula(model_fit))[[2]]
-        if (ncol(aggregated_estimates) > 2) {
+        if (ncol(aggregated_estimates) > 1) {
           by_var <- colnames(aggregated_estimates)[1]
           wtd_ests <- create_wtd_ests(self, lhs_var, by=by_var)
           gg <- gg +

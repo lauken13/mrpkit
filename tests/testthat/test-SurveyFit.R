@@ -226,7 +226,6 @@ test_that("plot appearance hasn't changed", {
   # need to use deterministic inputs to the plots to test appearance changes
   popn <- data.frame(value = c(0.60, 0.65, 0.70, 0.75, 0.80))
   by_age <- data.frame(age = factor(rep(1:4, 5), labels = levels(ex_map$mapped_sample_data()$age)),
-                       draw = rep(1:5, each = 4),
                        value = c(0.299514804640785, 0.217973976861686, 0.258871184848249, 0.271914651058614,
                                  0.31649006572552, 0.697755558183417, 0.209188556019217, 0.431414544349536,
                                  0.74861360588111, 0.209171398542821, 0.385790600813925, 0.45710161360912,
