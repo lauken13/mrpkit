@@ -77,7 +77,8 @@ Note that this method will automatically use each of the factor, character, and 
 2. `questions`: The question asked in the questionnaire for each of those columns.
 3. `responses`: Allowed response for each question.
 4. `weights`: This is an optional argument of the survey or post-stratification/population weight. If the weight is specified as a column in the datasets, then this argument should be specify as string data type. in this case, it is "wt" for `shape_survey` and `approx_voters_popn`.
-It is also possible to have an already summarized post-stratification. If it is the case, then the weight would be the size of each cell. Further, if the entire individual level population is given, the the this argument should be omitted and it would be automatically specify as 1. 
+
+It is also possible to have an already summarized post-stratification. If it is the case, then the weight would be the size of each cell. Further, if the entire individual level population is given, then this argument should be omitted and it would be automatically specify as 1. 
 
 5. `design`: This is an optional argument of the design formula of the survey, specified using the `survey` (Lumley, 2020) package notation.
 
@@ -373,7 +374,7 @@ plot_age
 
 The plot above shows the distribution of people who vote for the Box Party for each age group. The plot implies that people who are aged 36-55 are most likely to vote for the BP.
 
-The next plot displays the probability of voting for the BP by the state without using the weight. We learn that the probability of the BP winning the election is high since the majority of people in all states (around 75%) vote for that party. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
+The next plot displays the probability of voting for the BP by the state without using the weight. We learn that the probability of the BP winning the election is high since the majority of people in almost all the states (around 75%) vote for that party. State B is the state with the lowest probability of vote for the BP. That being said the distribution still ranged more than 50%. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
 
 
 ```{r state-vis}
