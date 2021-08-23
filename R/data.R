@@ -30,7 +30,6 @@
 #'
 "approx_popn"
 
-
 #' Simulated Survey Data for Shape World
 #'
 #' This is a simulated survey of whether Shape World voters prefer the Box Party
