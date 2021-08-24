@@ -66,11 +66,6 @@ SurveyFit <- R6::R6Class(
         stop("The 'newdata' argument should not be specified.",
              call. = FALSE)
       }
-      if (is.null(private$map_$poststrat_data())) {
-        stop("Post-stratification data not found. ",
-             "Please call the tabulate() method before fitting a model.",
-             call. = FALSE)
-      }
       poststrat <- private$map_$poststrat_data()
 
       if (is.null(fun)) {
