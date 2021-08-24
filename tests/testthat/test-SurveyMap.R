@@ -62,11 +62,48 @@ test_that("initializing with >0 questions doesn't error", {
   expect_length(ex_map$item_map(), 3)
 })
 
+test_that("delete() works", {
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
+  ex_map$delete(q_age)
+  expect_output(ex_map$print(), "empty mapping", fixed = TRUE)
+})
+
+
+test_that("add() works", {
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn))
+  ex_map$add(q_age, q_gender, q_pet)
+  expect_output(
+    ex_map$print(),
+    "age1 = age2",
+    fixed = TRUE
+  )
+  expect_output(
+    ex_map$print(),
+    "pet_own = pet_pref ",
+    fixed = TRUE
+  )
+  expect_output(
+    ex_map$print(),
+    "gender = gender ",
+    fixed = TRUE
+  )
+})
+
 test_that("add() errors if name already exists", {
   ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
   expect_error(
     ex_map$add(q_age),
     "Survey label 'age' already defined"
+  )
+})
+
+test_that("replace() works", {
+  ex_map <- suppressWarnings(SurveyMap$new(samp, popn, q_age))
+  suppressWarnings(ex_map$replace(q_age, q_gender))
+  expect_output(
+    ex_map$print(),
+    "gender = gender ",
+    fixed = TRUE
   )
 })
 
