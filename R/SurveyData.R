@@ -143,15 +143,25 @@ SurveyData <- R6::R6Class(
       }
 
       if (length(questions) == 0 && length(responses) == 0) {
-        keep <- function(x) is.factor(x) || is.character(x) || length(unique(na.omit(x))) == 2
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(na.omit(x))) == 2 ||
+          !is.null(attr(x, "labels"))
         data_use <- data[, sapply(data, keep), drop = FALSE]
-        questions <- lapply(data_use, function(x)
-          if (class(x)[1] == "haven_labelled")
-          {if (!is.null(labelled::var_label(x)))
-            setNames(labelled::var_label(x), names(x)) else
-              setNames(names(x), names(x))} else # need to work on this
-                setNames(names(x), names(x))) # this one also
-        responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(x))
+        data_factorize <- as.data.frame(lapply(data_use, function(x)
+          if(!is.null(attr(x, "labels"))) {
+            if (0 %in% x){as.factor(names(attr(x, "labels")[as.numeric(paste(x))+1]))}
+            else {as.factor(names(attr(x, "labels")[as.numeric(paste(x))]))}}
+          else
+          {x}))
+        q_labelled <- dplyr::select_if(data_use, function(x) !is.null(attr(x, "label")) &
+                                         class(attr(x, "label")) == "character")
+        questions <- lapply(q_labelled, function(x) setNames(attr(x, "label"), names(x)))
+        q_not_labelled <- dplyr::select_if(data_use, function(x) is.null(attr(x, "label")) |
+                                             (!is.null(attr(x, "label")) &
+                                                (class(attr(x, "label")) == "numeric" |
+                                                   class(attr(x, "label")) == "integer" |
+                                                   class(attr(x, "label")) == "double")))
+        append(questions, setNames(as.list(colnames(q_not_labelled)), colnames(q_not_labelled)))
+        responses <- lapply(data_factorize, function(x) if (is.factor(x)) levels(x) else unique(na.omit(x)))
         warning(
           "No 'questions' and 'responses' provided. ",
           "Using all factor, character, and binary variables in 'data' by default.",
