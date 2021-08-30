@@ -14,6 +14,23 @@
 #'
 "feline_survey"
 
+
+#' feline_survey with some variables stored in haven-labelled class.
+#' @source Created in CreateTestData.R
+#' @format A data frame with columns:
+#' \describe{
+#'  \item{age1}{Age group; haven-labelled}
+#'  \item{gender}{Gender; haven-labbeled}
+#'  \item{pet_own}{Pet ownership; haven-labelled}
+#'  \item{y}{Example binary outcome variable}
+#'  \item{wt}{Raked and trimmed survey weight}
+#' }
+#'
+#' @examples
+#' str(feline_survey_haven)
+#'
+"feline_survey_haven"
+
 #' Example approximate population (modelled after ACS)
 #'
 #' @source Created in CreateTestData.R
