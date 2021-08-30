@@ -16,9 +16,13 @@ Conducts multilevel regression with post-stratification in an opinionated
 Authors:
 \itemize{
   \item Jonah Gabry \email{jsg2201@columbia.edu}
-  \item Mitzi Morris
   \item Dewi Amaliah
   \item Rohan Alexander \email{rohan.alexander@utoronto.ca}
+}
+
+Other contributors:
+\itemize{
+  \item Mitzi Morris [contributor]
 }
 
 }

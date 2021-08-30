@@ -143,7 +143,7 @@ SurveyData <- R6::R6Class(
       }
 
       if (length(questions) == 0 && length(responses) == 0) {
-        keep <- function(x) is.factor(x) || is.character(x) || length(unique(x)) == 2 || class(x)[1] == "haven_labelled"
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(na.omit(x))) == 2
         data_use <- data[, sapply(data, keep), drop = FALSE]
         questions <- lapply(data_use, function(x)
           if (class(x)[1] == "haven_labelled")
@@ -161,9 +161,6 @@ SurveyData <- R6::R6Class(
       if (length(responses) != length(questions)) {
         stop("Mismatch between number of survey questions and responses.",
              call. = FALSE)
-      }
-      if (length(responses) != length(unique(responses))) {
-        stop("All elements of 'responses' must be unique.")
       }
       if (length(questions) != length(unique(questions))) {
         stop("All elements of 'questions' must be unique.")
@@ -205,6 +202,7 @@ SurveyData <- R6::R6Class(
 
       if (length(weights) == 0) {
         wts <- rep(1, nrow(data))
+        warning("'Weights have not been provided, assume all data weighted with weight 1.", call. = FALSE)
       } else {
         if (!is.character(weights) || !weights %in% colnames(data)) {
           stop("'weights' must be a string naming a column in 'data'.", call. = FALSE)

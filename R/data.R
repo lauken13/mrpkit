@@ -69,7 +69,7 @@
 #' \describe{
 #'  \item{age_group}{Age group}
 #'  \item{gender}{Gender}
-#'  \item{vote_for}{Party voted for in the 2016 election}
+#'  \item{vote_pref}{Party voted for in the 2016 election}
 #'  \item{education}{Highest grade of education completed}
 #'  \item{state}{State}
 #'  \item{wt}{Raked and trimmed survey weight}

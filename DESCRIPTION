@@ -11,16 +11,16 @@ Authors@R: c(
            family = "Gabry",
            role = c("aut"),
            email = "jsg2201@columbia.edu"),
-    person(given = "Mitzi",
-           family = "Morris",
-           role = c("aut")),
     person(given = "Dewi",
            family = "Amaliah",
            role = c("aut")),
     person(given = "Rohan",
            family = "Alexander",
            role = c("aut"),
-           email = "rohan.alexander@utoronto.ca")
+           email = "rohan.alexander@utoronto.ca"),
+    person(given = "Mitzi",
+           family = "Morris",
+           role = c("ctb"))
            )
 Description: Conducts multilevel regression with post-stratification in an opinionated 
     and specific way. Users specify two datasets (sample and population), establish 
@@ -33,7 +33,8 @@ Imports:
     dplyr,
     forcats,
     ggplot2,
-    survey
+    survey,
+    R6
 Suggests:
     testthat,
     rstanarm (>= 2.21.0),
