@@ -99,18 +99,18 @@ shape_survey_haven <- shape_survey %>%
                                            `56-65` = 5, `66-75` = 6, `76-90` = 7),
                               label = "Which age group are you?"),
          gender = labelled(gender, c("m" = 1, "f" = 2, "nb" = 3)),
-         vote_for = labelled(vote_for, c("BP" = 1,
-                                         "BP" = 2,
-                                         "CP" = 3,
-                                         "CP" = 4),
+         vote_for = labelled(vote_for, c("Box Party" = 1,
+                             "BP" = 2,
+                             "Circle Party" = 3,
+                             "CP" = 4),
                              label = "Which party did you vote for in the 2018 election?"),
          highest_educ = labelled(education,
                               c("no high school" = 1,
                                 "high school" = 2,
                                 "some college" = 3,
-                                "some college" = 4,
+                                "associates" = 4,
                                 "4-years college" = 5,
-                                "post-grad" = 6),
+                                "post-graduate" = 6),
                               label = "Please identify your completed highest education"),
          state = labelled(state,
                           c("A" = 1,
@@ -187,7 +187,5 @@ approx_voters_popn <- approx_voters_popn %>%
                             "D" = "4",
                             "E" = "5")) %>%
   select(c(age_group, gender, vote_pref, wt, education, state))
-
-
 
 usethis::use_data(shape_survey, shape_survey_haven, approx_voters_popn, overwrite = TRUE)
