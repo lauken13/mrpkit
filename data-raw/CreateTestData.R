@@ -57,7 +57,7 @@ rkd_obj_feline_survey <- rake(design = svy_design_feline_survey, sample.margins 
 wts_trim_feline_survey <- trimWeights(rkd_obj_feline_survey, upper = quantile(weights(rkd_obj_feline_survey),.975))
 feline_survey$wt <- weights(wts_trim_feline_survey)
 
-# Adjust measurement  #
+# Adjust measurement
 
 feline_survey <- feline_survey %>%
   select(-S_inclusion_prob) %>%

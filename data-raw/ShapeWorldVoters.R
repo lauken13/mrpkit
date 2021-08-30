@@ -3,6 +3,7 @@ library(brms)
 library(survey)
 library(dplyr)
 library(forcats)
+library(haven)
 
 
 #declare the design of the population
@@ -21,7 +22,7 @@ design <- declare_population(N = 50000,
 
 ### get population
 popn <- draw_data(design +
-                    declare_sampling(n=50000))
+                    declare_sampling(n=50000, legacy = TRUE))
 
 ### function to create sample
 get_sample <- function(data, n) {
@@ -88,6 +89,48 @@ shape_survey$wt <- weights(wts_trim_shape_survey)
 
 # Adjust measurement  #
 
+## Example of haven labelled data
+
+shape_survey_haven <- shape_survey %>%
+  select(-S_inclusion_prob) %>%
+  mutate_at(c("age_group", "gender", "vote_for", "education", "state" ,"y"), as.factor) %>%
+  mutate(age = labelled(age_group, c(`18-25` = 1, `26-35` = 2,
+                                           `36-45` = 3,`46-55` = 4,
+                                           `56-65` = 5, `66-75` = 6, `76-90` = 7),
+                              label = "Which age group are you?"),
+         gender = labelled(gender, c("m" = 1, "f" = 2, "nb" = 3)),
+         vote_for = labelled(vote_for, c("BP" = 1,
+                                         "BP" = 2,
+                                         "CP" = 3,
+                                         "CP" = 4),
+                             label = "Which party did you vote for in the 2018 election?"),
+         highest_educ = labelled(education,
+                              c("no high school" = 1,
+                                "high school" = 2,
+                                "some college" = 3,
+                                "some college" = 4,
+                                "4-years college" = 5,
+                                "post-grad" = 6),
+                              label = "Please identify your completed highest education"),
+         state = labelled(state,
+                          c("A" = 1,
+                            "B" = 2,
+                            "C" = 3,
+                            "D" = 4,
+                            "E" = 5)))
+
+# assign some random NA to 10 observations in y
+random_id <- shape_survey_haven[sample(nrow(shape_survey_haven), 10), ] %>%
+  select(ID)
+
+shape_survey_haven <- shape_survey_haven %>%
+  mutate(y = ifelse(ID %in% random_id$ID, NA, y)) %>%
+  select(c(age, gender, vote_for, highest_educ, state, y, wt))
+
+# assign only variable label to y
+attributes(shape_survey_haven$y)$label <- "If today is election day, will you vote for the Box Party?"
+
+## Adjust measurement for the shape survey (not-haven labelled)
 shape_survey <- shape_survey %>%
   select(-S_inclusion_prob) %>%
   mutate_at(c("age_group", "gender", "vote_for", "education", "state" ,"y"), as.factor) %>%
@@ -145,4 +188,6 @@ approx_voters_popn <- approx_voters_popn %>%
                             "E" = "5")) %>%
   select(c(age_group, gender, vote_pref, wt, education, state))
 
-usethis::use_data(shape_survey, approx_voters_popn, overwrite = TRUE)
+
+
+usethis::use_data(shape_survey, shape_survey_haven, approx_voters_popn, overwrite = TRUE)
