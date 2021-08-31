@@ -63,7 +63,7 @@ test_that("error if question names don't match data names", {
       questions = list(banana = "Please identify your age group"),
       responses = list(banana = 1:4)
     ),
-    "Names of 'questions' much match column names in 'data'."
+    "Names of 'questions' must match column names in 'data'."
   )
 })
 
