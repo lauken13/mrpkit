@@ -1,3 +1,72 @@
+test_that("error if data has zero obs", {
+  # 0 rows, 0 cols
+  expect_error(
+    SurveyData$new(data = data.frame()),
+    "'data' cannot be empty"
+  )
+
+  # 0 rows, >0 cols
+  expect_error(
+    SurveyData$new(data = data.frame(x = numeric(0))),
+    "'data' cannot be empty"
+  )
+
+  # >0 rows, 0 cols
+  df <- data.frame(x = 1:10)
+  df$x <- NULL
+  expect_error(
+    SurveyData$new(data = df),
+    "'data' cannot be empty"
+  )
+})
+
+test_that("error if questions not all unique", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(age1 = "Please identify your age group",
+                       age2 = "Please identify your age group"),
+      responses = list(age1 = levels(feline_survey$age1),
+                       age2 = levels(feline_survey$age1))
+    ),
+    "All elements of 'questions' must be unique."
+  )
+})
+
+test_that("error if questions not all named", {
+  # none have names
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list("foo", "bar"),
+      responses = list(1:10, 1:10)
+    ),
+    "All elements of 'questions' and 'responses' list must have names"
+  )
+
+  # subset has names
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(a = "foo", b = "bar", "baz"),
+      responses = list(a = 1:10, b = 1:10, c = 1:10)
+    ),
+    "All elements of 'questions' and 'responses' list must have names"
+  )
+})
+
+test_that("error if question names don't match data names", {
+  # none have names
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(banana = "Please identify your age group"),
+      responses = list(banana = 1:4)
+    ),
+    "Names of 'questions' must match column names in 'data'."
+  )
+})
+
 test_that("error if weights column doesn't exist", {
   expect_error(
     SurveyData$new(

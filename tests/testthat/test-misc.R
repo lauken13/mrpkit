@@ -38,3 +38,29 @@ test_that("sim_posterior_probs throws error if not given glmerMod object", {
     sum(is.na(dim(sim_posterior_probs(glmer_fit,newdata = example_newdata, nsamples = 10)))),
     0)
 })
+
+
+test_that("require_suggested_package throws correct errors", {
+  expect_error(
+    require_suggested_package("SOME_PACKAGE"),
+    "Please install the SOME_PACKAGE package"
+  )
+
+  expect_error(
+    require_suggested_package("SOME_PACKAGE", ver = "2.0"),
+    "Please install at least version 2.0 of the SOME_PACKAGE package"
+  )
+})
+
+test_that("family_is_binomial works correctly", {
+  expect_true(family_is_binomial(stats::binomial()))
+  expect_true(family_is_binomial("bernoulli"))
+  expect_true(family_is_binomial("binomial"))
+  expect_false(family_is_binomial("poisson"))
+  expect_false(family_is_binomial(stats::poisson()))
+
+  expect_error(
+    family_is_binomial(TRUE),
+    "Model family must be a string or family object"
+  )
+})
