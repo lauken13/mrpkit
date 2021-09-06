@@ -144,6 +144,42 @@ SurveyFit <- R6::R6Class(
       }
       out
     },
+    #' @description Creates a set of summary statistics of the mrp estimate,
+    #' and corresponding weighted and raw data estimates
+    #' @param aggregated_estimates The object returned by `aggregate`.
+    #' @return A data frame. If `by` is not specified then the data frame will
+    #'   have number of rows equal to the number of posterior draws. If `by` is
+    #'   specified the data frame will have number of rows equal to the number
+    #'   of posterior draws times the number of levels of the `by` variable,
+    #'   and there will be an extra column indicating which level of the `by`
+    #'   variable each row corresponds to.
+    summary = function(aggregated_estimates, by = NULL) {
+      if(is.null(aggregated_estimates)){
+        stop("Must pass aggregated MRP estimates produced by aggregate function.")
+      }
+      model_fit <- private$fit_
+      lhs_var <- as.character(formula(model_fit))[[2]]
+      if (ncol(aggregated_estimates) > 1) {
+        by_var <- colnames(aggregated_estimates)[1]
+        wtd_ests <- data.frame(create_wtd_ests(self, lhs_var, by=by_var), method = "wtd")
+        mrp_ests_tmp <- by(aggregated_estimates[,"value"], aggregated_estimates[,by_var],function(x)c(mean = mean(x),sd = sd(x)))
+        mrp_ests_df <- sapply(mrp_ests_tmp, function(x) x)
+        mrp_ests <- data.frame(t(mrp_ests_df),by_var = colnames(mrp_ests_df), method = "mrp")
+        colnames(mrp_ests)[3] = by_var
+        lhs_binary <- force_factor(lhs_binary)
+        raw_ests_tmp <- by(lhs_binary, private$fit_$data[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
+        raw_ests_df <- sapply(raw_ests_tmp, function(x) x)
+        raw_ests <- data.frame(t(raw_ests_df),by_var = colnames(raw_ests_df), method = "raw")
+        colnames(raw_ests)[3] = by_var
+      } else{
+        wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
+        mrp_ests <- data.frame(mean=mean(aggregated_estimates$value),sd = sd(aggregated_estimates$value), method = "mrp")
+        lhs_binary <- force_factor(private$fit_$data[,lhs_var])
+        raw_ests <- data.frame(mean = mean(lhs_binary),sd = sqrt(mean(lhs_binary)*(1-mean(lhs_binary))/length(lhs_binary)), method = "raw")
+      }
+      out <- rbind(mrp_ests, raw_ests,wtd_ests)
+      out
+    },
     #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
     #' @param aggregated_estimates The object returned by `aggregate`
     #' @param weights TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95% interval.
@@ -198,3 +234,71 @@ SurveyFit <- R6::R6Class(
     }
   )
 )
+
+
+#' Create weighted estimates using the survey package
+#' @noRd
+#' @param fit_obj  An [R6][R6::R6Class] SurveyFit object
+#' @param outcome The variable we are estimating
+#' @param by The grouping variables
+#' @return A table of size nlevels by 3 (level, estimate, sd).
+create_wtd_ests <- function(fit_obj, outcome, by = NULL) {
+  weights <- fit_obj$map()$sample()$weights()
+  if (is.null(weights)) {
+    stop("Sample weights must be present", call. = FALSE)
+  }
+  design <- fit_obj$map()$sample()$design()
+  merged_data <- merge(fit_obj$map()$mapped_sample_data(),
+                       fit_obj$map()$sample()$survey_data()[c(outcome,".key")],
+                       by = ".key")
+  svy_dsn <- do.call(survey::svydesign, c(design, list(weights = weights, data = merged_data)))
+  if (is.null(by)) {
+    wtd_ests <- survey::svymean(stats::as.formula(paste0(c('~',outcome), collapse = "")), design = svy_dsn)
+    wtd_ests <- data.frame(wtd_ests)
+    rownames(wtd_ests) <- levels(merged_data[[outcome]])
+    wtd_ests <- wtd_ests[seq(2, dim(wtd_ests)[1], 2),]
+    colnames(wtd_ests) <- c("mean", "sd")
+  } else {
+    wtd_ests <- survey::svyby(
+      formula = stats::as.formula(paste0("~",outcome)),
+      by = stats::as.formula(paste0("~", by)),
+      design = svy_dsn,
+      survey::svymean
+    )
+    wtd_ests <- data.frame(wtd_ests)[, c(1,3,5)]
+    colnames(wtd_ests) <- c(by, "mean", "sd")
+  }
+  wtd_ests
+}
+
+
+#' Create weighted estimates using the survey package
+#' @noRd
+#' @param x A variable of length n
+#' @return A variable of length n that is binary (0,1) values. The higher level in the factor
+#' is the default 1
+force_factor <- function(x) {
+  if(length(x) ==0 & is.null(dim(x))){
+    stop("x must have length n")
+  }
+  else if(!is.null(dim(x))){
+    stop("x must be a vector of length n")
+  }
+  else if(is.factor(x) & length(levels(x))!=2){
+    stop("x cannot have more than 2 levels")
+  }
+  else if(is.factor(x) & length(levels(x))==2){
+    out_var <- as.numeric(x)-1
+  }
+  else if(is.numeric(x) & unique(na.omit(x))>2){
+    stop("x must have only two unique numeric values")
+  }
+  else if(is.numeric(x) & unique(na.omit(x))>2 & sum(x %in% c(1,0,NA))!=length(x)){
+    stop("x must only contain 1, 0 and missing values")
+  }
+  else if(is.numeric(x) & unique(na.omit(x))==2& sum(x %in% c(1,0,NA))==length(x)){
+    out_var <- private$fit_$data[,lhs_var]
+  }
+}
+}
+
