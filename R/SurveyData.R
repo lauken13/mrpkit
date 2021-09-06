@@ -146,7 +146,8 @@ SurveyData <- R6::R6Class(
         keep <- function(x) is.factor(x) || is.character(x) || length(unique(na.omit(x))) == 2 ||
           !is.null(attr(x, "labels"))
         data_use <- data[, sapply(data, keep), drop = FALSE]
-        data_factorize <- as.data.frame(lapply(data_use, function(x)
+        # factorize haven-labelled variable
+        data <- as.data.frame(lapply(data_use, function(x)
           if(!is.null(attr(x, "labels"))) {
             if (0 %in% x){as.factor(names(attr(x, "labels")[as.numeric(paste(x))+1]))}
             else {as.factor(names(attr(x, "labels")[as.numeric(paste(x))]))}}
@@ -160,8 +161,8 @@ SurveyData <- R6::R6Class(
                                                 (class(attr(x, "label")) == "numeric" |
                                                    class(attr(x, "label")) == "integer" |
                                                    class(attr(x, "label")) == "double")))
-        append(questions, setNames(as.list(colnames(q_not_labelled)), colnames(q_not_labelled)))
-        responses <- lapply(data_factorize, function(x) if (is.factor(x)) levels(x) else unique(na.omit(x)))
+        questions <- append(questions, setNames(as.list(colnames(q_not_labelled)), colnames(q_not_labelled)))
+        responses <- lapply(data, function(x) if (is.factor(x)) levels(x) else unique(na.omit(x)))
         warning(
           "No 'questions' and 'responses' provided. ",
           "Using all factor, character, and binary variables in 'data' by default.",
