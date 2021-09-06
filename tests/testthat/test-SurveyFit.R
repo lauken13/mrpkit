@@ -87,6 +87,8 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
 }
 
 if (requireNamespace("brms", quietly = TRUE)) {
+  brms_backend <- ifelse(requireNamespace("cmdstanr", quietly = TRUE),
+                         "cmdstanr", "rstan")
   suppressWarnings(
     fit_brms <- ex_map$fit(
       fun = brms::brm,
@@ -95,7 +97,8 @@ if (requireNamespace("brms", quietly = TRUE)) {
       iter = 10,
       chains = 1,
       refresh = 0,
-      seed = 123
+      seed = 123,
+      backend = brms_backend
     )
   )
 }
@@ -148,14 +151,22 @@ test_that("population_predict returns correct objects",{
   expect_equal(dim(fit_glmer$population_predict(nsamples = 5)), expected_dims)
 })
 
-test_that("population_predict errors if custom fun required but not specified", {
+test_that("population_predict throws correct errors", {
+  # custom fun required but not specified
   expect_error(
     fit_glm$population_predict(),
     "Custom population_predict method required"
   )
+
+  # newdata argument specified
+  expect_error(
+    fit_glm$population_predict(newdata = data.frame()),
+    "The 'newdata' argument should not be specified"
+  )
 })
 
-test_that("Aggregate (to population) returns correct objects", {
+
+test_that("aggregate (to population) returns correct objects", {
   expected_dims <- c(5, 1) # 5 = 10 iter / 2
 
   skip_if_not_installed("rstanarm")
@@ -181,7 +192,7 @@ test_that("Aggregate (to population) returns correct objects", {
   expect_equal(dim(x), expected_dims)
 })
 
-test_that("Aggregate (by variable level) returns correct objects", {
+test_that("aggregate (by variable level) returns correct objects", {
   expected_dims <- c(5 * nlevels(popn_obj$survey_data()$age), 2) # 5 = 10 iter / 2
   expected_names <- c("age", "value")
 
@@ -207,6 +218,13 @@ test_that("Aggregate (by variable level) returns correct objects", {
   expect_s3_class(x, "data.frame")
   expect_named(x, expected_names)
   expect_equal(dim(x), expected_dims)
+})
+
+test_that("aggregate throws correct errors", {
+  expect_error(
+    fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 5), by = c("age", "gender")),
+    "Currently only one variable can be named in 'by'"
+  )
 })
 
 test_that("plot returns ggplot object", {
@@ -257,7 +275,7 @@ test_that("plot appearance hasn't changed", {
   )
 })
 
-test_that("Populations are within acceptable tolerance of previous runs (+/- 2% points)",{
+test_that("populations are within acceptable tolerance of previous runs (+/- 2% points)",{
 
   skip_if_not_installed("rstanarm")
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
@@ -275,4 +293,30 @@ test_that("Populations are within acceptable tolerance of previous runs (+/- 2% 
   #This is VERY noisy
   x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
   expect_equal(mean(x$value), expected = .72, tolerance = .15)
+})
+
+
+test_that("print method calls fitted model's print method", {
+  # if the formulas are printed then the print method is working,
+  # we don't need to check for the entire print output
+  expect_output(
+    fit_stan_glm$print(),
+    "y ~ age + gender",
+    fixed = TRUE
+  )
+  expect_output(
+    fit_stan_glmer$print(),
+    "y ~ (1 | age) + (1 | gender)",
+    fixed = TRUE
+  )
+  expect_output(
+    fit_brms$print(),
+    "y ~ (1 | age) + (1 | gender)",
+    fixed = TRUE
+  )
+  expect_output(
+    fit_glmer$print(),
+    "y ~ (1 | age) + (1 | gender)",
+    fixed = TRUE
+  )
 })

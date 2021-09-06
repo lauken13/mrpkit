@@ -188,7 +188,7 @@ SurveyData <- R6::R6Class(
         stop("Names in 'questions' and 'responses' lists must be the same.")
       }
       if (!all(nms_q %in% colnames(data))) {
-        stop("Names of 'questions' much match column names in 'data'.", call. = FALSE)
+        stop("Names of 'questions' must match column names in 'data'.", call. = FALSE)
       }
       questions <- questions[nms_q]
       responses <- responses[nms_q]
