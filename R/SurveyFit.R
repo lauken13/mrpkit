@@ -157,6 +157,9 @@ SurveyFit <- R6::R6Class(
       if(is.null(aggregated_estimates)){
         stop("Must pass aggregated MRP estimates produced by aggregate function.")
       }
+      if(length(dim(aggregated_estimates))!=2 | is.null(dim(aggregated_estimates))){
+        stop("dimensions of aggregated estimates must be two")
+      }
       model_fit <- private$fit_
       lhs_var <- as.character(formula(model_fit))[[2]]
       if (ncol(aggregated_estimates) > 1) {
@@ -166,7 +169,7 @@ SurveyFit <- R6::R6Class(
         mrp_ests_df <- sapply(mrp_ests_tmp, function(x) x)
         mrp_ests <- data.frame(t(mrp_ests_df),by_var = colnames(mrp_ests_df), method = "mrp")
         colnames(mrp_ests)[3] = by_var
-        lhs_binary <- force_factor(lhs_binary)
+        lhs_binary <- force_factor(private$fit_$data[,lhs_var])
         raw_ests_tmp <- by(lhs_binary, private$fit_$data[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
         raw_ests_df <- sapply(raw_ests_tmp, function(x) x)
         raw_ests <- data.frame(t(raw_ests_df),by_var = colnames(raw_ests_df), method = "raw")
@@ -207,11 +210,7 @@ SurveyFit <- R6::R6Class(
       }
 
       if (weights) {
-        model_fit <- private$fit_
-        lhs_var <- as.character(formula(model_fit))[[2]]
-        if (ncol(aggregated_estimates) > 1) {
-          by_var <- colnames(aggregated_estimates)[1]
-          wtd_ests <- create_wtd_ests(self, lhs_var, by=by_var)
+          private$summary(aggregated_estimates)
           gg <- gg +
             ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
             ggplot2::geom_errorbar(

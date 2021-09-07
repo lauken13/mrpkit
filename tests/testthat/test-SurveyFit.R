@@ -295,6 +295,14 @@ test_that("populations are within acceptable tolerance of previous runs (+/- 2% 
   expect_equal(mean(x$value), expected = .72, tolerance = .15)
 })
 
+test_that("summary requires the correct input",{
+  expect_error(fit_glm$summary(),
+               "argument \"aggregated_estimates\" is missing, with no default")
+  expect_error(fit_glm$summary(c(1,2)),
+               'dimensions of aggregated estimates must be two')
+
+})
+
 
 test_that("print method calls fitted model's print method", {
   # if the formulas are printed then the print method is working,
