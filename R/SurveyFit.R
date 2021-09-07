@@ -284,21 +284,24 @@ force_factor <- function(x) {
   else if(!is.null(dim(x))){
     stop("x must be a vector of length n")
   }
-  else if(is.factor(x) & length(levels(x))!=2){
-    stop("x cannot have more than 2 levels")
+  else if(is.factor(x) ){
+    if(length(levels(x))!=2){
+      stop("x cannot have more than 2 levels")
+    }
+    if(length(levels(x))==2){
+    x_binary <- as.numeric(x)-1
+    }
   }
-  else if(is.factor(x) & length(levels(x))==2){
-    out_var <- as.numeric(x)-1
+  else if(is.numeric(x)){
+    if(length(unique(na.omit(x)))>2){
+      stop("x must have only two unique numeric values")
+    } else if(length(unique(na.omit(x)))<=2 & sum(x %in% c(1,0,NA))!=length(x)){
+      stop("x must only contain 1, 0 and missing values")
+    }
+    else if(length(unique(na.omit(x)))<=2& sum(x %in% c(1,0,NA))==length(x)){
+      x_binary <- x
+    }
   }
-  else if(is.numeric(x) & unique(na.omit(x))>2){
-    stop("x must have only two unique numeric values")
-  }
-  else if(is.numeric(x) & unique(na.omit(x))>2 & sum(x %in% c(1,0,NA))!=length(x)){
-    stop("x must only contain 1, 0 and missing values")
-  }
-  else if(is.numeric(x) & unique(na.omit(x))==2& sum(x %in% c(1,0,NA))==length(x)){
-    out_var <- private$fit_$data[,lhs_var]
-  }
-}
+  x_binary
 }
 

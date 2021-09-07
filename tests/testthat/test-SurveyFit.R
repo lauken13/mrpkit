@@ -320,3 +320,29 @@ test_that("print method calls fitted model's print method", {
     fixed = TRUE
   )
 })
+
+test_that("force factor works appropriately",{
+  x <- c()
+  expect_error(force_factor(x),"x must have length n")
+
+  x <- data.frame(a = c(1,2),b=c(1,2))
+  expect_error(force_factor(x),"x must be a vector of length n")
+
+  x <- factor(c("a","b","c"))
+  expect_error(force_factor(x),"x cannot have more than 2 levels")
+
+  x <- factor(c("yes", "no", NA))
+  expect_equal(force_factor(x), c(1,0, NA))
+
+  x <- factor(c("yes", "no", "yes"))
+  expect_equal(force_factor(x), c(1,0, 1))
+
+  x <- c(1,2,3)
+  expect_error(force_factor(x),"x must have only two unique numeric values")
+
+  x <- c(1,2, NA)
+  expect_error(force_factor(x),"x must only contain 1, 0 and missing values")
+
+  x <- c(1,1, NA)
+  expect_equal(force_factor(x), c(1,1, NA))
+})
