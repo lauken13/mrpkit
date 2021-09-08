@@ -153,7 +153,7 @@ SurveyFit <- R6::R6Class(
     #'   of posterior draws times the number of levels of the `by` variable,
     #'   and there will be an extra column indicating which level of the `by`
     #'   variable each row corresponds to.
-    summary = function(aggregated_estimates, by = NULL) {
+    summary = function(aggregated_estimates) {
       if(is.null(aggregated_estimates)){
         stop("Must pass aggregated MRP estimates produced by aggregate function.")
       }
@@ -185,49 +185,66 @@ SurveyFit <- R6::R6Class(
     },
     #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
     #' @param aggregated_estimates The object returned by `aggregate`
-    #' @param weights TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95% interval.
-    #'  If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.
-    plot = function(aggregated_estimates, weights = TRUE) {
+    #' @param additional_stats A vector the specifies which of three additional stats (wtd, raw, mrp) should be included on the plots.
+    #' The default value is to include the weighted estimate (wtd) and raw data mean (raw), but an analogous bar for mrp (mrp) can be
+    #' added using the posterior mean and sd. The sd for the weighted estimate uses the survey design and the survey package, whilst the
+    #' raw is a direct mean and binomial sd of the binary responses. Intervals are by default 95% CI
+    plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
+      model_fit <- private$fit_
+      lhs_var <- as.character(formula(model_fit))[[2]]
+      svy_q <- private$map_$sample()$questions()[[lhs_var]]
+      svy_ans <- private$map_$sample()$responses()[[lhs_var]][2]
       if (ncol(aggregated_estimates) > 1) {
         focus_var <- colnames(aggregated_estimates)[1]
-        which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
-        svy_q <- private$map_$sample()$questions()[[which_q]]
+        focus_var_which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
+        focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
-          ggplot2::geom_violin(fill = "darkblue", alpha = .3) +
+          ggplot2::geom_violin(fill = "#fe9929", alpha = .3,position = ggplot2::position_dodge(.25)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
-          ggplot2::xlab(svy_q)
+          ggplot2::xlab(focus_var_svy_q)+
+          ggplot2::ylab(paste0("Proportion who answer: ",svy_ans))+
+          ggplot2::ggtitle(svy_q)
+
+        additional_ests <- self$summary(aggregated_estimates)
+        if(length(additional_stats %in% c("wtd","raw","mrp")) != length(additional_stats)){
+          stop("additional statistics can only be weighted (wtd) or raw (raw) or mrp (mrp)")
+        }
+        additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
+        additional_ests_filtered$method <- ordered(additional_ests_filtered$method, levels = c("raw","mrp","wtd"))
+        gg <- gg +
+          ggplot2::geom_point(data = additional_ests_filtered, ggplot2::aes(x= .data[[focus_var]], y = mean, colour = method),
+                              position = ggplot2::position_dodge(.25)) +
+          ggplot2::geom_errorbar(
+            data = additional_ests_filtered,
+            ggplot2::aes(x = .data[[focus_var]],
+                         ymin = mean - 1.96*sd,
+                         ymax = mean + 1.96*sd,
+                         colour = method),
+            inherit.aes = FALSE, alpha = .5, width = .25, position = ggplot2::position_dodge(.25))+
+          ggplot2::theme(legend.position = "bottom",
+                         legend.title = ggplot2::element_blank()) +
+          ggplot2::scale_colour_manual(values = c("wtd" = "#0571b0" , "raw" = "#008837", "mrp" = "#cc4c02"))
+
       } else {
-        model_fit <- private$fit_
-        lhs_var <- as.character(formula(model_fit))[[2]]
-        svy_q <- private$map_$sample()$questions()[[lhs_var]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
-          ggplot2::geom_density(fill = "darkblue", alpha = .3, ) +
+          ggplot2::geom_density(fill = "#fe9929", alpha = .3, ) +
           ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)
-      }
 
-      if (weights) {
-          private$summary(aggregated_estimates)
-          gg <- gg +
-            ggplot2::geom_point(data = wtd_ests, ggplot2::aes(x= .data[[by_var]], y = .data[["mean"]])) +
-            ggplot2::geom_errorbar(
-              data = wtd_ests,
-              ggplot2::aes(x = .data[[by_var]],
-                           ymin = .data[["mean"]] - 1.96*.data[["sd"]],
-                           ymax = .data[["mean"]] + 1.96*.data[["sd"]]),
-              inherit.aes = FALSE, alpha = .5)
-        } else {
-          wtd_ests <- create_wtd_ests(self, lhs_var)
-          gg <- gg +
-            ggplot2::geom_vline(data = wtd_ests, ggplot2::aes(xintercept = .data[["mean"]])) +
-            ggplot2::annotate("rect",
-                              xmin = wtd_ests$mean - 1.96*wtd_ests$sd, xmax = wtd_ests$mean + 1.96*wtd_ests$sd,
-                              ymin = 0, ymax = 1.05,
-                              alpha = .5, fill = "grey")
-        }
+      additional_ests <- self$summary(aggregated_estimates)
+      if(length(additional_stats %in% c("wtd","raw")) != length(additional_stats)){
+        stop("additional statistics can only be weighted (wtd) or raw (raw)")
+      }
+      additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
+      gg <- gg +
+        ggplot2::geom_vline(data = additional_ests_filtered, ggplot2::aes(xintercept = .data[["mean"]], colour = method)) +
+        ggplot2::theme(legend.position = "bottom",
+              legend.title = ggplot2::element_blank()) +
+        ggplot2::scale_colour_manual(values = c("wtd" = "#0571b0" , "raw" = "#008837" , "mrp" = "#cc4c02"))
+
       }
       gg
     }

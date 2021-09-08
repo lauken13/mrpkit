@@ -143,16 +143,22 @@ estimates_by_age \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
 # plot estimates by age
-fit_1$plot(estimates_by_age, weights = FALSE)
-fit_1$plot(estimates_by_age, weights = TRUE)
+fit_1$plot(estimates_by_age)
+fit_1$plot(estimates_by_age, additional_stats = NA)
+fit_1$plot(estimates_by_age, additional_stats = "wtd")
+fit_1$plot(estimates_by_age, additional_stats = "raw")
+fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 mean(estimates_popn$value)
 
 # plot population estimate
-fit_1$plot(estimates_popn, weights = FALSE)
-fit_1$plot(estimates_popn, weights = TRUE)
+fit_1$plot(estimates_popn)
+fit_1$plot(estimates_popn, additional_stats = NA)
+fit_1$plot(estimates_popn, additional_stats = "wtd")
+fit_1$plot(estimates_popn, additional_stats = "raw")
+fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 
 }
 \section{Methods}{

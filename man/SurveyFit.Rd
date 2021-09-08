@@ -139,16 +139,22 @@ estimates_by_age \%>\%
   summarize(mean = mean(value), sd = sd(value))
 
 # plot estimates by age
-fit_1$plot(estimates_by_age, weights = FALSE)
-fit_1$plot(estimates_by_age, weights = TRUE)
+fit_1$plot(estimates_by_age)
+fit_1$plot(estimates_by_age, additional_stats = NA)
+fit_1$plot(estimates_by_age, additional_stats = "wtd")
+fit_1$plot(estimates_by_age, additional_stats = "raw")
+fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 mean(estimates_popn$value)
 
 # plot population estimate
-fit_1$plot(estimates_popn, weights = FALSE)
-fit_1$plot(estimates_popn, weights = TRUE)
+fit_1$plot(estimates_popn)
+fit_1$plot(estimates_popn, additional_stats = NA)
+fit_1$plot(estimates_popn, additional_stats = "wtd")
+fit_1$plot(estimates_popn, additional_stats = "raw")
+fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 
 }
 \section{Methods}{
@@ -160,6 +166,7 @@ fit_1$plot(estimates_popn, weights = TRUE)
 \item \href{#method-print}{\code{SurveyFit$print()}}
 \item \href{#method-population_predict}{\code{SurveyFit$population_predict()}}
 \item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
+\item \href{#method-summary}{\code{SurveyFit$summary()}}
 \item \href{#method-plot}{\code{SurveyFit$plot()}}
 \item \href{#method-clone}{\code{SurveyFit$clone()}}
 }
@@ -288,12 +295,38 @@ variable each row corresponds to.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-summary}{}}}
+\subsection{Method \code{summary()}}{
+Creates a set of summary statistics of the mrp estimate,
+and corresponding weighted and raw data estimates
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$summary(aggregated_estimates)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{aggregated_estimates}}{The object returned by \code{aggregate}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data frame. If \code{by} is not specified then the data frame will
+have number of rows equal to the number of posterior draws. If \code{by} is
+specified the data frame will have number of rows equal to the number
+of posterior draws times the number of levels of the \code{by} variable,
+and there will be an extra column indicating which level of the \code{by}
+variable each row corresponds to.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, weights = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, additional_stats = c("wtd", "raw"))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -301,8 +334,10 @@ Plot takes the aggregated estimates and produces a quick visualization total and
 \describe{
 \item{\code{aggregated_estimates}}{The object returned by \code{aggregate}}
 
-\item{\code{weights}}{TRUE (default) if weighted estimates are included for comparison. Weighted interval is a 95\% interval.
-If no weights are specified, weights are assumed to be 1, which is roughly equivalent to the observed data average.}
+\item{\code{additional_stats}}{A vector the specifies which of three additional stats (wtd, raw, mrp) should be included on the plots.
+The default value is to include the weighted estimate (wtd) and raw data mean (raw), but an analogous bar for mrp (mrp) can be
+added using the posterior mean and sd. The sd for the weighted estimate uses the survey design and the survey package, whilst the
+raw is a direct mean and binomial sd of the binary responses. Intervals are by default 95\% CI}
 }
 \if{html}{\out{</div>}}
 }
