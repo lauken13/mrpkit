@@ -25,7 +25,7 @@ SurveyFit <- R6::R6Class(
     initialize = function(fit, map, formula) {
       private$fit_ <- fit
       private$map_ <- map
-      private$map_ <- formula
+      private$formula_ <- formula
       invisible(self)
     },
 
