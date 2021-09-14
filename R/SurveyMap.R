@@ -136,10 +136,9 @@
 #'
 #' # estimates by age level
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
-#' head(estimates_by_age)
-#' estimates_by_age %>%
-#'   group_by(age) %>%
-#'   summarize(mean = mean(value), sd = sd(value))
+#'
+#'fit_1$summary()
+#'fit_1$summary(estimates_by_age)
 #'
 #' # plot estimates by age
 #' fit_1$plot(estimates_by_age)
@@ -150,7 +149,7 @@
 #'
 #' # population estimate
 #' estimates_popn <- fit_1$aggregate(poststrat_estimates)
-#' mean(estimates_popn$value)
+#' fit_1$summary(estimates_popn)
 #'
 #' # plot population estimate
 #' fit_1$plot(estimates_popn)

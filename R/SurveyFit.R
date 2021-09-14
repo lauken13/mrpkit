@@ -181,6 +181,7 @@ SurveyFit <- R6::R6Class(
         raw_ests <- data.frame(mean = mean(lhs_binary),sd = sqrt(mean(lhs_binary)*(1-mean(lhs_binary))/length(lhs_binary)), method = "raw")
       }
       out <- rbind(mrp_ests, raw_ests,wtd_ests)
+      rownames(out) <- NULL
       out
     },
     #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
