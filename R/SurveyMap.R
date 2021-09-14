@@ -545,7 +545,7 @@ SurveyMap <- R6::R6Class(
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
       fit <- do.call(fun, args)
-      SurveyFit$new(fit = fit, map = self)
+      SurveyFit$new(fit = fit, map = self, formula = formula)
     },
 
     #' @description Access the `item_map`

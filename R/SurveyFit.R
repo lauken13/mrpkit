@@ -12,7 +12,8 @@ SurveyFit <- R6::R6Class(
   classname = "SurveyFit",
   private = list(
     map_ = NULL,
-    fit_ = NULL
+    fit_ = NULL,
+    private$formula_ <- NULL
   ),
   public = list(
 
@@ -21,9 +22,10 @@ SurveyFit <- R6::R6Class(
     #'   not need to be called directly by the user.
     #' @param fit A fitted model object.
     #' @param map A [`SurveyMap`] object.
-    initialize = function(fit, map) {
+    initialize = function(fit, map,formula) {
       private$fit_ <- fit
       private$map_ <- map
+      private$map_ <- formula
       invisible(self)
     },
 
@@ -35,6 +37,11 @@ SurveyFit <- R6::R6Class(
     #' @description Access the SurveyMap object
     map = function() {
       private$map_
+    },
+
+    #' @description Access the SurveyMap object
+    formula = function() {
+      private$formula_
     },
 
     #' @description Call the fitted model object's print method
