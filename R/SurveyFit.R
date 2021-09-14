@@ -201,10 +201,10 @@ SurveyFit <- R6::R6Class(
         focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
-          ggplot2::geom_violin(fill = "#fe9929", alpha = .3,position = ggplot2::position_dodge(.25)) +
+          ggplot2::geom_violin(fill = "#636363",alpha = .4, position = ggplot2::position_dodge(.25)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(focus_var_svy_q)+
-          ggplot2::ylab(paste0("Proportion who answer: ",svy_ans))+
+          ggplot2::ylab(paste0('Proportion of "',svy_ans,'"'))+
           ggplot2::ggtitle(svy_q)
 
         additional_ests <- self$summary(aggregated_estimates)
@@ -231,18 +231,19 @@ SurveyFit <- R6::R6Class(
                          ymin = mean - 1.96*sd,
                          ymax = mean + 1.96*sd,
                          colour = method),
-            inherit.aes = FALSE, alpha = .5, width = .25, position = ggplot2::position_dodge(.25))+
+            inherit.aes = FALSE, alpha = .8, width = .25, position = ggplot2::position_dodge(.25))+
           ggplot2::theme(legend.position = "bottom",
                          legend.title = ggplot2::element_blank()) +
-          ggplot2::scale_colour_manual(values = c("wtd" = "#0571b0" , "raw" = "#008837", "mrp" = "#cc4c02"))
+          ggplot2::scale_colour_manual(values = c("wtd" = "#008837" , "raw" = "#7b3294", "mrp" = "#252525"))
 
       } else {
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
-          ggplot2::geom_density(fill = "#fe9929", alpha = .3, ) +
+          ggplot2::geom_density(fill = "#636363", alpha = .4) +
           ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
-          ggplot2::xlab(svy_q)
+          ggplot2::xlab(svy_q)+
+          ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
       additional_ests <- self$summary(aggregated_estimates)
       if(length(additional_stats %in% c("wtd","raw")) != length(additional_stats)){
@@ -253,7 +254,7 @@ SurveyFit <- R6::R6Class(
         ggplot2::geom_vline(data = additional_ests_filtered, ggplot2::aes(xintercept = .data[["mean"]], colour = method)) +
         ggplot2::theme(legend.position = "bottom",
               legend.title = ggplot2::element_blank()) +
-        ggplot2::scale_colour_manual(values = c("wtd" = "#0571b0" , "raw" = "#008837" , "mrp" = "#cc4c02"))
+        ggplot2::scale_colour_manual(values = c("wtd" = "#008837" , "raw" = "#7b3294", "mrp" = "#252525"))
 
       }
       gg
