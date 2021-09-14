@@ -237,6 +237,45 @@ test_that("plot returns ggplot object", {
   expect_s3_class(fit_stan_glmer$plot(by_age, weights = FALSE), "ggplot")
 })
 
+test_that("Warnings provided if weights are all equal to 1",{
+  expect_warning(samp_obj_wt1 <- SurveyData$new(
+    data = feline_survey,
+    questions = list(
+      age1 = "Please identify your age group",
+      gender = "Please select your gender",
+      pet_own = "Which pet do you own?",
+      y = "Response"
+    ),
+    responses = list(
+      age1 = levels(feline_survey$age1),
+      gender = levels(feline_survey$gender),
+      pet_own = levels(feline_survey$pet_own),
+      y = c("no","yes")
+    ),
+    design = list(ids =~1)
+  ),"Weights have not been provided, assume all data weighted with weight 1."
+  )
+  ex_map_wt1 <- SurveyMap$new(samp_obj_wt1, popn_obj, q_age, q_pet, q_gender)
+  ex_map_wt1$mapping()
+  ex_map_wt1$tabulate()
+  suppressWarnings(
+        fit_stan_glm_wt1 <- ex_map_wt1$fit(
+           fun = rstanarm::stan_glm,
+           formula = y ~ age + gender,
+             family = "binomial",
+             iter = 10,
+             chains = 1,
+             refresh = 0,
+             seed = 123
+           )
+       )
+  predict_ests_wt1 <- fit_stan_glm_wt1$population_predict()
+  agg_ests_wt1 <- fit_stan_glm_wt1$aggregate(predict_ests_wt1, by = "age")
+
+  expect_warning(fit_stan_glm_wt1$plot(agg_ests_wt1),
+                 "weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
+})
+
 test_that("plot appearance hasn't changed", {
   skip_on_cran()
   skip_if_not_installed("vdiffr")

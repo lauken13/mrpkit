@@ -213,6 +213,9 @@ SurveyFit <- R6::R6Class(
         }
         additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
         additional_ests_filtered$method <- ordered(additional_ests_filtered$method, levels = c("raw","mrp","wtd"))
+        if(sum(self$map()$sample()$weights() ==1)==length(self$map()$sample()$weights())){
+          warning("weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
+        }
         gg <- gg +
           ggplot2::geom_point(data = additional_ests_filtered, ggplot2::aes(x= .data[[focus_var]], y = mean, colour = method),
                               position = ggplot2::position_dodge(.25)) +
