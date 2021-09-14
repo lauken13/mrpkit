@@ -13,7 +13,7 @@ SurveyFit <- R6::R6Class(
   private = list(
     map_ = NULL,
     fit_ = NULL,
-    formula_ <- NULL
+    formula_ = NULL
   ),
   public = list(
 
