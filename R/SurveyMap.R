@@ -153,7 +153,7 @@
 #'
 #' # plot population estimate
 #' fit_1$plot(estimates_popn)
-#' fit_1$plot(estimates_popn, additional_stats = NA)
+#' fit_1$plot(estimates_popn, additional_stats = "none")
 #' fit_1$plot(estimates_popn, additional_stats = "wtd")
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))

@@ -276,6 +276,26 @@ test_that("Warnings provided if weights are all equal to 1",{
                  "weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
 })
 
+test_that("plot method returns warnings for incorrect additional stats input",{
+  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
+  expect_error(fit_stan_glmer$plot(x, additional_stats = "a"),
+               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+
+  expect_error(fit_stan_glmer$plot(x, additional_stats = FALSE),
+               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+
+
+  expect_error(fit_stan_glmer$plot(x, additional_stats = NA),
+               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+
+
+  expect_error(fit_stan_glmer$plot(x, additional_stats = NULL),
+               "when choosing no additional statistics, only supply `none`")
+
+  expect_error(fit_stan_glmer$plot(x, additional_stats = c("mrp","none")),
+               "when choosing no additional statistics, only supply `none`")
+})
+
 test_that("plot appearance hasn't changed", {
   skip_on_cran()
   skip_if_not_installed("vdiffr")

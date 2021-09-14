@@ -208,8 +208,14 @@ SurveyFit <- R6::R6Class(
           ggplot2::ggtitle(svy_q)
 
         additional_ests <- self$summary(aggregated_estimates)
-        if(length(additional_stats %in% c("wtd","raw","mrp")) != length(additional_stats)){
-          stop("additional statistics can only be weighted (wtd) or raw (raw) or mrp (mrp)")
+        if(sum(additional_stats %in% c("wtd","raw","mrp", "none")) != length(additional_stats)){
+          stop("only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+        }
+        if(sum(additional_stats %in% "none")==1 & length(additional_stats)>1){
+          stop("when choosing no additional statistics, only supply `none`")
+        }
+        if(is.null(additional_stats)){
+          stop("when choosing no additional statistics, only supply `none`")
         }
         additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
         additional_ests_filtered$method <- ordered(additional_ests_filtered$method, levels = c("raw","mrp","wtd"))
