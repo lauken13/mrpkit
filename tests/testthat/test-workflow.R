@@ -93,15 +93,19 @@ test_that("Complete run through w/o weights produces only expected warnings", {
   estimates_by_age <- fit_2$aggregate(poststrat_estimates, by = "age")
 
   # plot estimates by age
-  fit_2$plot(estimates_by_age, weights = FALSE)
-  fit_2$plot(estimates_by_age, weights = TRUE)
+  expect_warning(fit_2$plot(estimates_by_age),
+  "weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
+  expect_warning(fit_2$plot(estimates_by_age, additional_stats = "none"),
+                 'weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.')
 
   # population estimate
   estimates_popn <- fit_2$aggregate(poststrat_estimates)
 
   # plot population estimate
-  fit_2$plot(estimates_popn, weights = FALSE)
-  fit_2$plot(estimates_popn, weights = TRUE)
+  expect_warning(fit_2$plot(estimates_popn),
+                 'weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.')
+  expect_warning(fit_2$plot(estimates_popn, additional_stats = "none"),
+                 "weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
 
 })
 

@@ -256,6 +256,9 @@ SurveyFit <- R6::R6Class(
         stop("additional statistics can only be weighted (wtd) or raw (raw)")
       }
       additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
+      if(sum(self$map()$sample()$weights() ==1)==length(self$map()$sample()$weights())){
+        warning("weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
+      }
       gg <- gg +
         ggplot2::geom_vline(data = additional_ests_filtered, ggplot2::aes(xintercept = .data[["mean"]], colour = method)) +
         ggplot2::theme(legend.position = "bottom",
