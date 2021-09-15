@@ -43,7 +43,8 @@ The MRP workflow implemented by `mrpkit` is:
 5. Fit the model by creating a `SurveyFit` object.
 6. Predict the probability of the outcome using the post-stratification dataset.
 7. Estimate the probability of the outcome at a level of interest, for example, state/province level.
-8. Visualize the probability of the outcome.
+8. Create a summary with common comparisons 
+9. Visualize the probability of the outcome.
 
 A more detailed example of this workflow follows.
 
@@ -381,7 +382,7 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_estimation` represents the age group and the probability of voting for the Box Party for each age group. You can also get the mean of the probability of voting the BP by age group and its standard deviation with the help of `summarize` function from `dplyr` (Wickham, François, Henry & Müller, 2020) using the code as follows. 
+This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_estimation` represents the age group and the probability of voting for the Box Party for each age group.
 
 ```{r show-aggr}
 head(age_estimation) 
@@ -393,34 +394,39 @@ age_estimation %>%
   summarize(mean = mean(value), sd = sd(value))
 ```
 
+
+### Summarise and compare
+
+The output of aggregate is a posterior predictive distribution for the population (or sub-populations) of interest. This can be used with the plot function to visualize. However, we also might wish to make a table summary of the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates. We can use the `summary` method do to this. This method takes the aggregated data frame and produces a dataframe of mean and standard deviation estimates for each group (if in the aggregated frame) or overall in the population. The standard deviation for the weights is created by wrapping the survey package using the original design specified, and the raw standard deviation is $\sqrt\frac{pq}{n}$. This is called automatically in the plot method. 
+
 ### Visualize it
 
-Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and weights option (the default is TRUE) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When the weight is equal to TRUE, the estimation is weighted. Also, the plot would display the 95% confidence interval of the weighted estimation. 
+Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95% confidence interval.  
 In this example, we display the estimated plot for `age` and `state` and a density plot for the population estimates. 
 
 
-```{r age-vis}
+```{r age-vis, fig.width= 6, fig.height=4}
 plot_age <- fit1$plot(age_estimation) 
 plot_age
 ```
 
 The plot above shows the distribution of people who vote for the Box Party for each age group. The plot implies that people who are aged 36-55 are most likely to vote for the BP.
 
-The next plot displays the probability of voting for the BP by the state without using the weight. We learn that the probability of the BP winning the election is high since most people in almost all the states (around 75%) vote for that party. State B is the state with the lowest probability of vote for the BP. The distribution still ranged more than 50%. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
+The next plot displays the probability of voting for the BP by the state without using additional statistics. We learn that the probability of the BP winning the election is high since most people in almost all the states (around 75%) vote for that party. State B is the state with the lowest probability of vote for the BP. The distribution still ranged more than 50%. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
 
 
-```{r state-vis}
+```{r state-vis, fig.width= 6, fig.height=4}
 library(ggplot2)
-plot_state <- fit1$plot(state_estimation, weights = FALSE) +
+plot_state <- fit1$plot(state_estimation, additional_stats = "none") +
   ggtitle("Probability of voting the BP by state") +
   theme_bw()
 plot_state
 ```
 
-Lastly, we show the plot of the population estimate. About 70% of people in the Shape World will be likely to vote for the Box Party. 
+Lastly, we show the plot of the population estimate, with lines representing the mean weighted and raw estimates. About 70% of people in the Shape World will be likely to vote for the Box Party. 
 
-```{r}
-fit1$plot(popn_estimation, weights = TRUE)
+```{r,popn_estimate, fig.width= 6, fig.height=4}
+fit1$plot(popn_estimation, additional_stats = c("raw","wtd"))
 ```
 
 ## References
