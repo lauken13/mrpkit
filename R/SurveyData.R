@@ -146,7 +146,7 @@ SurveyData <- R6::R6Class(
         keep <- function(x) is.factor(x) || is.character(x) || length(unique(stats::na.omit(x))) == 2
         data_use <- data[, sapply(data, keep), drop = FALSE]
         questions <- setNames(as.list(colnames(data_use)), colnames(data_use))
-        responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(x))
+        responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(stats::na.omit(x)))
         warning(
           "No 'questions' and 'responses' provided. ",
           "Using all factor, character, and binary variables in 'data' by default.",
