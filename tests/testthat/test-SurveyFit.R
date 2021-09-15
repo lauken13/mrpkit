@@ -328,32 +328,41 @@ test_that("plot appearance hasn't changed", {
                                  0.804,0.847, 0.850, 0.823)
                        )
 
-  # vdiffr::write_svg(fit_stan_glmer$plot(popn, additional_stats = "none"),
-  #                   "tests/figs/SurveyFit/plot-population.svg", title = "plot-population")
-  #
-  # vdiffr::expect_doppelganger(
-  #   "plot-population",
-  #   fit_stan_glmer$plot(popn, additional_stats = "none"),
-  #   path = "tests/figs/SurveyFit/plot-population.svg"
-  # )
-  #
-  # vdiffr::expect_doppelganger(
-  #   "plot-population-weights",
-  #   fit_stan_glmer$plot(popn, additional_stats = c("mrp","raw","wtd")),
-  #   path = "SurveyFit"
-  # )
-  #
-  # vdiffr::expect_doppelganger(
-  #   "plot-group",
-  #   fit_stan_glmer$plot(by_age, additional_stats = "none"),
-  #   path = "SurveyFit"
-  # )
-  #
-  # vdiffr::expect_doppelganger(
-  #   "plot-group-weights",
-  #   fit_stan_glmer$plot(by_age, additional_stats = c("mrp","raw","wtd")),
-  #   path = "SurveyFit"
-  # )
+  #vdiffr::write_svg(fit_stan_glmer$plot(popn, additional_stats = "none"),
+  #                  "tests/figs/SurveyFit/plot-population.svg", title = "plot-population")
+
+  vdiffr::expect_doppelganger(
+    "plot-population",
+    fit_stan_glmer$plot(popn, additional_stats = "none"),
+    path = "tests/figs/SurveyFit/plot-population.svg"
+  )
+
+  #vdiffr::write_svg(fit_stan_glmer$plot(popn, additional_stats = c("mrp","raw","wtd")),
+  #                  "tests/figs/SurveyFit/plot-population-stats.svg", title = "plot-population-stats")
+
+  vdiffr::expect_doppelganger(
+    "plot-population-stats",
+    fit_stan_glmer$plot(popn, additional_stats = c("mrp","raw","wtd")),
+    path = "tests/figs/SurveyFit/plot-population-stats.svg"
+  )
+
+  #vdiffr::write_svg(fit_stan_glmer$plot(by_age, additional_stats  = "none"),
+  #                  "tests/figs/SurveyFit/plot-age.svg", title = "plot-age")
+
+  vdiffr::expect_doppelganger(
+    "plot-age",
+    fit_stan_glmer$plot(by_age, additional_stats  = "none"),
+    path = "tests/figs/SurveyFit/plot-age.svg"
+  )
+
+  #vdiffr::write_svg(fit_stan_glmer$plot(by_age, additional_stats  = c("wtd","raw","mrp")),
+  #                  "tests/figs/SurveyFit/plot-age-stats.svg", title = "plot-age-stats")
+
+  vdiffr::expect_doppelganger(
+    "plot-age-stats",
+    fit_stan_glmer$plot(by_age, additional_stats  = c("wtd","raw","mrp")),
+    path = "tests/figs/SurveyFit/plot-age-stats.svg"
+  )
 })
 
 test_that("populations are within acceptable tolerance of previous runs (+/- 2% points)",{
