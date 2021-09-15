@@ -227,6 +227,43 @@ test_that("aggregate throws correct errors", {
   )
 })
 
+test_that("populations are within acceptable tolerance of previous runs (+/- 2% points)",{
+
+  skip_if_not_installed("rstanarm")
+  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .05)
+
+  skip_if_not_installed("lme4")
+  #lme4 consistently lower
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
+  expect_equal(mean(x$value), expected = .68, tolerance = .05)
+
+  skip_if_not_installed("brms")
+  x <- fit_brms$aggregate(fit_brms$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .05)
+
+  #This is VERY noisy
+  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
+  expect_equal(mean(x$value), expected = .72, tolerance = .15)
+})
+
+test_that("summary works with different fit objects",{
+  skip_if_not_installed("brms")
+  x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
+  expect_s3_class(fit_brms$summary(x), "data.frame")
+
+  skip_if_not_installed("lme4")
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(), by = "age")
+  expect_s3_class(fit_brms$summary(x), "data.frame")
+
+  skip_if_not_installed("rstanarm")
+  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict(), by = "age")
+  expect_s3_class(fit_stan_glm$summary(x), "data.frame")
+
+  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
+  expect_s3_class(fit_stan_glmer$summary(x), "data.frame")
+})
+
 test_that("plot returns ggplot object", {
   popn <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
   expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "mrp"), "ggplot")
@@ -273,45 +310,27 @@ test_that("Warnings provided if weights are all equal to 1",{
   agg_ests_wt1 <- fit_stan_glm_wt1$aggregate(predict_ests_wt1, by = "age")
 
   expect_warning(fit_stan_glm_wt1$plot(agg_ests_wt1),
-                 "weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
+                 "Weights are all equal to 1 or no weights provided. Raw estimate and weighted estimate will be equivalent.")
 })
 
-test_that("plot method returns warnings for incorrect additional stats input",{
+test_that("plot method errors for incorrect additional stats input",{
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
   expect_error(fit_stan_glmer$plot(x, additional_stats = "a"),
-               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+               "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'")
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = FALSE),
-               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+               "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'")
 
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = NA),
-               "only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
+               "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'.")
 
 
-  expect_error(fit_stan_glmer$plot(x, additional_stats = NULL),
-               "when choosing no additional statistics, only supply `none`")
+  expect_error(fit_stan_glmer$plot(x, additional_stats = 3),
+               "'additional_stats' must be a character vector")
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = c("mrp","none")),
-               "when choosing no additional statistics, only supply `none`")
-})
-
-test_that("summary works with different fit objects",{
-
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
-  expect_s3_class(fit_brms$summary(x), "data.frame")
-
-  skip_if_not_installed("lme4")
-  x <- fit_glmer$aggregate(fit_glmer$population_predict(), by = "age")
-  expect_s3_class(fit_brms$summary(x), "data.frame")
-
-  skip_if_not_installed("rstanarm")
-  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict(), by = "age")
-  expect_s3_class(fit_stan_glm$summary(x), "data.frame")
-
-  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
-  expect_s3_class(fit_stan_glmer$summary(x), "data.frame")
+               "When choosing no additional statistics, only supply 'none'")
 })
 
 test_that("plot appearance hasn't changed", {
@@ -363,26 +382,6 @@ test_that("plot appearance hasn't changed", {
     fit_stan_glmer$plot(by_age, additional_stats  = c("wtd","raw","mrp")),
     path = "tests/figs/SurveyFit/plot-age-stats.svg"
   )
-})
-
-test_that("populations are within acceptable tolerance of previous runs (+/- 2% points)",{
-
-  skip_if_not_installed("rstanarm")
-  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
-  expect_equal(mean(x$value), expected = .72, tolerance = .05)
-
-  skip_if_not_installed("lme4")
-  #lme4 consistently lower
-  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
-  expect_equal(mean(x$value), expected = .68, tolerance = .05)
-
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict())
-  expect_equal(mean(x$value), expected = .72, tolerance = .05)
-
-  #This is VERY noisy
-  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
-  expect_equal(mean(x$value), expected = .72, tolerance = .15)
 })
 
 test_that("summary requires the correct input",{
