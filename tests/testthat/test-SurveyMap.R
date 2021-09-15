@@ -680,6 +680,8 @@ test_that("Model fits do not cause errors if specified correctly",{
   )), regexp = NA)
 
   skip_if_not_installed("brms")
+  brms_backend <- ifelse(requireNamespace("cmdstanr", quietly = TRUE),
+                         "cmdstanr", "rstan")
   expect_error(suppressWarnings(ex_map$fit(
     fun = brms::brm,
     formula = y ~ (1|age) + (1|gender),
@@ -687,7 +689,8 @@ test_that("Model fits do not cause errors if specified correctly",{
     iter = 10,
     chains = 1,
     cores = 1,
-    family = "bernoulli"
+    family = "bernoulli",
+    backend = brms_backend
   )), regexp = NA)
 
   skip_if_not_installed("lme4")
