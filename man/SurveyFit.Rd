@@ -320,7 +320,7 @@ and corresponding weighted and raw data estimates
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{aggregated_estimates}}{The object returned by \code{aggregate}.}
+\item{\code{aggregated_estimates}}{The data frame returned by the \verb{aggregate() method}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -337,7 +337,7 @@ variable each row corresponds to.
 \if{html}{\out{<a id="method-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
+Plot takes the aggregated MRP estimates and produces a quick visualization of total and sub-population estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, additional_stats = c("wtd", "raw"))}\if{html}{\out{</div>}}
 }
@@ -345,14 +345,21 @@ Plot takes the aggregated estimates and produces a quick visualization total and
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{aggregated_estimates}}{The object returned by \code{aggregate}}
+\item{\code{aggregated_estimates}}{The data frame returned by \code{aggregate}.}
 
-\item{\code{additional_stats}}{A vector the specifies which of three additional stats (wtd, raw, mrp) should be included on the plots.
-The default value is to include the weighted estimate (wtd) and raw data mean (raw), but an analogous bar for mrp (mrp) can be
-added using the posterior mean and sd. The sd for the weighted estimate uses the survey design and the survey package, whilst the
-raw is a direct mean and binomial sd of the binary responses. Intervals are by default 95\% CI}
+\item{\code{additional_stats}}{A vector that specifies which of three additional
+stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
+default value is to include the weighted estimate (wtd) and raw data
+mean (raw), but an analogous bar for MRP (mrp) can be added using the
+posterior mean and sd. The sd for the weighted estimate uses the survey
+design and the \pkg{survey} package, whilst the raw estimate is a
+direct mean and binomial sd of the binary responses. Intervals are by
+default 95\% CI.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A ggplot object.
 }
 }
 \if{html}{\out{<hr>}}
