@@ -167,8 +167,7 @@ SurveyFit <- R6::R6Class(
       if(length(dim(aggregated_estimates))!=2 | is.null(dim(aggregated_estimates))){
         stop("dimensions of aggregated estimates must be two")
       }
-      model_fit <- private$fit_
-      lhs_var <- as.character(formula(model_fit))[[2]]
+      lhs_var <- as.character(self$formula()[[2]])
       if (ncol(aggregated_estimates) > 1) {
         by_var <- colnames(aggregated_estimates)[1]
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var, by=by_var), method = "wtd")
@@ -176,15 +175,15 @@ SurveyFit <- R6::R6Class(
         mrp_ests_df <- sapply(mrp_ests_tmp, function(x) x)
         mrp_ests <- data.frame(t(mrp_ests_df),by_var = colnames(mrp_ests_df), method = "mrp")
         colnames(mrp_ests)[3] = by_var
-        lhs_binary <- force_factor(private$fit_$data[,lhs_var])
-        raw_ests_tmp <- by(lhs_binary, private$fit_$data[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
+        raw_ests_tmp <- by(lhs_binary, self$map()$sample()$survey_data()[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
         raw_ests_df <- sapply(raw_ests_tmp, function(x) x)
         raw_ests <- data.frame(t(raw_ests_df),by_var = colnames(raw_ests_df), method = "raw")
         colnames(raw_ests)[3] = by_var
       } else{
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(mean=mean(aggregated_estimates$value),sd = sd(aggregated_estimates$value), method = "mrp")
-        lhs_binary <- force_factor(private$fit_$data[,lhs_var])
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
         raw_ests <- data.frame(mean = mean(lhs_binary),sd = sqrt(mean(lhs_binary)*(1-mean(lhs_binary))/length(lhs_binary)), method = "raw")
       }
       out <- rbind(mrp_ests, raw_ests,wtd_ests)
@@ -199,7 +198,7 @@ SurveyFit <- R6::R6Class(
     #' raw is a direct mean and binomial sd of the binary responses. Intervals are by default 95% CI
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       model_fit <- private$fit_
-      lhs_var <- as.character(formula(model_fit))[[2]]
+      lhs_var <- as.character(self$formula()[[2]])
       svy_q <- private$map_$sample()$questions()[[lhs_var]]
       svy_ans <- private$map_$sample()$responses()[[lhs_var]][2]
       if (ncol(aggregated_estimates) > 1) {
@@ -283,7 +282,7 @@ create_wtd_ests <- function(fit_obj, outcome, by = NULL) {
   }
   design <- fit_obj$map()$sample()$design()
   merged_data <- merge(fit_obj$map()$mapped_sample_data(),
-                       fit_obj$map()$sample()$survey_data()[c(outcome,".key")],
+                       fit_obj$map()$sample()$survey_data()[c(as.character(outcome),".key")],
                        by = ".key")
   svy_dsn <- do.call(survey::svydesign, c(design, list(weights = weights, data = merged_data)))
   if (is.null(by)) {

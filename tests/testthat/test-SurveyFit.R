@@ -229,12 +229,12 @@ test_that("aggregate throws correct errors", {
 
 test_that("plot returns ggplot object", {
   popn <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
-  expect_s3_class(fit_stan_glmer$plot(popn, weights = TRUE), "ggplot")
-  expect_s3_class(fit_stan_glmer$plot(popn, weights = FALSE), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "mrp"), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "none"), "ggplot")
 
   by_age <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
-  expect_s3_class(fit_stan_glmer$plot(by_age, weights = TRUE), "ggplot")
-  expect_s3_class(fit_stan_glmer$plot(by_age, weights = FALSE), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(by_age, additional_stats = c("wtd","raw")), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(by_age, additional_stats = "none"), "ggplot")
 })
 
 test_that("Warnings provided if weights are all equal to 1",{
