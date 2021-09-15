@@ -143,7 +143,7 @@
 #'
 #' # plot estimates by age
 #' fit_1$plot(estimates_by_age)
-#' fit_1$plot(estimates_by_age, additional_stats = "none)
+#' fit_1$plot(estimates_by_age, additional_stats = "none")
 #' fit_1$plot(estimates_by_age, additional_stats = "wtd")
 #' fit_1$plot(estimates_by_age, additional_stats = "raw")
 #' fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))

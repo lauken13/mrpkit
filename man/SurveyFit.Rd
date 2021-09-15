@@ -112,19 +112,19 @@ fit_1 <- ex_map$fit(
 )
 
 # Example lme4 usage
-# fit_2 <- ex_map$fit(
-#   fun = lme4::glmer,
-#   formula = y ~ (1|age) + (1|gender),
-#   family = "binomial"
-# )
-#
+fit_2 <- ex_map$fit(
+  fun = lme4::glmer,
+  formula = y ~ (1|age) + (1|gender),
+  family = "binomial"
+)
+
 # Example brms usage
-# fit_3 <- ex_map$fit(
-#   fun = brms::brm,
-#   formula = y ~ (1|age) + (1|gender),
-#   family = "bernoulli",
-#   seed = 1111
-# )
+fit_3 <- ex_map$fit(
+  fun = brms::brm,
+  formula = y ~ (1|age) + (1|gender),
+  family = "bernoulli",
+  seed = 1111
+)
 
 
 # predicted probabilities
@@ -133,25 +133,25 @@ poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
-head(estimates_by_age)
-estimates_by_age \%>\%
-  group_by(age) \%>\%
-  summarize(mean = mean(value), sd = sd(value))
+
+fit_1$summary(estimates_by_age)
+fit_2$summary(estimates_by_age)
+fit_3$summary(estimates_by_age)
 
 # plot estimates by age
 fit_1$plot(estimates_by_age)
-fit_1$plot(estimates_by_age, additional_stats = NA)
+fit_1$plot(estimates_by_age, additional_stats = "none")
 fit_1$plot(estimates_by_age, additional_stats = "wtd")
 fit_1$plot(estimates_by_age, additional_stats = "raw")
 fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
-mean(estimates_popn$value)
+fit_1$summary(estimates_popn)
 
 # plot population estimate
 fit_1$plot(estimates_popn)
-fit_1$plot(estimates_popn, additional_stats = NA)
+fit_1$plot(estimates_popn, additional_stats = "none")
 fit_1$plot(estimates_popn, additional_stats = "wtd")
 fit_1$plot(estimates_popn, additional_stats = "raw")
 fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
@@ -163,6 +163,7 @@ fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 \item \href{#method-new}{\code{SurveyFit$new()}}
 \item \href{#method-fit}{\code{SurveyFit$fit()}}
 \item \href{#method-map}{\code{SurveyFit$map()}}
+\item \href{#method-formula}{\code{SurveyFit$formula()}}
 \item \href{#method-print}{\code{SurveyFit$print()}}
 \item \href{#method-population_predict}{\code{SurveyFit$population_predict()}}
 \item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
@@ -179,7 +180,7 @@ Create a new \code{SurveyFit} object. This method is called
 internally by the \verb{$fit()} method of the \code{\link{SurveyMap}} object and does
 not need to be called directly by the user.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$new(fit, map)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$new(fit, map, formula)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -188,6 +189,8 @@ not need to be called directly by the user.
 \item{\code{fit}}{A fitted model object.}
 
 \item{\code{map}}{A \code{\link{SurveyMap}} object.}
+
+\item{\code{formula}}{A formula object representing the model ran.}
 }
 \if{html}{\out{</div>}}
 }
@@ -209,6 +212,16 @@ Access the fitted model object
 Access the SurveyMap object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$map()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-formula"></a>}}
+\if{latex}{\out{\hypertarget{method-formula}{}}}
+\subsection{Method \code{formula()}}{
+Access the SurveyMap object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SurveyFit$formula()}\if{html}{\out{</div>}}
 }
 
 }

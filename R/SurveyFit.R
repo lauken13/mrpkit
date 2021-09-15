@@ -22,6 +22,7 @@ SurveyFit <- R6::R6Class(
     #'   not need to be called directly by the user.
     #' @param fit A fitted model object.
     #' @param map A [`SurveyMap`] object.
+    #' @param formula A formula object representing the model ran.
     initialize = function(fit, map, formula) {
       private$fit_ <- fit
       private$map_ <- map
