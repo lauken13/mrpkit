@@ -217,17 +217,35 @@ SurveyFit <- R6::R6Class(
       rownames(out) <- NULL
       out
     },
-    #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
+    #' @description Plot takes the aggregated MRP estimates and produces a quick visualization of total and sub-population estimates.
     #' @param aggregated_estimates The data frame returned by `aggregate`.
     #' @param additional_stats A vector that specifies which of three additional
-    #'   stats (wtd, raw, mrp) should be included on the plots. The default
-    #'   value is to include the weighted estimate (wtd) and raw data mean
-    #'   (raw), but an analogous bar for MRP (mrp) can be added using the
+    #'   stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
+    #'   default value is to include the weighted estimate (wtd) and raw data
+    #'   mean (raw), but an analogous bar for MRP (mrp) can be added using the
     #'   posterior mean and sd. The sd for the weighted estimate uses the survey
     #'   design and the \pkg{survey} package, whilst the raw estimate is a
     #'   direct mean and binomial sd of the binary responses. Intervals are by
     #'   default 95% CI.
+    #' @return A ggplot object.
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
+      if (!is.character(additional_stats)) {
+        stop("'additional_stats' must be a character vector.", call. = FALSE)
+      }
+      if (!all(additional_stats %in% c("wtd", "raw", "mrp", "none"))) {
+        stop("Valid 'additional_stats' arguments are either 'none' or a combination of ",
+             "'wtd', 'raw', and 'mrp'.", call. = FALSE)
+      }
+      if ("none" %in% additional_stats && length(additional_stats) > 1) {
+        stop("When choosing no additional statistics, only supply 'none'.",
+             call. = FALSE)
+      }
+      if ("wtd" %in% additional_stats && all(self$map()$sample()$weights() == 1)) {
+        warning("Weights are all equal to 1 or no weights provided. ",
+                  "Raw estimate and weighted estimate will be equivalent.",
+                  call. = FALSE)
+      }
+
       model_fit <- private$fit_
       lhs_var <- as.character(self$formula()[[2]])
       svy_q <- private$map_$sample()$questions()[[lhs_var]]
@@ -238,63 +256,62 @@ SurveyFit <- R6::R6Class(
         focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
-          ggplot2::geom_violin(fill = "#636363",alpha = .4, position = ggplot2::position_dodge(.25)) +
+          ggplot2::geom_violin(fill = "#636363",alpha = 0.4, position = ggplot2::position_dodge(0.25)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(focus_var_svy_q)+
-          ggplot2::ylab(paste0('Proportion of "',svy_ans,'"'))+
+          ggplot2::ylab(paste0('Proportion of "', svy_ans, '"'))+
           ggplot2::ggtitle(svy_q)
 
         additional_ests <- self$summary(aggregated_estimates)
-        if(sum(additional_stats %in% c("wtd","raw","mrp", "none")) != length(additional_stats)){
-          stop("only supply arguments `wtd`, `raw`, `mrp` or `none` as additional statistics.")
-        }
-        if(sum(additional_stats %in% "none")==1 & length(additional_stats)>1){
-          stop("when choosing no additional statistics, only supply `none`")
-        }
-        if(is.null(additional_stats)){
-          stop("when choosing no additional statistics, only supply `none`")
-        }
-        additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
+        additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats, ]
         additional_ests_filtered$method <- ordered(additional_ests_filtered$method, levels = c("raw","mrp","wtd"))
-        if(sum(self$map()$sample()$weights() ==1)==length(self$map()$sample()$weights())){
-          warning("weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
-        }
         gg <- gg +
-          ggplot2::geom_point(data = additional_ests_filtered, ggplot2::aes(x= .data[[focus_var]], y = mean, colour = method),
-                              position = ggplot2::position_dodge(.25)) +
+          ggplot2::geom_point(
+            data = additional_ests_filtered,
+            ggplot2::aes(x= .data[[focus_var]], y = mean, colour = method),
+            position = ggplot2::position_dodge(0.25)
+          ) +
           ggplot2::geom_errorbar(
             data = additional_ests_filtered,
             ggplot2::aes(x = .data[[focus_var]],
-                         ymin = mean - 1.96*sd,
-                         ymax = mean + 1.96*sd,
+                         ymin = mean - 1.96 * sd,
+                         ymax = mean + 1.96 * sd,
                          colour = method),
-            inherit.aes = FALSE, alpha = .8, width = .25, position = ggplot2::position_dodge(.25))+
-          ggplot2::theme(legend.position = "bottom",
-                         legend.title = ggplot2::element_blank()) +
+            inherit.aes = FALSE,
+            alpha = 0.8,
+            width = 0.25,
+            position = ggplot2::position_dodge(0.25)
+          )+
+          ggplot2::theme(
+            legend.position = "bottom",
+            legend.title = ggplot2::element_blank()
+          ) +
           ggplot2::scale_colour_manual(values = c("wtd" = "#008837" , "raw" = "#7b3294", "mrp" = "#252525"))
 
       } else {
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[["value"]], y = ggplot2::after_stat(scaled)) +
-          ggplot2::geom_density(fill = "#636363", alpha = .4) +
+          ggplot2::geom_density(fill = "#636363", alpha = 0.4) +
           ggplot2::scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
           ggplot2::scale_y_continuous(limits = c(0, 1.05), expand = c(0, 0)) +
           ggplot2::xlab(svy_q)+
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
-      additional_ests <- self$summary(aggregated_estimates)
-      if(length(additional_stats %in% c("wtd","raw")) != length(additional_stats)){
-        stop("additional statistics can only be weighted (wtd) or raw (raw)")
-      }
-      additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
-      if(sum(self$map()$sample()$weights() ==1)==length(self$map()$sample()$weights())){
-        warning("weights are all equal to 1 or no weights provided. Raw estimate and wtd estimate will be equivalent.")
-      }
-      gg <- gg +
-        ggplot2::geom_vline(data = additional_ests_filtered, ggplot2::aes(xintercept = .data[["mean"]], colour = method)) +
-        ggplot2::theme(legend.position = "bottom",
-              legend.title = ggplot2::element_blank()) +
-        ggplot2::scale_colour_manual(values = c("wtd" = "#008837" , "raw" = "#7b3294", "mrp" = "#252525"))
+        additional_ests <- self$summary(aggregated_estimates)
+        if (!all(additional_stats %in% c("wtd","raw"))) {
+          stop("additional statistics can only be weighted (wtd) or raw (raw)")
+        }
+        additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
+        gg <- gg +
+          ggplot2::geom_vline(
+            data = additional_ests_filtered,
+            ggplot2::aes(xintercept = .data[["mean"]], colour = method)
+          ) +
+          ggplot2::theme(
+            legend.position = "bottom",
+            legend.title = ggplot2::element_blank()
+          ) +
+          ggplot2::scale_colour_manual(values = c("wtd" = "#008837" , "raw" = "#7b3294", "mrp" = "#252525"))
 
       }
       gg
@@ -302,6 +319,8 @@ SurveyFit <- R6::R6Class(
   )
 )
 
+
+# internal ----------------------------------------------------------------
 
 #' Create weighted estimates using the survey package
 #' @noRd
@@ -339,33 +358,29 @@ create_wtd_ests <- function(fit_obj, outcome, by = NULL) {
 }
 
 
-#' Create weighted estimates using the survey package
+#' Force a variable to a factor variable
 #' @noRd
-#' @param x A variable of length n
-#' @return A variable of length n that is binary (0,1) values. The higher level in the factor
-#' is the default 1
+#' @param x A variable of length n.
+#' @return A variable of length n that is binary (0,1) values. The higher level
+#'   in the factor is the default 1.
 force_factor <- function(x) {
-  if(length(x) ==0 & is.null(dim(x))){
-    stop("x must have length n")
-  }
-  else if(!is.null(dim(x))){
-    stop("x must be a vector of length n")
-  }
-  else if(is.factor(x) ){
-    if(length(levels(x))!=2){
-      stop("x cannot have more than 2 levels")
+  if (length(x) == 0 && is.null(dim(x))) {
+    stop("x must have length n.", call. = FALSE)
+  } else if (!is.null(dim(x))) {
+    stop("x must be a vector of length n.", call. = FALSE)
+  } else if (is.factor(x)) {
+    if (length(levels(x)) != 2){
+      stop("x cannot have more than 2 levels.", call. = FALSE)
     }
-    if(length(levels(x))==2){
-    x_binary <- as.numeric(x)-1
+    if (length(levels(x)) == 2) {
+      x_binary <- as.numeric(x) - 1
     }
-  }
-  else if(is.numeric(x)){
-    if(length(unique(na.omit(x)))>2){
-      stop("x must have only two unique numeric values")
-    } else if(length(unique(na.omit(x)))<=2 & sum(x %in% c(1,0,NA))!=length(x)){
-      stop("x must only contain 1, 0 and missing values")
-    }
-    else if(length(unique(na.omit(x)))<=2& sum(x %in% c(1,0,NA))==length(x)){
+  } else if (is.numeric(x)) {
+    if (length(unique(stats::na.omit(x))) > 2){
+      stop("x must have only two unique numeric values.", call. = FALSE)
+    } else if (length(unique(stats::na.omit(x))) <= 2 && sum(x %in% c(1, 0, NA)) != length(x)) {
+      stop("x must only contain 1, 0 and missing values", call. = FALSE)
+    } else if (length(unique(stats::na.omit(x))) <= 2 && sum(x %in% c(1, 0, NA)) == length(x)) {
       x_binary <- x
     }
   }

@@ -143,7 +143,7 @@ SurveyData <- R6::R6Class(
       }
 
       if (length(questions) == 0 && length(responses) == 0) {
-        keep <- function(x) is.factor(x) || is.character(x) || length(unique(na.omit(x))) == 2
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(stats::na.omit(x))) == 2
         data_use <- data[, sapply(data, keep), drop = FALSE]
         questions <- setNames(as.list(colnames(data_use)), colnames(data_use))
         responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(x))
