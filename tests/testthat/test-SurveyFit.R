@@ -247,6 +247,14 @@ test_that("populations are within acceptable tolerance of previous runs (+/- 2% 
   expect_equal(mean(x$value), expected = .72, tolerance = .15)
 })
 
+test_that("summary requires the correct input",{
+  expect_error(fit_glm$summary(),
+               "argument \"aggregated_estimates\" is missing, with no default")
+  expect_error(fit_glm$summary(c(1,2)),
+               "'aggregated_estimates' must be a data frame", fixed = TRUE)
+
+})
+
 test_that("summary works with different fit objects",{
   skip_if_not_installed("brms")
   x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
@@ -268,13 +276,16 @@ test_that("plot returns ggplot object", {
   popn <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
   expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "mrp"), "ggplot")
   expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "none"), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "raw"), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "wtd"), "ggplot")
+  expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = c("wtd", "mrp", "raw")), "ggplot")
 
   by_age <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
   expect_s3_class(fit_stan_glmer$plot(by_age, additional_stats = c("wtd","raw")), "ggplot")
   expect_s3_class(fit_stan_glmer$plot(by_age, additional_stats = "none"), "ggplot")
 })
 
-test_that("Warnings provided if weights are all equal to 1",{
+test_that("plot throws warning if weights are all equal to 1",{
   expect_warning(samp_obj_wt1 <- SurveyData$new(
     data = feline_survey,
     questions = list(
@@ -319,11 +330,11 @@ test_that("plot method errors for incorrect additional stats input",{
                "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'")
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = FALSE),
-               "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'")
+               "'additional_stats' must be a character vector.")
 
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = NA),
-               "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'.")
+               "'additional_stats' must be a character vector.")
 
 
   expect_error(fit_stan_glmer$plot(x, additional_stats = 3),
@@ -384,15 +395,6 @@ test_that("plot appearance hasn't changed", {
   )
 })
 
-test_that("summary requires the correct input",{
-  expect_error(fit_glm$summary(),
-               "argument \"aggregated_estimates\" is missing, with no default")
-  expect_error(fit_glm$summary(c(1,2)),
-               "'aggregated_estimates' must be a data frame", fixed = TRUE)
-
-})
-
-
 test_that("print method calls fitted model's print method", {
   # if the formulas are printed then the print method is working,
   # we don't need to check for the entire print output
@@ -407,7 +409,7 @@ test_that("print method calls fitted model's print method", {
     fixed = TRUE
   )
   expect_output(
-    fit_brms$print(),
+    suppressWarnings(fit_brms$print()),
     "y ~ (1 | age) + (1 | gender)",
     fixed = TRUE
   )

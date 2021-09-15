@@ -298,9 +298,6 @@ SurveyFit <- R6::R6Class(
           ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
         additional_ests <- self$summary(aggregated_estimates)
-        if (!all(additional_stats %in% c("wtd","raw"))) {
-          stop("additional statistics can only be weighted (wtd) or raw (raw)")
-        }
         additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats,]
         gg <- gg +
           ggplot2::geom_vline(
