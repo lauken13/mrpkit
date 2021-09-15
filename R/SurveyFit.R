@@ -175,7 +175,7 @@ SurveyFit <- R6::R6Class(
         mrp_ests_df <- sapply(mrp_ests_tmp, function(x) x)
         mrp_ests <- data.frame(t(mrp_ests_df),by_var = colnames(mrp_ests_df), method = "mrp")
         colnames(mrp_ests)[3] = by_var
-        lhs_binary <- force_factor(self$map()$mapped_sample_data()[,lhs_var])
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
         raw_ests_tmp <- by(lhs_binary, self$map()$mapped_sample_data()[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
         raw_ests_df <- sapply(raw_ests_tmp, function(x) x)
         raw_ests <- data.frame(t(raw_ests_df),by_var = colnames(raw_ests_df), method = "raw")
@@ -183,7 +183,7 @@ SurveyFit <- R6::R6Class(
       } else{
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(mean=mean(aggregated_estimates$value),sd = sd(aggregated_estimates$value), method = "mrp")
-        lhs_binary <- force_factor(self$map()$mapped_sample_data()[,lhs_var])
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
         raw_ests <- data.frame(mean = mean(lhs_binary),sd = sqrt(mean(lhs_binary)*(1-mean(lhs_binary))/length(lhs_binary)), method = "raw")
       }
       out <- rbind(mrp_ests, raw_ests,wtd_ests)
