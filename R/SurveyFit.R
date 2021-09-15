@@ -155,7 +155,7 @@ SurveyFit <- R6::R6Class(
     },
     #' @description Creates a set of summary statistics of the mrp estimate,
     #' and corresponding weighted and raw data estimates
-    #' @param aggregated_estimates The object returned by `aggregate`.
+    #' @param aggregated_estimates The data frame returned by the `aggregate() method`.
     #' @return A data frame. If `by` is not specified then the data frame will
     #'   have number of rows equal to the number of posterior draws. If `by` is
     #'   specified the data frame will have number of rows equal to the number
@@ -218,11 +218,15 @@ SurveyFit <- R6::R6Class(
       out
     },
     #' @description Plot takes the aggregated estimates and produces a quick visualization total and sub-population estimates.
-    #' @param aggregated_estimates The object returned by `aggregate`
-    #' @param additional_stats A vector the specifies which of three additional stats (wtd, raw, mrp) should be included on the plots.
-    #' The default value is to include the weighted estimate (wtd) and raw data mean (raw), but an analogous bar for mrp (mrp) can be
-    #' added using the posterior mean and sd. The sd for the weighted estimate uses the survey design and the survey package, whilst the
-    #' raw is a direct mean and binomial sd of the binary responses. Intervals are by default 95% CI
+    #' @param aggregated_estimates The data frame returned by `aggregate`.
+    #' @param additional_stats A vector that specifies which of three additional
+    #'   stats (wtd, raw, mrp) should be included on the plots. The default
+    #'   value is to include the weighted estimate (wtd) and raw data mean
+    #'   (raw), but an analogous bar for MRP (mrp) can be added using the
+    #'   posterior mean and sd. The sd for the weighted estimate uses the survey
+    #'   design and the \pkg{survey} package, whilst the raw estimate is a
+    #'   direct mean and binomial sd of the binary responses. Intervals are by
+    #'   default 95% CI.
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       model_fit <- private$fit_
       lhs_var <- as.character(self$formula()[[2]])
