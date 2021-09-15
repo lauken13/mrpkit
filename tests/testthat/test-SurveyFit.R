@@ -296,6 +296,23 @@ test_that("plot method returns warnings for incorrect additional stats input",{
                "when choosing no additional statistics, only supply `none`")
 })
 
+test_that("summary works with different fit objects",{
+
+  x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
+  expect_s3_class(fit_brms$summary(x), "data.frame")
+
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(), by = "age")
+  expect_s3_class(fit_brms$summary(x), "data.frame")
+
+  x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict(), by = "age")
+  expect_s3_class(fit_stan_glm$summary(x), "data.frame")
+
+  x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
+  expect_s3_class(fit_stan_glmer$summary(x), "data.frame")
+
+
+})
+
 test_that("plot appearance hasn't changed", {
   skip_on_cran()
   skip_if_not_installed("vdiffr")
