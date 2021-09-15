@@ -389,7 +389,7 @@ test_that("summary requires the correct input",{
   expect_error(fit_glm$summary(),
                "argument \"aggregated_estimates\" is missing, with no default")
   expect_error(fit_glm$summary(c(1,2)),
-               'dimensions of aggregated estimates must be two')
+               "'aggregated_estimates' must be a data frame", fixed = TRUE)
 
 })
 

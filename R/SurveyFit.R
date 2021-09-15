@@ -150,6 +150,7 @@ SurveyFit <- R6::R6Class(
       } else {
         out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }
+      rownames(out) <- NULL
       out
     },
     #' @description Creates a set of summary statistics of the mrp estimate,
@@ -162,32 +163,57 @@ SurveyFit <- R6::R6Class(
     #'   and there will be an extra column indicating which level of the `by`
     #'   variable each row corresponds to.
     summary = function(aggregated_estimates) {
-      if(is.null(aggregated_estimates)){
-        stop("Must pass aggregated MRP estimates produced by aggregate function.")
-      }
-      if(length(dim(aggregated_estimates))!=2 | is.null(dim(aggregated_estimates))){
-        stop("dimensions of aggregated estimates must be two")
+      if (!is.data.frame(aggregated_estimates)) {
+        stop("'aggregated_estimates' must be a data frame ",
+             "returned by the aggregate() method.", call. = FALSE)
       }
       lhs_var <- as.character(self$formula()[[2]])
       if (ncol(aggregated_estimates) > 1) {
         by_var <- colnames(aggregated_estimates)[1]
-        wtd_ests <- data.frame(create_wtd_ests(self, lhs_var, by=by_var), method = "wtd")
-        mrp_ests_tmp <- by(aggregated_estimates[,"value"], aggregated_estimates[,by_var],function(x)c(mean = mean(x),sd = sd(x)))
-        mrp_ests_df <- sapply(mrp_ests_tmp, function(x) x)
-        mrp_ests <- data.frame(t(mrp_ests_df),by_var = colnames(mrp_ests_df), method = "mrp")
-        colnames(mrp_ests)[3] = by_var
-        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
-        raw_ests_tmp <- by(lhs_binary, self$map()$mapped_sample_data()[,by_var],function(x)c(mean = mean(x),sd = sqrt(mean(x)*(1-mean(x))/length(x))))
-        raw_ests_df <- sapply(raw_ests_tmp, function(x) x)
-        raw_ests <- data.frame(t(raw_ests_df),by_var = colnames(raw_ests_df), method = "raw")
-        colnames(raw_ests)[3] = by_var
+        wtd_ests <- data.frame(
+          create_wtd_ests(self, lhs_var, by = by_var),
+          method = "wtd"
+        )
+        mrp_ests_tmp <- by(
+          aggregated_estimates[, "value"],
+          aggregated_estimates[, by_var],
+          FUN = function(x) c(mean = mean(x), sd = sd(x))
+        )
+        mrp_ests_tmp <- sapply(mrp_ests_tmp, function(x) x)
+        mrp_ests <- data.frame(
+          t(mrp_ests_tmp),
+          by_var = colnames(mrp_ests_tmp),
+          method = "mrp"
+        )
+        colnames(mrp_ests)[3] <- by_var
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[, lhs_var])
+        raw_ests_tmp <- by(
+          lhs_binary,
+          self$map()$mapped_sample_data()[, by_var],
+          FUN = function(x) c(mean = mean(x), sd = sqrt(mean(x) * (1 - mean(x))/length(x)))
+        )
+        raw_ests_tmp <- sapply(raw_ests_tmp, function(x) x)
+        raw_ests <- data.frame(
+          t(raw_ests_tmp),
+          by_var = colnames(raw_ests_tmp),
+          method = "raw"
+        )
+        colnames(raw_ests)[3] <- by_var
       } else{
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
-        mrp_ests <- data.frame(mean=mean(aggregated_estimates$value),sd = sd(aggregated_estimates$value), method = "mrp")
-        lhs_binary <- force_factor(self$map()$sample()$survey_data()[,lhs_var])
-        raw_ests <- data.frame(mean = mean(lhs_binary),sd = sqrt(mean(lhs_binary)*(1-mean(lhs_binary))/length(lhs_binary)), method = "raw")
+        mrp_ests <- data.frame(
+          mean = mean(aggregated_estimates$value),
+          sd = sd(aggregated_estimates$value),
+          method = "mrp"
+        )
+        lhs_binary <- force_factor(self$map()$sample()$survey_data()[, lhs_var])
+        raw_ests <- data.frame(
+          mean = mean(lhs_binary),
+          sd = sqrt(mean(lhs_binary) * (1 - mean(lhs_binary))/length(lhs_binary)),
+          method = "raw"
+        )
       }
-      out <- rbind(mrp_ests, raw_ests,wtd_ests)
+      out <- rbind(mrp_ests, raw_ests, wtd_ests)
       rownames(out) <- NULL
       out
     },
