@@ -428,7 +428,7 @@ fit1$plot(popn_estimation, weights = TRUE)
 
 Bates, D., Maechler, M., Bolker, B., & Walker, S. (2015). Fitting Linear Mixed-Effects Models Using lme4. *Journal of Statistical Software*, 67(1), 1-48. \doi:10.18637/jss.v067.i01.
   
-Blair, G., Cooper, J., Coppock, A., & Humphreys, M. (2019). Declaring and Diagnosing Research Designs. *American Political Science Review* 113(3): 838-859. URL http://declaredesign.org/declare.pdf.
+Blair, G., Cooper, J., Coppock, A., & Humphreys, M. (2019). Declaring and Diagnosing Research Designs. *American Political Science Review* 113(3): 838-859. URL https://declaredesign.org/declare.pdf.
 
 Bürkner, P.C. (2018). Advanced Bayesian Multilevel Modeling with the R Package brms. *The R Journal*, 10(1), 395-411. \doi:10.32614/RJ-2018-017.
 
@@ -436,7 +436,7 @@ Chang, W. (2019). R6: Encapsulated Classes with Reference Semantics. R package v
   
 Gelman, A., & Little, T. C. (1997). Poststratification into many categories using hierarchical logistic regression. *Survey Methodology*, 23(2), 127–135.
 
-Goodrich, B., Gabry, J., Ali, I., & Brilleman S. (2020). rstanarm: Bayesian applied regression modeling via Stan. R package version 2.21.1 https://mc-stan.org/rstanarm.
+Goodrich, B., Gabry, J., Ali, I., & Brilleman S. (2020). rstanarm: Bayesian applied regression modeling via Stan. R package version 2.21.1 https://mc-stan.org/rstanarm/.
 
 Lumley, T. (2020) "survey: analysis of complex survey samples". R package version 4.0.
 
