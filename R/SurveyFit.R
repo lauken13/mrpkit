@@ -156,12 +156,10 @@ SurveyFit <- R6::R6Class(
     #' @description Creates a set of summary statistics of the mrp estimate,
     #' and corresponding weighted and raw data estimates
     #' @param aggregated_estimates The data frame returned by the `aggregate() method`.
-    #' @return A data frame. If `by` is not specified then the data frame will
-    #'   have number of rows equal to the number of posterior draws. If `by` is
-    #'   specified the data frame will have number of rows equal to the number
-    #'   of posterior draws times the number of levels of the `by` variable,
-    #'   and there will be an extra column indicating which level of the `by`
-    #'   variable each row corresponds to.
+    #' @return A data frame that consists of a minimum three rows with the raw, MRP
+    #' and weighted estimates, plus an estimate of standard error. If the aggregated estimates
+    #' were specified with a `by` argument (indicating sub population or small area estimates),
+    #' then produces a dataframe with number of rows equal to three times the number of small areas.
     summary = function(aggregated_estimates) {
       if (!is.data.frame(aggregated_estimates)) {
         stop("'aggregated_estimates' must be a data frame ",
@@ -217,7 +215,8 @@ SurveyFit <- R6::R6Class(
       rownames(out) <- NULL
       out
     },
-    #' @description Plot takes the aggregated MRP estimates and produces a quick visualization of total and sub-population estimates.
+    #' @description Plot takes the aggregated MRP estimates and produces a quick
+    #' visualization of total and sub-population estimates.
     #' @param aggregated_estimates The data frame returned by `aggregate`.
     #' @param additional_stats A vector that specifies which of three additional
     #'   stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
@@ -225,9 +224,11 @@ SurveyFit <- R6::R6Class(
     #'   mean (raw), but an analogous bar for MRP (mrp) can be added using the
     #'   posterior mean and sd. The sd for the weighted estimate uses the survey
     #'   design and the \pkg{survey} package, whilst the raw estimate is a
-    #'   direct mean and binomial sd of the binary responses. Intervals are by
-    #'   default 95% CI.
-    #' @return A ggplot object.
+    #'   direct mean and binomial sd of the binary responses. Uncertainty is included on
+    #'   violin plots but not on density plots. Intervals are 95% CI.
+    #' @return A ggplot object that is either a violin plot (if aggregated estimates is
+    #' at a small area level) or density plot (if aggregated estimates is at the population
+    #' level).
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       if (!is.character(additional_stats)) {
         stop("'additional_stats' must be a character vector.", call. = FALSE)

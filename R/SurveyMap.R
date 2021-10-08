@@ -122,12 +122,12 @@
 #' )
 #'
 #' # Example brms usage
-#' fit_3 <- ex_map$fit(
-#'   fun = brms::brm,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "bernoulli",
-#'   seed = 1111
-#' )
+#' # fit_3 <- ex_map$fit(
+#' #   fun = brms::brm,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "bernoulli",
+#' #   seed = 1111
+#' # )
 #'
 #'
 #' # predicted probabilities
@@ -139,7 +139,7 @@
 #'
 #' fit_1$summary(estimates_by_age)
 #' fit_2$summary(estimates_by_age)
-#' fit_3$summary(estimates_by_age)
+#'# fit_3$summary(estimates_by_age)
 #'
 #' # plot estimates by age
 #' fit_1$plot(estimates_by_age)
