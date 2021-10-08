@@ -116,19 +116,19 @@ fit_1 <- ex_map$fit(
 )
 
 # Example lme4 usage
-# fit_2 <- ex_map$fit(
-#   fun = lme4::glmer,
-#   formula = y ~ (1|age) + (1|gender),
-#   family = "binomial"
-# )
-#
+fit_2 <- ex_map$fit(
+  fun = lme4::glmer,
+  formula = y ~ (1|age) + (1|gender),
+  family = "binomial"
+)
+
 # Example brms usage
-# fit_3 <- ex_map$fit(
-#   fun = brms::brm,
-#   formula = y ~ (1|age) + (1|gender),
-#   family = "bernoulli",
-#   seed = 1111
-# )
+fit_3 <- ex_map$fit(
+  fun = brms::brm,
+  formula = y ~ (1|age) + (1|gender),
+  family = "bernoulli",
+  seed = 1111
+)
 
 
 # predicted probabilities
@@ -137,22 +137,28 @@ poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
-head(estimates_by_age)
-estimates_by_age \%>\%
-  group_by(age) \%>\%
-  summarize(mean = mean(value), sd = sd(value))
+
+fit_1$summary(estimates_by_age)
+fit_2$summary(estimates_by_age)
+fit_3$summary(estimates_by_age)
 
 # plot estimates by age
-fit_1$plot(estimates_by_age, weights = FALSE)
-fit_1$plot(estimates_by_age, weights = TRUE)
+fit_1$plot(estimates_by_age)
+fit_1$plot(estimates_by_age, additional_stats = "none")
+fit_1$plot(estimates_by_age, additional_stats = "wtd")
+fit_1$plot(estimates_by_age, additional_stats = "raw")
+fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
 # population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
-mean(estimates_popn$value)
+fit_1$summary(estimates_popn)
 
 # plot population estimate
-fit_1$plot(estimates_popn, weights = FALSE)
-fit_1$plot(estimates_popn, weights = TRUE)
+fit_1$plot(estimates_popn)
+fit_1$plot(estimates_popn, additional_stats = "none")
+fit_1$plot(estimates_popn, additional_stats = "wtd")
+fit_1$plot(estimates_popn, additional_stats = "raw")
+fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 
 }
 \section{Methods}{

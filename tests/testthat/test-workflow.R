@@ -8,22 +8,22 @@ test_that("Complete run through w/o weights produces only expected warnings", {
   shape_survey <- shape_survey %>%
     dplyr::select(-c("wt","highest_educ","state"))
   expect_warning(
-  box_prefs <- SurveyData$new(
-    data = shape_survey,
-    questions = list(
-      age = "Please identify your age group",
-      gender = "Please select your gender",
-      vote_for = "Which party did you vote for in the 2018 election?",
-      y = "If today is the election day, would you vote for the Box Party?"
+    box_prefs <- SurveyData$new(
+      data = shape_survey,
+      questions = list(
+        age = "Please identify your age group",
+        gender = "Please select your gender",
+        vote_for = "Which party did you vote for in the 2018 election?",
+        y = "If today is the election day, would you vote for the Box Party?"
+      ),
+      responses = list(
+        age = levels(shape_survey$age),
+        gender = levels(shape_survey$gender),
+        vote_for = levels(shape_survey$vote_for),
+        y = c("no","yes")
+      )
     ),
-    responses = list(
-      age = levels(shape_survey$age),
-      gender = levels(shape_survey$gender),
-      vote_for = levels(shape_survey$vote_for),
-      y = c("no","yes")
-    )
-  ),
-  'Weights have not been provided, assume all data weighted with weight 1')
+    'Weights have not been provided, assume all data weighted with weight 1')
 
   approx_voters_popn <- approx_voters_popn %>%
     dplyr::select(-c("wt","education","state"))
@@ -62,7 +62,7 @@ test_that("Complete run through w/o weights produces only expected warnings", {
   )
 
   # Create SurveyMap object adding all questions at once
-    ex_map <- SurveyMap$new(
+  ex_map <- SurveyMap$new(
     sample = box_prefs,
     population = popn_obj,
     q_age,
@@ -93,15 +93,24 @@ test_that("Complete run through w/o weights produces only expected warnings", {
   estimates_by_age <- fit_2$aggregate(poststrat_estimates, by = "age")
 
   # plot estimates by age
-  fit_2$plot(estimates_by_age, weights = FALSE)
-  fit_2$plot(estimates_by_age, weights = TRUE)
+  expect_warning(
+    fit_2$plot(estimates_by_age),
+    "Weights are all equal to 1 or no weights provided. Raw estimate and weighted estimate will be equivalent."
+  )
+  expect_silent(
+    fit_2$plot(estimates_by_age, additional_stats = "none")
+  )
 
   # population estimate
   estimates_popn <- fit_2$aggregate(poststrat_estimates)
 
   # plot population estimate
-  fit_2$plot(estimates_popn, weights = FALSE)
-  fit_2$plot(estimates_popn, weights = TRUE)
-
+  expect_warning(
+    fit_2$plot(estimates_popn),
+    "Weights are all equal to 1 or no weights provided. Raw estimate and weighted estimate will be equivalent."
+  )
+  expect_silent(
+    fit_2$plot(estimates_popn, additional_stats = "none")
+  )
 })
 
