@@ -105,6 +105,7 @@
 #'
 #' # Example rstanarm usage
 #' # Returns a SurveyFit object
+#' \dontrun{
 #' fit_1 <- ex_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
@@ -159,6 +160,7 @@
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 #'
+
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
