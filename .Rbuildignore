@@ -13,3 +13,4 @@
 ^pkgdown$
 ^sandbox
 ^\.github$
+^cran-comments\.md$
