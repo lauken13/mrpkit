@@ -174,25 +174,27 @@ SurveyFit <- R6::R6Class(
         )
         mrp_ests <- aggregated_estimates %>%
           dplyr::group_by(.data[[by_var]])%>%
-          dplyr::summarise(mean=mean(value), sd=sd(value))%>%
-          dplyr::relocate(by_var,.after="sd")%>%
+          dplyr::summarise(mean = mean(value), sd = sd(value))%>%
+          dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "mrp")
 
         lhs_binary <- self$map()$sample()$survey_data() %>%
           dplyr::select(lhs_var, .key)%>%
           dplyr::mutate(lhs_binary = force_factor(.data[[lhs_var]]))
 
-
         raw_data <- self$map()$mapped_sample_data() %>%
-          dplyr::left_join(lhs_binary,by = ".key")
+          dplyr::left_join(lhs_binary, by = ".key")
 
         raw_ests <- raw_data %>%
           dplyr::group_by(.data[[by_var]])%>%
-          dplyr::summarise(mean=mean(.data[["lhs_binary"]]),
-                    sd=sqrt(mean(.data[["lhs_binary"]]) * (1 - mean(.data[["lhs_binary"]]))/length(.data[["lhs_binary"]])))%>%
-          dplyr::relocate(by_var,.after="sd")%>%
+          dplyr::summarise(
+            mean = mean(.data[["lhs_binary"]]),
+            sd = sqrt(mean(.data[["lhs_binary"]]) * (1 - mean(.data[["lhs_binary"]])) /
+                        length(.data[["lhs_binary"]]))
+          ) %>%
+          dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "raw")
-       } else{
+       } else {
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(
           mean = mean(aggregated_estimates$value),
@@ -202,7 +204,7 @@ SurveyFit <- R6::R6Class(
         lhs_binary <- force_factor(self$map()$sample()$survey_data()[, lhs_var])
         raw_ests <- data.frame(
           mean = mean(lhs_binary),
-          sd = sqrt(mean(lhs_binary) * (1 - mean(lhs_binary))/length(lhs_binary)),
+          sd = sqrt(mean(lhs_binary) * (1 - mean(lhs_binary)) / length(lhs_binary)),
           method = "raw"
         )
       }
@@ -210,6 +212,7 @@ SurveyFit <- R6::R6Class(
       rownames(out) <- NULL
       out
     },
+
     #' @description Plot takes the aggregated MRP estimates and produces a quick
     #' visualization of total and sub-population estimates.
     #' @param aggregated_estimates The data frame returned by `aggregate`.
