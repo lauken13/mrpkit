@@ -11,7 +11,7 @@ Conducts multilevel regression with post-stratification in an opinionated
     a correspondence between them, and then conduct analysis.
 }
 \author{
-\strong{Maintainer}: Lauren Kennedy \email{lauren.kennedy729@gmail.com}
+\strong{Maintainer}: Lauren Kennedy \email{lauren.kennedy1@monash.edu}
 
 Authors:
 \itemize{

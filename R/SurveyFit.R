@@ -173,25 +173,25 @@ SurveyFit <- R6::R6Class(
           method = "wtd"
         )
         mrp_ests <- aggregated_estimates %>%
-          group_by(.data[[by_var]])%>%
-          summarise(mean=mean(value), sd=sd(value))%>%
-          relocate(by_var,.after="sd")%>%
-          mutate(method = "mrp")
+          dplyr::group_by(.data[[by_var]])%>%
+          dplyr::summarise(mean=mean(value), sd=sd(value))%>%
+          dplyr::relocate(by_var,.after="sd")%>%
+          dplyr::mutate(method = "mrp")
 
         lhs_binary <- self$map()$sample()$survey_data() %>%
-          select(lhs_var, .key)%>%
-          mutate(lhs_binary = force_factor(.data[[lhs_var]]))
+          dplyr::select(lhs_var, .key)%>%
+          dplyr::mutate(lhs_binary = force_factor(.data[[lhs_var]]))
 
 
         raw_data <- self$map()$mapped_sample_data() %>%
-          left_join(lhs_binary,by = ".key")
+          dplyr::left_join(lhs_binary,by = ".key")
 
         raw_ests <- raw_data %>%
-          group_by(.data[[by_var]])%>%
-          summarise(mean=mean(.data[["lhs_binary"]]),
+          dplyr::group_by(.data[[by_var]])%>%
+          dplyr::summarise(mean=mean(.data[["lhs_binary"]]),
                     sd=sqrt(mean(.data[["lhs_binary"]]) * (1 - mean(.data[["lhs_binary"]]))/length(.data[["lhs_binary"]])))%>%
-          relocate(by_var,.after="sd")%>%
-          mutate(method = "raw")
+          dplyr::relocate(by_var,.after="sd")%>%
+          dplyr::mutate(method = "raw")
        } else{
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(
