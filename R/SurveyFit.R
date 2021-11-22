@@ -172,32 +172,27 @@ SurveyFit <- R6::R6Class(
           create_wtd_ests(self, lhs_var, by = by_var),
           method = "wtd"
         )
-        mrp_ests_tmp <- by(
-          aggregated_estimates[, "value"],
-          aggregated_estimates[, by_var],
-          FUN = function(x) c(mean = mean(x), sd = sd(x))
-        )
-        mrp_ests_tmp <- sapply(mrp_ests_tmp, function(x) x)
-        mrp_ests <- data.frame(
-          t(mrp_ests_tmp),
-          by_var = colnames(mrp_ests_tmp),
-          method = "mrp"
-        )
-        colnames(mrp_ests)[3] <- by_var
-        lhs_binary <- force_factor(self$map()$sample()$survey_data()[, lhs_var])
-        raw_ests_tmp <- by(
-          lhs_binary,
-          self$map()$mapped_sample_data()[, by_var],
-          FUN = function(x) c(mean = mean(x), sd = sqrt(mean(x) * (1 - mean(x))/length(x)))
-        )
-        raw_ests_tmp <- sapply(raw_ests_tmp, function(x) x)
-        raw_ests <- data.frame(
-          t(raw_ests_tmp),
-          by_var = colnames(raw_ests_tmp),
-          method = "raw"
-        )
-        colnames(raw_ests)[3] <- by_var
-      } else{
+        mrp_ests <- aggregated_estimates %>%
+          group_by(.data[[by_var]])%>%
+          summarise(mean=mean(value), sd=sd(value))%>%
+          relocate(by_var,.after="sd")%>%
+          mutate(method = "mrp")
+
+        lhs_binary <- self$map()$sample()$survey_data() %>%
+          select(lhs_var, .key)%>%
+          mutate(lhs_binary = force_factor(.data[[lhs_var]]))
+
+
+        raw_data <- self$map()$mapped_sample_data() %>%
+          left_join(lhs_binary,by = ".key")
+
+        raw_ests <- raw_data %>%
+          group_by(.data[[by_var]])%>%
+          summarise(mean=mean(.data[["lhs_binary"]]),
+                    sd=sqrt(mean(.data[["lhs_binary"]]) * (1 - mean(.data[["lhs_binary"]]))/length(.data[["lhs_binary"]])))%>%
+          relocate(by_var,.after="sd")%>%
+          mutate(method = "raw")
+       } else{
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(
           mean = mean(aggregated_estimates$value),
