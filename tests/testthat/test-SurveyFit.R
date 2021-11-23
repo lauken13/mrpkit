@@ -67,7 +67,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
       fun = rstanarm::stan_glmer,
       formula = y ~ (1|age) + (1|gender),
       family = "binomial",
-      iter = 10,
+      iter = 100,
       chains = 1,
       refresh = 0,
       seed = 123
@@ -78,7 +78,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
       fun = rstanarm::stan_glm,
       formula = y ~ age + gender,
       family = "binomial",
-      iter = 10,
+      iter = 100,
       chains = 1,
       refresh = 0,
       seed = 123
@@ -94,7 +94,7 @@ if (requireNamespace("brms", quietly = TRUE)) {
       fun = brms::brm,
       formula = y ~ (1|age) + (1|gender),
       family = "bernoulli",
-      iter = 10,
+      iter = 100,
       chains = 1,
       refresh = 0,
       seed = 123,
@@ -258,18 +258,34 @@ test_that("summary requires the correct input",{
 test_that("summary works with different fit objects",{
   skip_if_not_installed("brms")
   x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
-  expect_s3_class(fit_brms$summary(x), "data.frame")
+  expect_s3_class(s <- fit_brms$summary(x), "data.frame")
+  expect_named(s, c("mean", "sd", "age", "method"))
+  expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
+  previous_result <- readRDS(test_path("answers/summary-brms.rds"))
+  expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
 
   skip_if_not_installed("lme4")
   x <- fit_glmer$aggregate(fit_glmer$population_predict(), by = "age")
-  expect_s3_class(fit_brms$summary(x), "data.frame")
+  expect_s3_class(s <- fit_glmer$summary(x), "data.frame")
+  expect_named(s, c("mean", "sd", "age", "method"))
+  expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
+  previous_result <- readRDS(test_path("answers/summary-glmer.rds"))
+  expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
 
   skip_if_not_installed("rstanarm")
   x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict(), by = "age")
-  expect_s3_class(fit_stan_glm$summary(x), "data.frame")
+  expect_s3_class(s <- fit_stan_glm$summary(x), "data.frame")
+  expect_named(s, c("mean", "sd", "age", "method"))
+  expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
+  previous_result <- readRDS(test_path("answers/summary-stan_glm.rds"))
+  expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
 
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
-  expect_s3_class(fit_stan_glmer$summary(x), "data.frame")
+  expect_s3_class(s <- fit_stan_glmer$summary(x), "data.frame")
+  expect_named(s, c("mean", "sd", "age", "method"))
+  expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
+  previous_result <- readRDS(test_path("answers/summary-stan_glmer.rds"))
+  expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
 })
 
 test_that("plot returns ggplot object", {
