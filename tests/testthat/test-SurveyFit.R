@@ -136,9 +136,9 @@ test_that("fit returns fitted model object", {
 })
 
 test_that("population_predict returns correct objects",{
-  # expect 5 draws (because iter = 10 above) for columns
+  # expect 50 draws (because iter = 100 above) for columns
   # expect same number of rows as poststrat data
-  expected_dims <- c(nrow(ex_map$poststrat_data()), 5)
+  expected_dims <- c(nrow(ex_map$poststrat_data()), 50)
 
   skip_if_not_installed("rstanarm")
   expect_equal(dim(fit_stan_glmer$population_predict()), expected_dims)
@@ -148,7 +148,7 @@ test_that("population_predict returns correct objects",{
   expect_equal(dim(fit_brms$population_predict()), expected_dims)
 
   skip_if_not_installed("lme4")
-  expect_equal(dim(fit_glmer$population_predict(nsamples = 5)), expected_dims)
+  expect_equal(dim(fit_glmer$population_predict(nsamples = 50)), expected_dims)
 })
 
 test_that("population_predict throws correct errors", {
@@ -167,7 +167,7 @@ test_that("population_predict throws correct errors", {
 
 
 test_that("aggregate (to population) returns correct objects", {
-  expected_dims <- c(5, 1) # 5 = 10 iter / 2
+  expected_dims <- c(50, 1) # 50 = 100 iter / 2
 
   skip_if_not_installed("rstanarm")
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
@@ -186,14 +186,14 @@ test_that("aggregate (to population) returns correct objects", {
   expect_equal(dim(x), expected_dims)
 
   skip_if_not_installed("lme4")
-  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 5))
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
   expect_s3_class(x, "data.frame")
   expect_named(x, "value")
   expect_equal(dim(x), expected_dims)
 })
 
 test_that("aggregate (by variable level) returns correct objects", {
-  expected_dims <- c(5 * nlevels(popn_obj$survey_data()$age), 2) # 5 = 10 iter / 2
+  expected_dims <- c(50 * nlevels(popn_obj$survey_data()$age), 2) # 50 = 100 iter / 2
   expected_names <- c("age", "value")
 
   skip_if_not_installed("rstanarm")
@@ -214,7 +214,7 @@ test_that("aggregate (by variable level) returns correct objects", {
   expect_equal(dim(x), expected_dims)
 
   skip_if_not_installed("lme4")
-  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 5), by = "age")
+  x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50), by = "age")
   expect_s3_class(x, "data.frame")
   expect_named(x, expected_names)
   expect_equal(dim(x), expected_dims)
