@@ -9,154 +9,6 @@ object and provides methods for generating predicted probabilities for all
 poststrat cells, generating population and group estimates, and visualizing
 results.
 }
-\examples{
-library(dplyr)
-
-head(shape_survey)
-box_prefs <- SurveyData$new(
-  data = shape_survey,
-  questions = list(
-    age = "Please identify your age group",
-    gender = "Please select your gender",
-    vote_for = "Which party did you vote for in the 2018 election?",
-    y = "If today is the election day, would you vote for the Box Party?"
-  ),
-  responses = list(
-    age = levels(shape_survey$age),
-    gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
-    y = c("no","yes")
-  ),
-  weights = "wt",
-  design = list(ids =~1)
-)
-box_prefs$print()
-box_prefs$n_questions()
-
-head(approx_voters_popn)
-popn_obj <- SurveyData$new(
-  data = approx_voters_popn,
-  questions = list(
-    age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
-  ),
-  # order doesn't matter (gender before age2 here) because
-  # the list has the names of the variables
-  responses = list(
-    gender = levels(approx_voters_popn$gender),
-    age_group = levels(approx_voters_popn$age_group),
-    vote_pref = levels(approx_voters_popn$vote_pref)
-  ),
-  weights = "wt"
-)
-popn_obj$print()
-
-q_age <- QuestionMap$new(
-  name = "age",
-  col_names = c("age","age_group"),
-  values_map = list(
-    "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
-    "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
-  )
-)
-print(q_age)
-
-q_party_pref <- QuestionMap$new(
-  name = "party_pref",
-  col_names = c("vote_for","vote_pref"),
-  values_map = list("Box Party" = "BP",  "BP" = "BP","Circle Party" = "CP", "CP" = "CP")
-)
-q_gender <- QuestionMap$new(
-  name = "gender",
-  col_names = c("gender", "gender"),
-  values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
-)
-
-# Create SurveyMap object adding all questions at once
-ex_map <- SurveyMap$new(
-  sample = box_prefs,
-  population = popn_obj,
-  q_age,
-  q_party_pref,
-  q_gender
-)
-print(ex_map) # or ex_map$print()
-
-# Or can add questions incrementally
-ex_map <- SurveyMap$new(sample = box_prefs, population = popn_obj)
-print(ex_map)
-
-ex_map$add(q_age, q_party_pref)
-print(ex_map)
-
-ex_map$add(q_gender)
-print(ex_map)
-
-# Create the mapping between sample and population
-ex_map$mapping()
-
-# Create the poststratification data frame using all variables in the mapping
-# (alternatively, can specify particular variables, e.g. tabulate("age"))
-ex_map$tabulate()
-
-# Example rstanarm usage
-# Returns a SurveyFit object
-fit_1 <- ex_map$fit(
-  fun = rstanarm::stan_glmer,
-  formula = y ~ (1|age) + (1|gender),
-  family = "binomial",
-  seed = 1111,
-  # just to keep the example fast and small
-  chains = 1
-)
-
-# Example lme4 usage
-fit_2 <- ex_map$fit(
-  fun = lme4::glmer,
-  formula = y ~ (1|age) + (1|gender),
-  family = "binomial"
-)
-
-# Example brms usage
-fit_3 <- ex_map$fit(
-  fun = brms::brm,
-  formula = y ~ (1|age) + (1|gender),
-  family = "bernoulli",
-  seed = 1111
-)
-
-
-# predicted probabilities
-# returns matrix with rows for poststrat cells, cols for posterior draws
-poststrat_estimates <- fit_1$population_predict()
-
-# estimates by age level
-estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
-
-fit_1$summary(estimates_by_age)
-fit_2$summary(estimates_by_age)
-fit_3$summary(estimates_by_age)
-
-# plot estimates by age
-fit_1$plot(estimates_by_age)
-fit_1$plot(estimates_by_age, additional_stats = "none")
-fit_1$plot(estimates_by_age, additional_stats = "wtd")
-fit_1$plot(estimates_by_age, additional_stats = "raw")
-fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
-
-# population estimate
-estimates_popn <- fit_1$aggregate(poststrat_estimates)
-fit_1$summary(estimates_popn)
-
-# plot population estimate
-fit_1$plot(estimates_popn)
-fit_1$plot(estimates_popn, additional_stats = "none")
-fit_1$plot(estimates_popn, additional_stats = "wtd")
-fit_1$plot(estimates_popn, additional_stats = "raw")
-fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
-
-}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -325,19 +177,18 @@ and corresponding weighted and raw data estimates
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A data frame. If \code{by} is not specified then the data frame will
-have number of rows equal to the number of posterior draws. If \code{by} is
-specified the data frame will have number of rows equal to the number
-of posterior draws times the number of levels of the \code{by} variable,
-and there will be an extra column indicating which level of the \code{by}
-variable each row corresponds to.
+A data frame that consists of a minimum three rows with the raw, MRP
+and weighted estimates, plus an estimate of standard error. If the aggregated estimates
+were specified with a \code{by} argument (indicating sub population or small area estimates),
+then produces a dataframe with number of rows equal to three times the number of small areas.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot takes the aggregated MRP estimates and produces a quick visualization of total and sub-population estimates.
+Plot takes the aggregated MRP estimates and produces a quick
+visualization of total and sub-population estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, additional_stats = c("wtd", "raw"))}\if{html}{\out{</div>}}
 }
@@ -353,13 +204,15 @@ default value is to include the weighted estimate (wtd) and raw data
 mean (raw), but an analogous bar for MRP (mrp) can be added using the
 posterior mean and sd. The sd for the weighted estimate uses the survey
 design and the \pkg{survey} package, whilst the raw estimate is a
-direct mean and binomial sd of the binary responses. Intervals are by
-default 95\% CI.}
+direct mean and binomial sd of the binary responses. Uncertainty is included on
+violin plots but not on density plots. Intervals are 95\% CI.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A ggplot object.
+A ggplot object that is either a violin plot (if aggregated estimates is
+at a small area level) or density plot (if aggregated estimates is at the population
+level).
 }
 }
 \if{html}{\out{<hr>}}
