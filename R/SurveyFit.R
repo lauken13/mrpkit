@@ -210,7 +210,7 @@ SurveyFit <- R6::R6Class(
       }
       out <- rbind(mrp_ests, raw_ests, wtd_ests)
       rownames(out) <- NULL
-      out
+      as.data.frame(out)
     },
 
     #' @description Plot takes the aggregated MRP estimates and produces a quick
