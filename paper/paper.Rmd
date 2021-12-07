@@ -267,9 +267,6 @@ The relationship between the two datasets is finalised by bringing all of this t
 2) the name of the `SurveyData` object related to the post-stratification dataset, in this case `poststrat_obj`; and 
 3) the question mappings that should be included, which specifies the matched labels and values provided by `QuestionMap` objects. 
 
-<!-- Probs get rid of: -->
-<!-- The `SurveyMap` object has `new`, `add`, `delete`, `replace`, `mapping`, `tabulate`, and `fit` methods. -->
-
 The method initializes a new `SurveyMap` object is `SurveyMap$new`. This takes `SurveyData` and `QuestionMap` objects as argument. 
 
 ```{r map-object}
@@ -398,8 +395,8 @@ The output of aggregate is a posterior predictive distribution for the populatio
 
 ### Visualize
 
-Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95% confidence interval.  
-In this example, we display the estimated plot for `age` and `state` and a density plot for the population estimates. 
+Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95 per cent confidence interval.  
+In this example, we display the estimated plot for 'age' and 'state' and a density plot for the population estimates. 
 
 
 ```{r age-vis, fig.width= 6, fig.height=4}
@@ -409,8 +406,7 @@ plot_age
 
 The plot above shows the distribution of people who vote for the Box Party for each age group. The plot implies that people who are aged 36-55 are most likely to vote for the BP.
 
-The next plot displays the probability of voting for the BP by the state without using additional statistics. We learn that the probability of the BP winning the election is high since most people in almost all the states (around 75%) vote for that party. State B is the state with the lowest probability of vote for the BP. The distribution still ranged more than 50%. Note that this violin plot is generated using `ggplot2` (Wickham, 2016). Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
-
+The next plot displays the probability of voting for the BP by the state without using additional statistics. We learn that the probability of the BP winning the election is high since most people in almost all the states (around 75%) vote for that party. State B is the state with the lowest probability of vote for the BP. The distribution still ranged more than 50 per cent. Note that this violin plot is generated using `ggplot2` [@citeggplot]. Hence, it could be modified the same way `ggplot2`'s plot is modified. For example, here, we can add the title and change the theme of the plot.
 
 ```{r state-vis, fig.width= 6, fig.height=4}
 library(ggplot2)
@@ -433,8 +429,423 @@ fit1$plot(popn_estimation, additional_stats = c("raw","wtd"))
 
 # Implementation and technical notes {#implementation}
 
+There are a variety of technical notes related to this package and the architectural decisions that were made.
+
+Section \@ref(implementation) discusses some of the implementation issues and technical notes related to the decisions that were made
+
 
 # Worked example {#example}
+
+In this example we will forecast the 2020 US presidential election using survey data from the Democracy Fund Voter Study Group and use the Integrated Public Use Microdata Series (IPUMS), to access the 2018 American Community Survey (ACS) to use as post-stratification data. We are interested in considering the following variables: state, age-group, and gender.
+
+The first step is to gather the datasets. For the survey data we are interested in the Nationscape dateset, which can be requested from the Voter Study Group. Access is usually granted within hours and is completely free. We are going to use the survey from 25 June 2020.
+
+```{r}
+# This code based on that from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
+library(haven)
+library(tidyverse)
+
+raw_nationscape_data <- 
+  read_dta(here::here("paper/ns20200625.dta"))
+
+# The Stata format separates labels so reunite those
+raw_nationscape_data <- 
+  labelled::to_factor(raw_nationscape_data)
+
+# Just keep relevant variables
+nationscape_data <- 
+  raw_nationscape_data %>% 
+  select(vote_2020,
+         gender,
+         state,
+         age)
+
+# For simplicity, remove anyone undecided or planning to vote for someone other than Biden/Trump and make vote a binary variable: 1 for Biden, 0 for Trump.
+nationscape_data <- 
+  nationscape_data %>% 
+  filter(vote_2020 == "Joe Biden" | vote_2020 == "Donald Trump") %>% 
+  mutate(vote_biden = if_else(vote_2020 == "Joe Biden", 1, 0)) %>% 
+  select(-vote_2020)
+
+# Create the dependent variables by grouping the existing variables
+nationscape_data <-
+  nationscape_data %>%
+  mutate(
+    age_group = case_when( # case_when works in order and exits when there's a match
+      age <= 29 ~ 'age_18-29',
+      age <= 44 ~ 'age_30-44',
+      age <= 59 ~ 'age_45-59',
+      age >= 60 ~ 'age_60_or_more',
+      TRUE ~ 'Trouble'
+      )
+#     gender = case_when(
+#       gender == "Female" ~ 'female',
+#       gender == "Male" ~ 'male',
+#       TRUE ~ 'Trouble'
+#       ),
+#     education_level = case_when(
+#       education == "3rd Grade or less" ~ "High school or less",
+#       education == "Middle School - Grades 4 - 8" ~ "High school or less",
+#       education == "Completed some high school" ~ "High school or less",
+#       education == "High school graduate" ~ "High school or less",
+#       education == "Other post high school vocational training" ~ "Some post secondary",
+#       education == "Completed some college, but no degree" ~ "Some post secondary",
+#       education == "Associate Degree" ~ "Post secondary or higher",
+#       education == "College Degree (such as B.A., B.S.)" ~ "Post secondary or higher",
+#       education == "Completed some graduate, but no degree" ~ "Post secondary or higher",
+#       education == "Masters degree" ~ "Graduate degree",
+#       education == "Doctorate degree" ~ "Graduate degree",
+#       TRUE ~ 'Trouble'
+#       )
+    ) 
+#   select(-education, -age)
+
+# Tidy the class
+nationscape_data <-
+  nationscape_data %>%
+  mutate(across(c(gender, state, age_group, vote_biden), as_factor))
+
+nationscape_data %>% 
+  head()
+```
+
+```{r}
+# This code is very directly from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
+# Format state names so the whole state name is written out, to match IPUMS data
+# states_names_and_abbrevs <- 
+#   tibble(stateicp = state.name, state = state.abb)
+# 
+# nationscape_data <-
+#   nationscape_data %>%
+#   left_join(states_names_and_abbrevs)
+# 
+# rm(states_names_and_abbrevs)
+# 
+# # Make lowercase to match IPUMS data
+# nationscape_data <- 
+#   nationscape_data %>% 
+#   mutate(stateicp = tolower(stateicp))
+# 
+# nationscape_data$stateicp %>% unique()
+# 
+# # Replace NAs with DC
+# nationscape_data$stateicp <- 
+#   replace_na(nationscape_data$stateicp, "district of columbia")
+# 
+# # Tidy the class
+# nationscape_data <- 
+#   nationscape_data %>% 
+#   mutate(across(c(gender, stateicp, education_level, age_group), as_factor))
+# 
+# # Save data
+# write_csv(nationscape_data, "outputs/data/polling_data.csv")
+
+```
+
+
+
+We also need a post-stratification dataset. In this case we can use the American Community Survey (ACS) accessed through IPUMS. 
+
+```{r}
+# Again, closely following code from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
+library(haven)
+library(tidyverse)
+
+raw_poststrat_data <- 
+  read_dta(here::here("paper/usa_00009.dta"))
+
+# The Stata format separates labels so reunite those
+raw_poststrat_data <- 
+  labelled::to_factor(raw_poststrat_data)
+head(raw_poststrat_data)
+
+raw_poststrat_data$age <- as.numeric(raw_poststrat_data$age)
+raw_poststrat_data$stateicp <- as.character(raw_poststrat_data$stateicp)
+
+poststrat_data <- 
+  raw_poststrat_data %>% 
+  # filter(inctot < 9999999) %>% 
+  filter(age >= 18) %>% 
+#   mutate(gender = sex) %>% 
+  mutate(
+    age_group = case_when( # case_when works in order and exits when there's a match
+      age <= 29 ~ 'age_18-29',
+      age <= 44 ~ 'age_30-44',
+      age <= 59 ~ 'age_45-59',
+      age >= 60 ~ 'age_60_or_more',
+      TRUE ~ 'Trouble'
+      )
+#     education_level = case_when(
+#       educd == "nursery school, preschool" ~ "High school or less",
+#       educd == "kindergarten" ~ "High school or less",
+#       educd == "grade 1" ~ "High school or less",
+#       educd == "grade 2" ~ "High school or less",
+#       educd == "grade 3" ~ "High school or less",
+#       educd == "grade 4" ~ "High school or less",
+#       educd == "grade 5" ~ "High school or less",
+#       educd == "grade 6" ~ "High school or less",
+#       educd == "grade 7" ~ "High school or less",
+#       educd == "grade 8" ~ "High school or less",
+#       educd == "grade 9" ~ "High school or less",
+#       educd == "grade 10" ~ "High school or less",
+#       educd == "grade 11" ~ "High school or less",
+#       educd == "12th grade, no diploma" ~ "High school or less",
+#       educd == "regular high school diploma" ~ "High school or less",
+#       educd == "ged or alternative credential" ~ "High school or less",
+#       educd == "some college, but less than 1 year" ~ "Some post secondary",
+#       educd == "1 or more years of college credit, no degree" ~ "Some post secondary",
+#       educd == "associate's degree, type not specified" ~ "Post secondary or higher",
+#       educd == "bachelor's degree" ~ "Post secondary or higher",
+#       educd == "master's degree" ~ "Graduate degree",
+#       educd == "professional degree beyond a bachelor's degree" ~ "Graduate degree",
+#       educd == "doctoral degree" ~ "Graduate degree",
+#       educd == "no schooling completed" ~ "High school or less",
+#       TRUE ~ 'Trouble'
+#       )
+    ) %>% 
+  filter(!stateicp %in% c("puerto rico", "state groupings (1980 urban/rural sample)", "military/mil. reservations", "state not identified"))
+
+# Just keep relevant variables
+poststrat_data <- 
+  poststrat_data %>% 
+  select(sex,
+         age_group,
+         stateicp)
+
+# Tidy the class
+poststrat_data <-
+  poststrat_data %>%
+  mutate(across(c(sex, stateicp, age_group), as_factor))
+
+
+# 
+# # Save data
+# write_csv(poststrat_data, "outputs/data/us_poststrat.csv")
+# 
+# poststrat_data %>% 
+#   head()
+
+```
+
+Now that we have the data, we need to create a `SurveyData` object for the survey dataset.
+
+```{r survey-object}
+library(mrpkit)
+# Create a SurveyData object for the survey dataset 
+us_presidential_election <- 
+  SurveyData$new(
+    data = nationscape_data,
+    questions = list(
+      age_group = "Please identify your age",
+      gender = "Please select your gender",
+      vote_biden = "If today is election day, will you vote for Biden?",
+      state = "Which state do you live in?"
+      ),
+    responses = list(
+      age_group = levels(nationscape_data$age_group),
+      gender = levels(nationscape_data$gender),
+      vote_biden = levels(nationscape_data$vote_biden),
+      state = levels(nationscape_data$state)
+      )
+    )
+
+# Display it
+us_presidential_election$print()
+```
+
+And we now need the same for the post-stratification dataset.
+
+```{r survey-object}
+# Create a SurveyData object for the survey dataset 
+us_post_strat <- 
+  SurveyData$new(
+    data = poststrat_data,
+    questions = list(
+      age_group = "Please identify your age",
+      sex = "Please select your sex",
+      stateicp = "Which state do you live in?"
+      ),
+    responses = list(
+      age_group = levels(poststrat_data$age_group),
+      sex = levels(poststrat_data$sex),
+      stateicp = levels(poststrat_data$stateicp)
+      )
+    )
+
+# Display it
+us_post_strat$print()
+```
+
+Now we need to start to bring the datasets together.
+
+```{r questions}
+# Create QuestionMap$object for the question related to age
+q_age <- QuestionMap$new(
+  name = "age",
+  col_names = c("age_group", "age_group"),
+  values_map = list(
+    "age_18-29" = "age_18-29",
+    "age_30-44" = "age_30-44",
+    "age_45-59" = "age_45-59",
+    "age_60_or_more" = "age_60_or_more"
+  )
+)
+# 
+# # Create QuestionMap$object for the question related to party preference
+# q_party_pref <- QuestionMap$new(
+#   name = "party_pref",
+#   col_names = c("vote_for", "vote_pref"),
+#   values_map = list(
+#     "Box Party" = "BP",
+#     "BP" = "BP",
+#     "Circle Party" = "CP",
+#     "CP" = "CP"
+#   )
+# )
+
+# Create QuestionMap$object for the question related to gender
+q_gender <- QuestionMap$new(
+  name = "gender",
+  col_names = c("gender", "sex"),
+  values_map = data.frame(
+    "Female" = "female",
+    "Male" = "male"
+  )
+)
+
+# Create QuestionMap$object for the question related to state
+q_state <- QuestionMap$new(
+  name = "state",
+  col_names = c("state", "stateicp"),
+  values_map = list(
+  "AL" = "alabama",
+  "AK" = "alaska",
+  "AZ" = "arizona",
+  "AR" = "arkansas",
+  "CA" = "california",
+  "CO" = "colorado",
+  "CT" = "connecticut",
+  "DE" = "delaware",
+  "DC" = "district of columbia",
+  "FL" = "florida",
+  "GA" = "georgia",
+  "HI" = "hawaii",
+  "ID" = "idaho",
+  "IL" = "illinois",
+  "IN" = "indiana",
+  "IA" = "iowa",
+  "KS" = "kansas",
+  "KY" = "kentucky",
+  "LA" = "louisiana",
+  "ME" = "maine",
+  "MD" = "maryland",
+  "MA" = "massachusetts",
+  "MI" = "michigan",
+  "MN" = "minnesota",
+  "MS" = "mississippi",
+  "MO" = "missouri",
+  "MT" = "montana",
+  "NE" = "nebraska",
+  "NV" = "nevada",
+  "NH" = "new hampshire",
+  "NJ" = "new jersey",
+  "NM" = "new mexico",
+  "NY" = "new york",
+  "NC" = "north carolina",
+  "ND" = "north dakota",
+  "OH" = "ohio",
+  "OK" = "oklahoma",
+  "OR" = "oregon",
+  "PA" = "pennsylvania",
+  "RI" = "rhode island",
+  "SC" = "south carolina",
+  "SD" = "south dakota",
+  "TN" = "tennessee",
+  "TX" = "texas",
+  "UT" = "utah",
+  "VT" = "vermont",
+  "VA" = "virginia",
+  "WA" = "washington",
+  "WV" = "west virginia",
+  "WI" = "wisconsin",
+  "WY" = "wyoming"
+  )
+)
+```
+
+```{r}
+q_age
+q_gender
+q_state
+```
+
+
+We can now bring them together.
+
+
+```{r map-object}
+# Create a new SurveyMap object
+us_map <- SurveyMap$new(sample = us_presidential_election, 
+                        population = us_post_strat,
+                        q_state, q_age, q_gender
+                        )
+
+print(us_map)
+```
+
+We now finish the process of bringing the datasets together.
+
+```{r mapping}
+us_map$mapping()
+```
+
+If a user wants to include all the variables in the post-stratification step, then a user uses the method `SurveyMap$tabulate` without any arguments. This prepares the dataset for post-stratification. It is also possible to specify only certain variables in the post-stratification matrix, by including those variables as arguments. 
+    
+```{r tabulate}
+us_map$tabulate()
+```
+
+We can now model the dataset.
+
+```{r  fitting}
+# Example of using rstanarm::stan_glmer
+fit1 <- us_map$fit(
+  fun = rstanarm::stan_glmer,
+  formula = vote_biden ~ (1 | age) + (1 | gender) + (1 | state),
+  family = "binomial",
+  refresh = 100,
+  cores = 2)
+```
+
+
+
+```{r predict}
+# predict the probability of voting for Biden using the fit1 model
+poststrat_est_fit1 <- fit1$population_predict()
+```
+
+
+```{r}
+# aggregate the predicted value by state
+state_estimation <- fit1$aggregate(poststrat_est_fit1, by = "state")
+
+```
+
+```{r}
+
+# generate the population estimate
+popn_estimation <- fit1$aggregate(poststrat_est_fit1)
+```
+
+```{r}
+library(ggplot2)
+plot_state <- fit1$plot(state_estimation, additional_stats = "none") +
+  ggtitle("Probability of voting the BP by state") +
+  theme_bw()
+plot_state
+```
+
+
 
 
 
