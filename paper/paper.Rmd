@@ -10,9 +10,9 @@ author:
 thanks: "**Feedback:** Comments on the `r format(Sys.time(), '%d %B %Y')` version of this paper are welcome at: lauren.kennedy729@gmail.com. **Funding statement:** We have no direct financial disclosures. **Conflicts statement:** We have no conflicts to disclose. **Code and data accessibility statement:** Code and data are available at: https://github.com/lauken13/mrpkit. We are unable to share direct access to the datasets used in the 2020 US Presidential example in this paper, however they are freely available and we provide detailed instructions for how to obtain them. **Author contributions:** Kennedy had the original idea. Gabry, Kennedy, and Morris made architectural and other high-level decisions. Gabry and Kennedy wrote most of the code and tests in the package. Amaliah wrote the vignette and contributed tests. Alexander wrote the first draft of this paper. All authors contributed to writing the paper, and approved the final version."
 date: "`r format(Sys.time(), '%d %B %Y')`"
 abstract: |
-    The R package `mrpkit` implements a structured workflow for Multilevel Regression and Poststratification (MRP). The package helps appropriately set-up the survey and post-stratification datasets and then establish a relationship between different variables in these datasets. A substantial amount of the work to do this is specified by the methods in the package, saving time, enhancing reproducibility, and reducing the risk of coding errors. The package natively supports multilevel binomial and Bernoulli models fit with `lme4` and `Stan` (via `brms` and `rstanarm`) and allows for the use of custom modeling functions. Summaries and visualizations of the resulting post-stratified estimates can be conducted using the methods in the package. This implementation provides a detailed workflow when conducting MRP that will be useful for researchers and in teaching. Unlike writing all the code yourself, using `mrpkit` proactively addresses many common issues, and makes it possible for folks who are new to MRP to quickly conduct their first analysis.
+    The R package `mrpkit` implements a structured workflow for Multilevel Regression and Poststratification (MRP). The package helps appropriately set-up the survey and post-stratification datasets and then establish a relationship between different variables in these datasets. A substantial amount of the work to do this is specified by the methods in the package, saving time, enhancing reproducibility, and reducing the risk of coding errors. The package natively supports multilevel binomial and Bernoulli models fit with `lme4` and `Stan` (via `brms` and `rstanarm`) and allows for the use of custom modeling functions. Summaries and visualizations of the resulting post-stratified estimates can be conducted using the methods in the package. This implementation provides a detailed workflow when conducting MRP that will be useful for researchers and in teaching. Using `mrpkit` proactively addresses many common issues and makes it possible to conduct MRP in an efficient way.
     
-    **Keywords:** multilevel regression with post-stratification, R, reproducibility, statistics.
+    **Keywords:** multilevel regression with post-stratification; R; reproducibility; workflow; statistics.
 output:
   bookdown::pdf_document2:
 toc: FALSE
@@ -25,24 +25,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-Multilevel regression with post-stratification (MRP) is a statistical approach in which surveys are related to each other using a statistical model. This is useful because known biases in one survey can be adjusted by another in a statistically reasonable way. This enables better use of non-representative surveys, consideration of additional information, and for the propagation of uncertainty. However, it can be difficult to use MRP due to this need to relate two different datasets. This seemingly straight-forward requirement imposes considerable hassle in practice and tends to substantially complicate reproducibility. The R [@citer] package `mrpkit` allows users to conduct multilevel regression with post-stratification in an opinionated and specific way. The package enables users to specify two datasets (a sample dataset and a post-stratification dataset), establish a correspondence between them, and then conduct analysis.
+Multilevel regression with post-stratification (MRP) is a statistical approach in which surveys are related to each other using a statistical model. This is useful because known biases in one survey can be adjusted by another in a statistically reasonable way. This enables better use of non-representative surveys, consideration of additional information, and for the propagation of uncertainty. However, it can be difficult to use MRP due to this need to relate two different datasets. This seemingly straight-forward requirement imposes considerable hassle in practice and tends to substantially complicate reproducibility. The R [@citer] package `mrpkit` allows users to conduct multilevel regression with post-stratification in an opinionated and specific way. The package provides a workflow whereby users specify two datasets (a sample dataset and a post-stratification dataset), establish a correspondence between them, and then conduct analysis.
 
 The process of conducting MRP involves considering some survey outcome as being due to a combination of many different cells that are typically demographic or geographic in nature, estimating this relationship using a multilevel regression model and then aggregating cell-level estimates to match the population [@wang2015forecasting]. The survey of interest would typically be a regular survey, such as a political poll of, say, 1,000 respondents, but it could also be a larger survey, such as the American National Election Studies, or similar. The post-stratification dataset would typically be a larger survey, such as, in the case of the US, the American Community Surveys, or a census. The correspondences need to be established for each possible answer for each question, for instance, the age-groups used in both surveys need to be homogenized. The model would typically be a Bayesian hierarchical model, but in principle any variety could be used.
 
 At its core, MRP is a mapping between a survey object and a population object. It is from this mapping that the power of MRP exists, but it can be difficult to establish this mapping in a reproducible way that fits into a typical applied statistics workflow. Making this implementation easier and more reproducible is important because interest in, and the use of, MRP has considerably increased. It can be difficult even for those experienced with MRP to ensure there are no mistakes in this mapping. The `mrpkit` package creates a well-defined workflow for MRP that represents an important contribution for enhancing the reproducibility of MRP analysis.
 
-Our package complements existing packages such as `survey` [@lumleyone; @lumleytwo; @lumleythree], and `DeclareDesign` [@citeDeclareDesign]. The `survey` package is well-established and allows a user to specify a survey design, such as clustered, stratified, etc, generate summary statistics, and conduct sub-population analysis. The `srvyr` package [@citesrvyr] is a variant of `survey` that adds a syntax similar to `dplyr` [@citedplyr]. The `DeclareDesign` package [@citeDeclareDesign] is a newer package that is based around a grammar of research design aspects including: data generation, creating treatment and control groups, and sampling. In general, these packages are focused on the designing, implementing, and simulating from, surveys. Ours is focused on what is needed for MRP, and we draw on their packages where possible. 
+Our package complements existing packages such as `survey` [@lumleyone; @lumleytwo; @lumleythree], and `DeclareDesign` [@citeDeclareDesign]. The `survey` package is well-established and allows a user to specify a survey design, such as clustered, stratified, etc, generate summary statistics, and conduct sub-population analysis. The `srvyr` package [@citesrvyr] is a variant of `survey` that adds a syntax similar to `dplyr` [@citedplyr]. The `DeclareDesign` package [@citeDeclareDesign] is a newer package that is based around a grammar of research design aspects including: data generation, creating treatment and control groups, and sampling. In general, these packages are focused on designing, implementing, and simulating from, surveys. Ours is focused on what is needed for MRP, and we draw on their packages where possible. 
 
-In terms of packages to specifically help with MRP, the most common alternative at the moment to this package is for users to do all aspects of the MRP workflow themselves. While there is nothing inherently difficult about MRP, the implementation can be difficult. In particular, preparing and matching different levels between surveys can be time consuming and potentially introduce undocumented errors. More recently `tidymrp` [@jospackage] is being developed. This package focuses on conducting analysis in a tidy way [@citetidyverse]. And `ccesMRPprep` [@shirospackage] is focused on using the Cooperative Congressional Election Study (CCES).
+In terms of packages to specifically help with MRP, the most common alternative to this package at the moment is for users to do all aspects of the MRP workflow themselves. This can be difficult. In particular, preparing and matching different levels between surveys can be time consuming and potentially introduce undocumented errors. The package `ccesMRPprep` [@shirospackage] is focused on MRP using the Cooperative Congressional Election Study (CCES). More recently the package `tidymrp` [@jospackage] is being developed, which focuses on conducting analysis in a tidy way [@citetidyverse].
 
-The main alternative approach is for MRP to be conducted on a case-specific basis. This means that a researcher who is interested in MRP estimates writes the code needed to obtain, clean, prepare, analyze and ultimately interpret the estimates. Again, while there is nothing inherently wrong with this approach, successfully conducting MRP requires dealing with many small issues. Each of these is small but getting them wrong can have large effects that are potentially unnoticed on the estimates. It is also easy to overlook steps, or to not appropriately document them. `mrpkit` is prescriptive about the steps that must be taken, and ensures that all aspects are documented.
+The main alternative approach is for MRP to be conducted on a case-specific basis. This means that a researcher who is interested in MRP estimates writes the code needed to obtain, clean, prepare, analyze, and ultimately interpret the estimates. Again, while there is nothing inherently wrong with this approach, successfully conducting MRP requires dealing with many small issues. Each of these is small but getting them wrong can have large effects that are potentially unnoticed on the estimates. It is also easy to overlook steps, or to not appropriately document them. `mrpkit` is prescriptive about the steps that must be taken, and ensures that all aspects are documented.
 
 The remainder of this paper is structured as follows: Section \@ref(usecase) discusses the core use case and workflow for MRP as implemented in `mrpkit`. Section \@ref(implementation) discusses some of the implementation issues and technical notes related to the decisions that were made. Section \@ref(example) provides an example of the package in use. Finally, Section \@ref(summary) provides a summary discussion, some cautions, and weaknesses, as well as notes about next steps.
 
 
 # Use cases and workflow {#usecase}
 
-The MRP workflow implemented by `mrpkit` is summarised in Figure \@ref(fig:illustrate). In this section, these steps are expanded on. At each of them there are a variety of decisions that must be made. The `mrpkit` package makes each of these explicit.
+The MRP workflow implemented by `mrpkit` is summarized in Figure \@ref(fig:illustrate). In this section, these steps are expanded on. At each of them there are a variety of decisions that must be made. The `mrpkit` package makes each of these explicit.
 
 ```{r illustrate, warning = FALSE, echo=FALSE, fig.cap="Illustration of a `mrpkit` workflow"}
 library(DiagrammeR)
@@ -62,24 +62,33 @@ subgraph cluster0 {
 ")
 ```
 
-We see a variety of use cases including:
+We see a variety of use cases for `mrpkit` including:
 
 - A professor wants to introduce MRP to a class that might not be especially experienced with R, nor have time to develop the necessary skills, instead wanting to focus on the estimates and applications.
 - A researcher with domain or survey expertise, but who does not have the resources to ensure that the code has been appropriately tested.
 - A researcher who is experienced with MRP needs to run many different models on the same dataset.
 
+The main contribution of `mrpkit` across these situations is making steps explicit that are often implicit.
+
+
 ## Set-up, load package, and read in the datasets
 
-At the moment the `mrpkit` package has not been submitted to CRAN as it is still be finalised. For now it can be installed from GitHub.
+At the moment the `mrpkit` package has not been submitted to CRAN as it is being finalized. For now it can be installed from GitHub.
+
+```{r, eval=FALSE}
+devtools::install_github("lauken13/mrpkit")
+```
+
 
 ```{r}
-# devtools::install_github("lauken13/mrpkit")
 library(mrpkit)
 ```
 
 Having installed and loaded the package, a user first needs to get their survey and post-stratification dataset into R. This means ensuring that it is in a rectangular format such as a CSV and then reading it in as a dataframe. The `mrpkit` package does not explicitly contain methods for this, instead a user could use `readr::read_csv()` [@citereadr] or `haven::read_dta()` [@citehaven]. 
 
-A user will need two datasets. At this point, one aspect to be aware of is the class of the variables. The `mrpkit` package will convert all variables to factor variables. Here for the survey and post-stratification datasets we will use simulated datasets that are available as part of the package `mrpkit::shape_survey` and `mrpkit::approx_voters_popn`.
+A user will need two datasets. At this point, a user should be keenly aware of the class of the variables as this becomes important later in the workflow. This is because the `mrpkit` package will convert all variables to factor variables. 
+
+In this example we will use simulated datasets that are available as part of the package for the survey dataset, `mrpkit::shape_survey`, and the post-stratification dataset, `mrpkit::approx_voters_popn`.
 
 ```{r}
 survey <- shape_survey
@@ -90,19 +99,18 @@ head(poststrat)
 ```
 
 
-
 ## Preparing each dataset
 
-Typically MRP requires at least two datasets---usually a survey dataset and a post-stratification dataset. A user specifies these using the `SurveyData` method. `SurveyData` objects are used to represent both the survey and the post-stratification datasets, along with their metadata. A user needs to create `SurveyData` objects for both the survey and post-stratification datasets separately using the `SurveyData$new` method and assigning a name to each. The `SurveyData$new` method is used to transform a regular data frame into a `SurveyData` object. 
+Typically, MRP requires at least two datasets---usually a survey dataset and a post-stratification dataset. A user specifies these using the `SurveyData` class. `SurveyData` objects are used to represent both the survey and the post-stratification datasets, along with their metadata. The `SurveyData$new` method transforms a regular dataframe into a `SurveyData` object. A user needs to create `SurveyData` objects for both the survey and post-stratification datasets separately using the `SurveyData$new` method and assigning a name to each.
 
-As part of creating these objects a user will typically specify the dataset (from the earlier step), the survey questions, the possible responses, and any weights and design formula that are applicable. A user does this separately for the survey and the post-stratification dataset, so there will be two objects created. Having created this object, a user can use the `SurveyData$print` method to display the created `SurveyData` object in the console.
+As part of creating these objects a user will typically specify the dataset (brought into R in the earlier step), the survey questions, the possible responses, and any weights and design formula that are applicable. A user does this separately for the survey and the post-stratification dataset, so there will be two objects created. Having created this object, a user can use the `SurveyData$print` method to display the created `SurveyData` object in the console.
 
-Building on the datasets earlier, we will show the steps to create `SurveyData` objects using the `SurveyData$new` method. This method takes the following arguments:
+Building on the datasets that were loaded earlier, we will show the steps to create `SurveyData` objects using the `SurveyData$new` method. This method takes the following arguments:
 
-1. `data`: The name of the dataframe, i.e., the survey or post-stratification data, that is to be transformed to a `SurveyData` object. By default, this method uses each of the factor, character, and binary variables to create questions and responses, unless a user specifies the list of questions and responses.
-2. `questions`: The actual questions asked in the survey form or questionnaire for each of the columns in the dataframe. For instance, a column called 'age' may contain the results of a question 'Please identify your age-group'.
+1. `data`: The name of the dataset, i.e., the survey or post-stratification data that will be transformed to a `SurveyData` object. By default, this method uses all of the factor, character, and binary variables in the dataset to create questions and responses, unless a user specifies the list of questions and responses that are of interest.
+2. `questions`: The actual questions asked in the survey form or questionnaire for each of the columns in the dataset For instance, a column called 'age' may contain the results of a question 'Please identify your age-group'.
 3. `responses`: All possible responses for each of the questions. For instance, possible responses in the 'age' column could be: '18-25', '26-35', '36-45', '46-55', '56-65', '66-75', and '76-90'.
-4. (Optional) `weights`: If the weight is specified as a column in the datasets, then this argument should be specified as a string.
+4. (Optional) `weights`: If the weight is specified as a column in the dataset, then this argument should be specified as a string.
 5. (Optional) `design`: If there is a design formula for the survey, then this can be specified using the notation of the `survey` package [@lumleyone; @lumleytwo; @lumleythree].
 
 Here we create a `SurveyData` object for the survey dataset.
@@ -135,7 +143,7 @@ box_pref <- SurveyData$new(
 box_pref$print()
 ```
 
-Now we create a `SurveyData` object for the post-stratification dataset. This code is used to create a `SurveyData` object for post-stratification data when the weight is already specified in the dataset. Usually, the post-stratification data is from a large survey, for example, the American Community Survey (ACS) or Demographic and Health Survey (DHS). It is possible to have an already summarized post-stratification dataset. If this is the case, then the weight would be the size of each cell. Alternatively (as in this example), if the entire individual-level population is given, then this argument should be omitted, and it would be automatically specified as 1.
+Now we create a `SurveyData` object for the post-stratification dataset. In this case, the weight is already specified in the dataset. Often in MRP, the post-stratification dataset is from a large survey, for example, the American Community Survey (ACS) or Demographic and Health Survey (DHS). It is possible to have an already summarized post-stratification dataset. If this is the case, then the weight would be the size of each cell. Alternatively (as in this example), if the entire individual-level population is given, then this argument should be omitted, and it would be automatically specified as 1.
 
 ```{r poststrat-object}
 poststrat_obj <- SurveyData$new(
@@ -162,23 +170,23 @@ poststrat_obj <- SurveyData$new(
 poststrat_obj$print() 
 ```
 
-A user can access the properties of the `SurveyData` object using methods for this. For instance, the weights, `SurveyData$weights()`, the design, `SurveyData$design()`, the questions, `SurveyData$questions()`, and the number of questions, `SurveyData$n_questions()`, or the responses, `SurveyData$responses()`.
+A user can access the properties of the `SurveyData` object using various methods. For instance, the weights, `SurveyData$weights()`, the design, `SurveyData$design()`, the questions, `SurveyData$questions()`, the number of questions, `SurveyData$n_questions()`, and the responses, `SurveyData$responses()`.
 
 
 
 ## Aligning the datasets
 
-Having established these two datasets separately, a user needs to begin to create a relationship between them. The first step is to relate each question, and their answers using `QuestionMap$new`. This needs to be done for every question that will be used and typically requires specifying a name that will be used for the underlying construct, the column names in each of the two `SurveyData` objects, and a mapping between the values in each. This is a deliberately specific task requiring the user to think about and manually link the answers.
+Having established these two datasets separately, a user needs to begin to create a relationship between them. The first step is to relate each question, and their answers using `QuestionMap$new`. This needs to be done for every question that will be used and typically requires specifying a name that will be used for the underlying construct, the column names in each of the two `SurveyData` objects, and a mapping between the values in each. This is a deliberately specific task requiring the user to think about and manually link the values.
 
 In the example, the survey (`box_pref`) and the post-stratification (`poststrat_obj`) objects have different column labels and response levels. Specifically, the column label for age in `box_pref` is 'age', whereas, in `poststrat_obj`, the column label is 'age_group'. This variable also has different levels; `box_pref` has seven levels of age, whereas `poststrat_obj` has only four levels of age. We do this alignment using the `QuestionMap$new` method.
 
 This method takes three arguments:
 
 1. `name`: The name of the underlying construct. This will be used in the modeling stage.
-2. `col_names`: A character vector of the column label in the survey and post-stratification objects. The column name of the survey should always be the first element, followed by the column name of the post-stratification object. This order is not interchangeable.  
+2. `col_names`: A character vector of the column label in the survey and post-stratification objects. The column name of the survey should always be the first element, followed by the column name of the post-stratification object. This order is not interchangeable.
 3. `values_map`: The list of the mapped values between the survey and post-stratification object. If there is a meaningful ordering over the values, they should be sorted over that order, either descending or ascending.
 
-Here we define how age-groups, political preferences, gender, education, and states should come together. While this is tedious it is worth noting that in general much of this code is likely to be re-useable across different situations.
+Here we define how age-groups, political preferences, gender, education, and states should come together. While this is tedious it is worth noting that in general much of this code is likely to be re-useable across different projects.
 
 ```{r questions}
 # Create QuestionMap$object for the question related to age
@@ -251,23 +259,19 @@ The maps between each question print nicely to allow checking.
 
 ```{r}
 q_age
-q_party_pref
-q_gender
-q_educ
-q_state
 ```
 
 
 
 ## Bringing the datasets together
 
-The relationship between the two datasets is finalised by bringing all of this together to create a map between them using `SurveyMap$new` and assigning this to an object. This typically requires specifying: 
+The relationship between the two datasets is finalized by bringing all of this together to create a map between them using `SurveyMap$new` and assigning this to an object. This typically requires specifying: 
 
 1) the name of the `SurveyData` object related to the sample, in this case 'box_pref'; 
-2) the name of the `SurveyData` object related to the post-stratification dataset, in this case `poststrat_obj`; and 
+2) the name of the `SurveyData` object related to the post-stratification dataset, in this case 'poststrat_obj'; and 
 3) the question mappings that should be included, which specifies the matched labels and values provided by `QuestionMap` objects. 
 
-The method initializes a new `SurveyMap` object is `SurveyMap$new`. This takes `SurveyData` and `QuestionMap` objects as argument. 
+To initialize a new `SurveyMap` object a user can use the `SurveyMap$new` method. This takes `SurveyData` and `QuestionMap` objects as argument. 
 
 ```{r map-object}
 # Create a new SurveyMap object
@@ -287,17 +291,18 @@ ex_map$add(q_state)
 print(ex_map)
 ```
 
-The user has mapped all the questions in the post-stratification object. Variables could be excluded using the `SurveyMap$delete` method. Similarly, `SurveyMap$replace` enables a user to use another level of matching. 
+At this point the user has mapped the questions of interest between the survey and the post-stratification datasets. Variables could be excluded using the `SurveyMap$delete` method, or replaced using the `SurveyMap$replace` method.
 
-## Finalising the mapping and tabulation
 
-At this point, the datasets have been brought together. This process is finalised with `SurveyMap$mapping`. This creates new sample and post-stratification datasets with unified variable names, and levels. It prepares the mapped data for model fitting.
+## Finalizing the mapping and tabulation
+
+The process of bringing the datasets together is finalized with the method `SurveyMap$mapping`. This creates new sample and post-stratification datasets with unified variable names, and levels. It prepares the mapped data for model fitting.
 
 ```{r mapping}
 ex_map$mapping()
 ```
 
-If a user wants to include all the variables in the post-stratification step, then a user uses the method `SurveyMap$tabulate` without any arguments. This prepares the dataset for post-stratification. It is also possible to specify only certain variables in the post-stratification matrix, by including those variables as arguments. 
+If a user wants to include all the variables in the post-stratification step, then a user can use the `SurveyMap$tabulate` method without any arguments. It is also possible to specify only certain variables in the post-stratification step, by including those variables as arguments. 
     
 ```{r tabulate}
 ex_map$tabulate()
@@ -305,7 +310,7 @@ ex_map$tabulate()
 
 ## Modelling the survey data
 
-The user can then fit a model to the survey dataset using `SurveyMap$fit` and naming it to create an object. Built-in options include: `rstanarm::stan_glmer()` and `rstanarm::stan_glm()` [@citestanarm], `lme4::glmer()` [@citelme4] , `brms::brm()` [@citebrms]. A user could also specify their own function. For that purpose there is a `data` argument that accepts a dataframe. In this example, we fit three models using `rstanarm::stan_glmer()`, `lme4::glmer()`, and `brms:brm()` with `age`, `gender`, and `education` as the predictors.
+The user can then fit a model to the survey dataset using `SurveyMap$fit` and naming it to create an object. Built-in options include: `rstanarm::stan_glmer()` and `rstanarm::stan_glm()` [@citestanarm], `lme4::glmer()` [@citelme4], and `brms::brm()` [@citebrms]. A user could also specify their own function. For that purpose, there is a `data` argument that accepts a dataframe. In this example, we fit three models using `rstanarm::stan_glmer()`, `lme4::glmer()`, and `brms:brm()` with `age`, `gender`, and `education` as the predictors.
 
 ```{r  fitting}
 # Example of using rstanarm::stan_glmer
@@ -342,8 +347,8 @@ At this stage, a user has fitted model objects, i.e., `fit1` and `fit2`. These o
 
 1) Generating the predicted probabilities for the post-stratification cells using `SurveyFit$population_predict`.
 2) Considering these post-stratified estimates at a more-aggregated level, for instance state or province level, using `SurveyFit$aggregate`.
-3) Make a table that summarises the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates, using the `summary` method.
-4) Visualise the estimates using the `plot` method.
+3) Make a table that summarizes the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates, using the `summary` method.
+4) Visualize the estimates using the `plot` method.
 
 
 ### Get the probability of the outcome for each poststratification cell
@@ -361,7 +366,7 @@ poststrat_est_fit1 <- fit1$population_predict()
 
 ### Aggregate the probability of the outcome to a higher level of estimate
 
-The next step is to generate the population estimate or group estimate using the `SurveyFit$aggregate` method. This method takes two arguments, namely the post-stratification estimate data and the variable whose level to which the estimated value would be aggregated to. In this example, we want to aggregate the estimated value by the level of `age` and `state`. If the variable is not specified, then this method would generate a population estimate.
+The next step is to generate the population estimate or group estimate using the `SurveyFit$aggregate` method. This method takes two arguments, namely the post-stratification estimate and the variable whose level to which the estimated value would be aggregated to. In this example, we want to aggregate the estimated value by the level of `age` and `state`. If the variable is not specified, then this method would generate a population estimate.
 
 ```{r aggregate}
 
@@ -376,7 +381,7 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_estimation` represents the age group and the probability of voting for the Box Party for each age group.
+This method then will return a dataframe with the variable levels and probability of the outcome, `y`. In this example, `age_estimation` represents the age group and the probability of voting for the Box Party for each age group.
 
 ```{r show-aggr}
 head(age_estimation) 
@@ -389,13 +394,13 @@ age_estimation %>%
 ```
 
 
-### Summarise and compare
+### Summarize and compare
 
-The output of aggregate is a posterior predictive distribution for the population (or sub-populations) of interest. This can be used with the plot function to visualize. However, we also might wish to make a table summary of the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates. We can use the `summary` method do to this. This method takes the aggregated data frame and produces a dataframe of mean and standard deviation estimates for each group (if in the aggregated frame) or overall in the population. The standard deviation for the weights is created by wrapping the survey package using the original design specified, and the raw standard deviation is $\sqrt\frac{pq}{n}$. This is called automatically in the plot method. 
+The output of aggregate is a posterior predictive distribution for the population (or sub-populations) of interest. This can be used with the plot function to visualize. However, we also might wish to make a table summary of the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates. We can use the `summary` method do to this. This method takes the aggregated dataframe and produces a dataframe of mean and standard deviation estimates for each group (if in the aggregated frame) or overall in the population. The standard deviation for the weights is created by wrapping the survey package using the original design specified, and the raw standard deviation is $\sqrt\frac{pq}{n}$. This is called automatically in the plot method. 
 
 ### Visualize
 
-Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95 per cent confidence interval.  
+Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated dataframe and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95 per cent confidence interval.  
 In this example, we display the estimated plot for 'age' and 'state' and a density plot for the population estimates. 
 
 
@@ -438,9 +443,9 @@ Section \@ref(implementation) discusses some of the implementation issues and te
 
 In this example we will forecast the 2020 US presidential election using survey data from the Democracy Fund Voter Study Group and use the Integrated Public Use Microdata Series (IPUMS), to access the 2018 American Community Survey (ACS) to use as post-stratification data. We are interested in considering the following variables: state, age-group, and gender.
 
-The first step is to gather the datasets. For the survey data we are interested in the Nationscape dateset, which can be requested from the Voter Study Group. Access is usually granted within hours and is completely free. We are going to use the survey from 25 June 2020.
+The first step is to gather the datasets. For the survey data we are interested in the Nationscape dataset, which can be requested from the Voter Study Group. Access is usually granted within hours and is completely free. We are going to use the survey from 25 June 2020.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # This code based on that from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
 library(haven)
 library(tidyverse)
@@ -471,34 +476,14 @@ nationscape_data <-
 nationscape_data <-
   nationscape_data %>%
   mutate(
-    age_group = case_when( # case_when works in order and exits when there's a match
+    age_group = case_when(
       age <= 29 ~ 'age_18-29',
       age <= 44 ~ 'age_30-44',
       age <= 59 ~ 'age_45-59',
       age >= 60 ~ 'age_60_or_more',
       TRUE ~ 'Trouble'
       )
-#     gender = case_when(
-#       gender == "Female" ~ 'female',
-#       gender == "Male" ~ 'male',
-#       TRUE ~ 'Trouble'
-#       ),
-#     education_level = case_when(
-#       education == "3rd Grade or less" ~ "High school or less",
-#       education == "Middle School - Grades 4 - 8" ~ "High school or less",
-#       education == "Completed some high school" ~ "High school or less",
-#       education == "High school graduate" ~ "High school or less",
-#       education == "Other post high school vocational training" ~ "Some post secondary",
-#       education == "Completed some college, but no degree" ~ "Some post secondary",
-#       education == "Associate Degree" ~ "Post secondary or higher",
-#       education == "College Degree (such as B.A., B.S.)" ~ "Post secondary or higher",
-#       education == "Completed some graduate, but no degree" ~ "Post secondary or higher",
-#       education == "Masters degree" ~ "Graduate degree",
-#       education == "Doctorate degree" ~ "Graduate degree",
-#       TRUE ~ 'Trouble'
-#       )
     ) 
-#   select(-education, -age)
 
 # Tidy the class
 nationscape_data <-
@@ -509,105 +494,49 @@ nationscape_data %>%
   head()
 ```
 
-```{r}
-# This code is very directly from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
-# Format state names so the whole state name is written out, to match IPUMS data
-# states_names_and_abbrevs <- 
-#   tibble(stateicp = state.name, state = state.abb)
-# 
-# nationscape_data <-
-#   nationscape_data %>%
-#   left_join(states_names_and_abbrevs)
-# 
-# rm(states_names_and_abbrevs)
-# 
-# # Make lowercase to match IPUMS data
-# nationscape_data <- 
-#   nationscape_data %>% 
-#   mutate(stateicp = tolower(stateicp))
-# 
-# nationscape_data$stateicp %>% unique()
-# 
-# # Replace NAs with DC
-# nationscape_data$stateicp <- 
-#   replace_na(nationscape_data$stateicp, "district of columbia")
-# 
-# # Tidy the class
-# nationscape_data <- 
-#   nationscape_data %>% 
-#   mutate(across(c(gender, stateicp, education_level, age_group), as_factor))
-# 
-# # Save data
-# write_csv(nationscape_data, "outputs/data/polling_data.csv")
-
-```
-
-
-
 We also need a post-stratification dataset. In this case we can use the American Community Survey (ACS) accessed through IPUMS. 
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Again, closely following code from Alen Mitrovski, Xiaoyan Yang, and Matthew Wankiewicz.
 library(haven)
 library(tidyverse)
 
-raw_poststrat_data <- 
+raw_poststrat_data <-
   read_dta(here::here("paper/usa_00009.dta"))
 
 # The Stata format separates labels so reunite those
-raw_poststrat_data <- 
+raw_poststrat_data <-
   labelled::to_factor(raw_poststrat_data)
 head(raw_poststrat_data)
 
 raw_poststrat_data$age <- as.numeric(raw_poststrat_data$age)
-raw_poststrat_data$stateicp <- as.character(raw_poststrat_data$stateicp)
+raw_poststrat_data$stateicp <-
+  as.character(raw_poststrat_data$stateicp)
 
-poststrat_data <- 
-  raw_poststrat_data %>% 
-  # filter(inctot < 9999999) %>% 
-  filter(age >= 18) %>% 
-#   mutate(gender = sex) %>% 
+poststrat_data <-
+  raw_poststrat_data %>%
+  filter(age >= 18) %>%
   mutate(
-    age_group = case_when( # case_when works in order and exits when there's a match
+    age_group = case_when(
       age <= 29 ~ 'age_18-29',
       age <= 44 ~ 'age_30-44',
       age <= 59 ~ 'age_45-59',
       age >= 60 ~ 'age_60_or_more',
       TRUE ~ 'Trouble'
-      )
-#     education_level = case_when(
-#       educd == "nursery school, preschool" ~ "High school or less",
-#       educd == "kindergarten" ~ "High school or less",
-#       educd == "grade 1" ~ "High school or less",
-#       educd == "grade 2" ~ "High school or less",
-#       educd == "grade 3" ~ "High school or less",
-#       educd == "grade 4" ~ "High school or less",
-#       educd == "grade 5" ~ "High school or less",
-#       educd == "grade 6" ~ "High school or less",
-#       educd == "grade 7" ~ "High school or less",
-#       educd == "grade 8" ~ "High school or less",
-#       educd == "grade 9" ~ "High school or less",
-#       educd == "grade 10" ~ "High school or less",
-#       educd == "grade 11" ~ "High school or less",
-#       educd == "12th grade, no diploma" ~ "High school or less",
-#       educd == "regular high school diploma" ~ "High school or less",
-#       educd == "ged or alternative credential" ~ "High school or less",
-#       educd == "some college, but less than 1 year" ~ "Some post secondary",
-#       educd == "1 or more years of college credit, no degree" ~ "Some post secondary",
-#       educd == "associate's degree, type not specified" ~ "Post secondary or higher",
-#       educd == "bachelor's degree" ~ "Post secondary or higher",
-#       educd == "master's degree" ~ "Graduate degree",
-#       educd == "professional degree beyond a bachelor's degree" ~ "Graduate degree",
-#       educd == "doctoral degree" ~ "Graduate degree",
-#       educd == "no schooling completed" ~ "High school or less",
-#       TRUE ~ 'Trouble'
-#       )
-    ) %>% 
-  filter(!stateicp %in% c("puerto rico", "state groupings (1980 urban/rural sample)", "military/mil. reservations", "state not identified"))
+    )
+  ) %>%
+  filter(
+    !stateicp %in% c(
+      "puerto rico",
+      "state groupings (1980 urban/rural sample)",
+      "military/mil. reservations",
+      "state not identified"
+    )
+  )
 
 # Just keep relevant variables
-poststrat_data <- 
-  poststrat_data %>% 
+poststrat_data <-
+  poststrat_data %>%
   select(sex,
          age_group,
          stateicp)
@@ -616,20 +545,11 @@ poststrat_data <-
 poststrat_data <-
   poststrat_data %>%
   mutate(across(c(sex, stateicp, age_group), as_factor))
-
-
-# 
-# # Save data
-# write_csv(poststrat_data, "outputs/data/us_poststrat.csv")
-# 
-# poststrat_data %>% 
-#   head()
-
 ```
 
 Now that we have the data, we need to create a `SurveyData` object for the survey dataset.
 
-```{r survey-object}
+```{r survey-object-us}
 library(mrpkit)
 # Create a SurveyData object for the survey dataset 
 us_presidential_election <- 
@@ -655,7 +575,7 @@ us_presidential_election$print()
 
 And we now need the same for the post-stratification dataset.
 
-```{r survey-object}
+```{r survey-object-post-strat}
 # Create a SurveyData object for the survey dataset 
 us_post_strat <- 
   SurveyData$new(
@@ -678,7 +598,7 @@ us_post_strat$print()
 
 Now we need to start to bring the datasets together.
 
-```{r questions}
+```{r questions-us}
 # Create QuestionMap$object for the question related to age
 q_age <- QuestionMap$new(
   name = "age",
@@ -690,18 +610,6 @@ q_age <- QuestionMap$new(
     "age_60_or_more" = "age_60_or_more"
   )
 )
-# 
-# # Create QuestionMap$object for the question related to party preference
-# q_party_pref <- QuestionMap$new(
-#   name = "party_pref",
-#   col_names = c("vote_for", "vote_pref"),
-#   values_map = list(
-#     "Box Party" = "BP",
-#     "BP" = "BP",
-#     "Circle Party" = "CP",
-#     "CP" = "CP"
-#   )
-# )
 
 # Create QuestionMap$object for the question related to gender
 q_gender <- QuestionMap$new(
@@ -773,17 +681,9 @@ q_state <- QuestionMap$new(
 )
 ```
 
-```{r}
-q_age
-q_gender
-q_state
-```
-
-
 We can now bring them together.
 
-
-```{r map-object}
+```{r map-object-us}
 # Create a new SurveyMap object
 us_map <- SurveyMap$new(sample = us_presidential_election, 
                         population = us_post_strat,
@@ -795,19 +695,19 @@ print(us_map)
 
 We now finish the process of bringing the datasets together.
 
-```{r mapping}
+```{r mapping-us}
 us_map$mapping()
 ```
 
 If a user wants to include all the variables in the post-stratification step, then a user uses the method `SurveyMap$tabulate` without any arguments. This prepares the dataset for post-stratification. It is also possible to specify only certain variables in the post-stratification matrix, by including those variables as arguments. 
     
-```{r tabulate}
+```{r tabulate-us}
 us_map$tabulate()
 ```
 
 We can now model the dataset.
 
-```{r  fitting}
+```{r  fitting-us}
 # Example of using rstanarm::stan_glmer
 fit1 <- us_map$fit(
   fun = rstanarm::stan_glmer,
@@ -818,8 +718,7 @@ fit1 <- us_map$fit(
 ```
 
 
-
-```{r predict}
+```{r predict-us}
 # predict the probability of voting for Biden using the fit1 model
 poststrat_est_fit1 <- fit1$population_predict()
 ```
@@ -832,7 +731,6 @@ state_estimation <- fit1$aggregate(poststrat_est_fit1, by = "state")
 ```
 
 ```{r}
-
 # generate the population estimate
 popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 ```
@@ -840,12 +738,10 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 ```{r}
 library(ggplot2)
 plot_state <- fit1$plot(state_estimation, additional_stats = "none") +
-  ggtitle("Probability of voting the BP by state") +
-  theme_bw()
+  ggtitle("Probability of supporting Biden by state") +
+  theme_classic()
 plot_state
 ```
-
-
 
 
 
@@ -865,6 +761,7 @@ The variety of skills
 
 ## The use of R6 objects
 
+One of the defining features of `mrpkit` is the use of R6 objects. This 
 
 
 ## Next steps and cautions
