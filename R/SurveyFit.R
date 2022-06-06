@@ -137,16 +137,16 @@ SurveyFit <- R6::R6Class(
         if (length(by) != 1) {
           stop("Currently only one variable can be named in 'by'.", call. = FALSE)
         }
-        rotate_levels <- levels(private$map_$mapped_sample_data()[, by])
-        out <- expand.grid(by = rotate_levels, draw = 1:ncol(poststrat_estimates), value = NA)
-        colnames(out)[1] <- by
-        for (focus_level in rotate_levels){
-          level_loc <- poststrat_data[by] == focus_level
-          out[out[by] == focus_level, "value"] <-
-            apply(poststrat_estimates[level_loc, ], 2, function(x) sum(poststrat_data$N_j[level_loc]*x)/sum(poststrat_data$N_j[level_loc]))
-        }
+        ps_and_posterior <- cbind(poststrat_data,poststrat_estimates)
+        out <- ps_and_posterior %>%
+          tidyr::pivot_longer(cols = -colnames(poststrat_data),
+                       names_to = "draws",
+                       values_to = "posterior_sample")%>%
+          dplyr::group_by(.data[[by]], .data$draws)%>%
+          dplyr::summarise(value = sum(.data$posterior_sample*.data$N_j)/sum(.data$N_j))%>%
+          dplyr::ungroup()
         out <- out %>%
-          dplyr::select(-"draw")
+          dplyr::select(-"draws")
       } else {
         out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }
