@@ -27,7 +27,8 @@
 #'   responses = list(
 #'     age = levels(shape_survey$age),
 #'     gender = levels(shape_survey$gender),
-#'     vote_for = levels(shape_survey$vote_for),
+#'     vote_for = data.frame(data = levels(shape_survey$vote_for),
+#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
 #'     y = c("no","yes")
 #'   ),
 #'   weights = "wt",

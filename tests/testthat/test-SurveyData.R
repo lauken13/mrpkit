@@ -350,3 +350,24 @@ test_that("dataframe response option works appropriately", {
     )
 })
 
+test_that("error thrown if dataframe response given in wrong format", {
+  expect_error(
+    SurveyData$new(
+      data = feline_survey,
+      questions = list(
+        pet_own = "Which pet do you own?",
+        y = "Response"
+      ),
+      responses = list(
+        pet_own = data.frame(data = c("cat", "kitten", "dog", "puppy"),
+                             actual = c(data = c("adult cat > 1 year", "young cat < 1 year", "adult dog > 1 year", "young dog < 1 year"))),
+        y = data.frame(data = c("no", "yes"),
+                       asked = c("Prefer Dogs","Prefer Cats"))
+      ),
+      weights = "wt",
+      design = list(ids =~1)
+    ),
+    "If providing responses as data and asked questions, must be in a single two dataframe column with column names `data` and `asked`."
+  )
+})
+
