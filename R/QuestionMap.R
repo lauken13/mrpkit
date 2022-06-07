@@ -50,10 +50,7 @@ QuestionMap <- R6::R6Class(
     #'   responses to the question in the sample data and the values correspond
     #'   to the responses in the population data. If there is a meaningful
     #'   ordering over the values, they should be listed in that order, either
-    #'   descending or ascending. Note that if responses were given with both the
-    #'   values in the data and the actual responses given (useful as these will
-    #'   be used for plotting), mapping should use the values in the data
-    #'   (generally shorter). See **Examples**.
+    #'   descending or ascending. See **Examples**.
     #' @return A `QuestionMap` object that can be added to a [`SurveyMap`]
     #'   object.
     #'

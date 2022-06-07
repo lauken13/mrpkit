@@ -76,10 +76,7 @@ SurveyData <- R6::R6Class(
     #'   questions and the allowed responses, respectively. The names must
     #'   correspond to the names of variables in `data`. See **Examples**. If
     #'   these aren't provided then they will be created internally using all
-    #'   factor, character, and binary variables in `data`. Responses can also be
-    #'   provided as a dataframe with column names "data" and "asked", which
-    #'   reflect the responses as coded in the data ("data") and their
-    #'   corresponding actual survey responses ("asked").
+    #'   factor, character, and binary variables in `data`.
     #' @param weights Optionally, the name of a variable in `data` containing
     #'   survey weights.
     #' @param design Optionally, a named list of arguments (except `weights` and
@@ -182,11 +179,7 @@ SurveyData <- R6::R6Class(
       responses <- responses[nms_q]
 
       for (j in seq_along(questions)) {
-        if(is.data.frame(responses[[j]])){
-          responses_provided <- sort(responses[[j]][["data"]])
-        }else{
-          responses_provided <- sort(responses[[j]])
-        }
+        responses_provided <- sort(responses[[j]])
         if (is.factor(data[[nms_q[j]]])) {
           responses_in_data <- sort(levels(data[[nms_q[j]]]))
         } else {
@@ -307,13 +300,6 @@ print_questions_and_responses <- function(questions, responses) {
   for (i in seq_along(questions)) {
     cat("\nColumn label:", names(questions)[i], "\n")
     cat("Question:", questions[[i]], "\n")
-    if(is.data.frame(responses[[i]])){
-      responses_provided <- responses[[i]][["data"]]
-      responses_asked <- responses[[i]][["asked"]]
-      cat("Allowed answers:", paste(responses_provided, "(", responses_asked , ")",collapse = ", "), "\n")
-    }else{
-      responses_provided <- responses[[i]]
-      cat("Allowed answers:", paste(responses_provided, collapse = ", "), "\n")
-    }
+    cat("Allowed answers:", paste(responses[[i]], collapse = ", "), "\n")
   }
 }
