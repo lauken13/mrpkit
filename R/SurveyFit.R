@@ -178,7 +178,9 @@ SurveyFit <- R6::R6Class(
           dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "mrp")
 
-        lhs_binary <- self$map()$sample()$survey_data() %>%
+          levels(wtd_ests[[by_var]]) <- levels(mrp_ests[[by_var]])
+
+          lhs_binary <- self$map()$sample()$survey_data() %>%
           dplyr::select(lhs_var, .key)%>%
           dplyr::mutate(lhs_binary = force_factor(.data[[lhs_var]]))
 
@@ -194,6 +196,8 @@ SurveyFit <- R6::R6Class(
           ) %>%
           dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "raw")
+
+        levels(raw_ests[[by_var]]) <- levels(mrp_ests[[by_var]])
        } else {
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(
@@ -253,6 +257,16 @@ SurveyFit <- R6::R6Class(
         focus_var <- colnames(aggregated_estimates)[1]
         focus_var_which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
+        focus_var_responses <- private$map_$sample()$responses()[[focus_var_which_q]]
+        if(is.data.frame(focus_var_responses)){
+          num_modelled_levels <- length(levels(aggregated_estimates[[focus_var]]))
+          combined_levels_asked <- rep(NA, num_modelled_levels)
+          for(i in 1:num_modelled_levels){
+            combined_levels_data <- unlist(strsplit(levels(aggregated_estimates[[focus_var]])[i], split = " \\+ "))
+            combined_levels_asked[i] <- paste0(focus_var_responses$asked[focus_var_responses$data %in% combined_levels_data], collapse = " + ")
+          }
+          levels(aggregated_estimates[[focus_var]]) <- combined_levels_asked
+        }
         gg <- ggplot2::ggplot(aggregated_estimates) +
           ggplot2::aes(x = .data[[focus_var]], y = .data[["value"]]) +
           ggplot2::geom_violin(fill = "#636363",alpha = 0.4, position = ggplot2::position_dodge(0.25)) +
@@ -264,6 +278,7 @@ SurveyFit <- R6::R6Class(
         additional_ests <- self$summary(aggregated_estimates)
         additional_ests_filtered <- additional_ests[additional_ests$method %in% additional_stats, ]
         additional_ests_filtered$method <- ordered(additional_ests_filtered$method, levels = c("raw","mrp","wtd"))
+
         gg <- gg +
           ggplot2::geom_point(
             data = additional_ests_filtered,
