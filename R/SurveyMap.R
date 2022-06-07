@@ -137,10 +137,14 @@
 #'
 #' # estimates by age level
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+#' estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 #'
 #' fit_1$summary(estimates_by_age)
 #' fit_2$summary(estimates_by_age)
-#'# fit_3$summary(estimates_by_age)
+#' fit_3$summary(estimates_by_age)
+#'
+#' fit_1$summary(estimates_by_party)
+#' fit_1$plot(estimates_by_party)
 #'
 #' # plot estimates by age
 #' fit_1$plot(estimates_by_age)

@@ -24,7 +24,8 @@
 #'   responses = list(
 #'     age = levels(shape_survey$age),
 #'     gender = levels(shape_survey$gender),
-#'     vote_for = levels(shape_survey$vote_for),
+#'     vote_for = data.frame(data = levels(shape_survey$vote_for),
+#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
 #'     y = c("no","yes")
 #'   ),
 #'   weights = "wt",
@@ -183,6 +184,11 @@ SurveyData <- R6::R6Class(
 
       for (j in seq_along(questions)) {
         if(is.data.frame(responses[[j]])){
+          if(!identical(colnames(responses[[j]]),c("data","asked"))){
+            stop("If providing responses as data and asked questions, must be in a single two dataframe
+                 column with column names `data` and `asked`.",
+                 call. = FALSE)
+          }
           responses_provided <- sort(responses[[j]][["data"]])
         }else{
           responses_provided <- sort(responses[[j]])
