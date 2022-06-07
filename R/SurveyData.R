@@ -185,8 +185,7 @@ SurveyData <- R6::R6Class(
       for (j in seq_along(questions)) {
         if(is.data.frame(responses[[j]])){
           if(!identical(colnames(responses[[j]]),c("data","asked"))){
-            stop("If providing responses as data and asked questions, must be in a single two dataframe
-                 column with column names `data` and `asked`.",
+            stop("If providing responses as data and asked questions, must be in a single two dataframe column with column names `data` and `asked`.",
                  call. = FALSE)
           }
           responses_provided <- sort(responses[[j]][["data"]])
