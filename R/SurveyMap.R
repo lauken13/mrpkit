@@ -159,7 +159,7 @@
 #' fit_1$plot(estimates_popn, additional_stats = "wtd")
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
-#'
+#' }
 
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",

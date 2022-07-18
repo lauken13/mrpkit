@@ -31,11 +31,11 @@ LazyData: true
 RoxygenNote: 7.1.2
 Imports:
     dplyr,
-    tidyr,
     forcats,
     ggplot2,
     survey,
-    R6
+    R6,
+    tidyr
 Suggests:
     testthat,
     rstanarm (>= 2.21.0),
