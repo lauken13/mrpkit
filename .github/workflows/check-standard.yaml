@@ -65,7 +65,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_deps(dependencies = TRUE, type = if (.Platform$OS.type == "windows") "binary" else getOption("pkgType"))
+          remotes::install_deps(
+            dependencies = TRUE,
+            # hack due to issue compiling on windows (should remove this and use default when possible)
+            type = if (.Platform$OS.type == "windows") "binary" else getOption("pkgType")
+          )
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
