@@ -86,7 +86,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
   )
 }
 
-if (requireNamespace("brms", quietly = TRUE)) {
+if (requireNamespace("brms", quietly = TRUE) && .Platform$OS.type != "windows") {
   brms_backend <- ifelse(requireNamespace("cmdstanr", quietly = TRUE),
                          "cmdstanr", "rstan")
   suppressWarnings(
@@ -114,25 +114,31 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 test_that("fit objects have correct R6 class", {
   expect_r6_class(fit_stan_glmer, "SurveyFit")
   expect_r6_class(fit_stan_glm, "SurveyFit")
-  expect_r6_class(fit_brms, "SurveyFit")
   expect_r6_class(fit_glmer, "SurveyFit")
   expect_r6_class(fit_glm, "SurveyFit")
+  if (.Platform$OS.type != "windows") {
+    expect_r6_class(fit_brms, "SurveyFit")
+  }
 })
 
 test_that("map returns SurveyMap", {
   expect_r6_class(fit_stan_glmer$map(), "SurveyMap")
   expect_r6_class(fit_stan_glm$map(), "SurveyMap")
-  expect_r6_class(fit_brms$map(), "SurveyMap")
   expect_r6_class(fit_glmer$map(), "SurveyMap")
   expect_r6_class(fit_glm$map(), "SurveyMap")
+  if (.Platform$OS.type != "windows") {
+    expect_r6_class(fit_brms$map(), "SurveyMap")
+  }
 })
 
 test_that("fit returns fitted model object", {
   expect_s3_class(fit_stan_glmer$fit(), "stanreg")
   expect_s3_class(fit_stan_glm$fit(), "stanreg")
-  expect_s3_class(fit_brms$fit(), "brmsfit")
   expect_s4_class(fit_glmer$fit(), "glmerMod")
   expect_s3_class(fit_glm$fit(), "glm")
+  if (.Platform$OS.type != "windows") {
+    expect_s3_class(fit_brms$fit(), "brmsfit")
+  }
 })
 
 test_that("population_predict returns correct objects",{
@@ -144,11 +150,13 @@ test_that("population_predict returns correct objects",{
   expect_equal(dim(fit_stan_glmer$population_predict()), expected_dims)
   expect_equal(dim(fit_stan_glm$population_predict()), expected_dims)
 
-  skip_if_not_installed("brms")
-  expect_equal(dim(fit_brms$population_predict()), expected_dims)
-
   skip_if_not_installed("lme4")
   expect_equal(dim(fit_glmer$population_predict(nsamples = 50)), expected_dims)
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    expect_equal(dim(fit_brms$population_predict()), expected_dims)
+  }
 })
 
 test_that("population_predict throws correct errors", {
@@ -179,17 +187,20 @@ test_that("aggregate (to population) returns correct objects", {
   expect_named(x, "value")
   expect_equal(dim(x), expected_dims)
 
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict())
-  expect_s3_class(x, "data.frame")
-  expect_named(x, "value")
-  expect_equal(dim(x), expected_dims)
 
   skip_if_not_installed("lme4")
   x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
   expect_s3_class(x, "data.frame")
   expect_named(x, "value")
   expect_equal(dim(x), expected_dims)
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    x <- fit_brms$aggregate(fit_brms$population_predict())
+    expect_s3_class(x, "data.frame")
+    expect_named(x, "value")
+    expect_equal(dim(x), expected_dims)
+  }
 })
 
 test_that("aggregate (by variable level) returns correct objects", {
@@ -207,17 +218,19 @@ test_that("aggregate (by variable level) returns correct objects", {
   expect_named(x, expected_names)
   expect_equal(dim(x), expected_dims)
 
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
-  expect_s3_class(x, "data.frame")
-  expect_named(x, expected_names)
-  expect_equal(dim(x), expected_dims)
-
   skip_if_not_installed("lme4")
   x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50), by = "age")
   expect_s3_class(x, "data.frame")
   expect_named(x, expected_names)
   expect_equal(dim(x), expected_dims)
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
+    expect_s3_class(x, "data.frame")
+    expect_named(x, expected_names)
+    expect_equal(dim(x), expected_dims)
+  }
 })
 
 test_that("aggregate throws correct errors", {
@@ -238,13 +251,15 @@ test_that("populations are within acceptable tolerance of previous runs (+/- 2% 
   x <- fit_glmer$aggregate(fit_glmer$population_predict(nsamples = 50))
   expect_equal(mean(x$value), expected = .68, tolerance = .05)
 
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict())
-  expect_equal(mean(x$value), expected = .72, tolerance = .05)
-
   #This is VERY noisy
   x <- fit_stan_glm$aggregate(fit_stan_glm$population_predict())
   expect_equal(mean(x$value), expected = .72, tolerance = .15)
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    x <- fit_brms$aggregate(fit_brms$population_predict())
+    expect_equal(mean(x$value), expected = .72, tolerance = .05)
+  }
 })
 
 test_that("summary requires the correct input",{
@@ -256,14 +271,6 @@ test_that("summary requires the correct input",{
 })
 
 test_that("summary works with different fit objects",{
-  skip_if_not_installed("brms")
-  x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
-  expect_s3_class(s <- fit_brms$summary(x), "data.frame")
-  expect_named(s, c("mean", "sd", "age", "method"))
-  expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
-  previous_result <- readRDS(test_path("answers/summary-brms.rds"))
-  expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
-
   skip_if_not_installed("lme4")
   x <- fit_glmer$aggregate(fit_glmer$population_predict(), by = "age")
   expect_s3_class(s <- fit_glmer$summary(x), "data.frame")
@@ -286,9 +293,20 @@ test_that("summary works with different fit objects",{
   expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
   previous_result <- readRDS(test_path("answers/summary-stan_glmer.rds"))
   expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    x <- fit_brms$aggregate(fit_brms$population_predict(), by = "age")
+    expect_s3_class(s <- fit_brms$summary(x), "data.frame")
+    expect_named(s, c("mean", "sd", "age", "method"))
+    expect_equal(s$method, rep(c("mrp", "raw", "wtd"), each = 4))
+    previous_result <- readRDS(test_path("answers/summary-brms.rds"))
+    expect_equal(s[, c("mean", "sd")], previous_result[, c("mean", "sd")], tolerance = 0.05)
+  }
 })
 
 test_that("plot returns ggplot object", {
+  skip_if_not_installed("rstanarm")
   popn <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict())
   expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "mrp"), "ggplot")
   expect_s3_class(fit_stan_glmer$plot(popn, additional_stats = "none"), "ggplot")
@@ -302,6 +320,7 @@ test_that("plot returns ggplot object", {
 })
 
 test_that("plot throws warning if weights are all equal to 1",{
+  skip_if_not_installed("rstanarm")
   expect_warning(samp_obj_wt1 <- SurveyData$new(
     data = feline_survey,
     questions = list(
@@ -341,6 +360,7 @@ test_that("plot throws warning if weights are all equal to 1",{
 })
 
 test_that("plot method errors for incorrect additional stats input",{
+  skip_if_not_installed("rstanarm")
   x <- fit_stan_glmer$aggregate(fit_stan_glmer$population_predict(), by = "age")
   expect_error(fit_stan_glmer$plot(x, additional_stats = "a"),
                "Valid 'additional_stats' arguments are either 'none' or a combination of 'wtd', 'raw', and 'mrp'")
@@ -363,6 +383,7 @@ test_that("plot method errors for incorrect additional stats input",{
 test_that("plot appearance hasn't changed", {
   skip_on_cran()
   skip_if_not_installed("vdiffr")
+  skip_if_not_installed("rstanarm")
 
   # need to use deterministic inputs to the plots to test appearance changes
   popn <- data.frame(value = c(0.60, 0.65, 0.70, 0.75, 0.80))
@@ -373,7 +394,6 @@ test_that("plot appearance hasn't changed", {
                                  0.732,0.792, 0.796, 0.761,
                                  0.804,0.847, 0.850, 0.823)
                        )
-
   vdiffr::expect_doppelganger(
     "plot-population",
     fit_stan_glmer$plot(popn, additional_stats = "none")
@@ -395,6 +415,8 @@ test_that("plot appearance hasn't changed", {
 test_that("print method calls fitted model's print method", {
   # if the formulas are printed then the print method is working,
   # we don't need to check for the entire print output
+
+  skip_if_not_installed("rstanarm")
   expect_output(
     fit_stan_glm$print(),
     "y ~ age + gender",
@@ -405,16 +427,22 @@ test_that("print method calls fitted model's print method", {
     "y ~ (1 | age) + (1 | gender)",
     fixed = TRUE
   )
-  expect_output(
-    suppressWarnings(fit_brms$print()),
-    "y ~ (1 | age) + (1 | gender)",
-    fixed = TRUE
-  )
+
+  skip_if_not_installed("lme4")
   expect_output(
     fit_glmer$print(),
     "y ~ (1 | age) + (1 | gender)",
     fixed = TRUE
   )
+
+  skip_if_not_installed("brms")
+  if (.Platform$OS.type != "windows") {
+    expect_output(
+      suppressWarnings(fit_brms$print()),
+      "y ~ (1 | age) + (1 | gender)",
+      fixed = TRUE
+    )
+  }
 })
 
 test_that("force factor works appropriately",{

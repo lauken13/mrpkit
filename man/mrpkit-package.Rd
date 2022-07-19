@@ -6,9 +6,7 @@
 \alias{mrpkit-package}
 \title{mrpkit: Multilevel Regression with Post-Stratification}
 \description{
-Conducts multilevel regression with post-stratification in an opinionated 
-    and specific way. Users specify two datasets (sample and population), establish 
-    a correspondence between them, and then conduct analysis.
+Conducts multilevel regression with post-stratification in an opinionated and specific way. Users specify two datasets (sample and population), establish a correspondence between them, and then conduct analysis.
 }
 \author{
 \strong{Maintainer}: Lauren Kennedy \email{lauren.kennedy1@monash.edu}

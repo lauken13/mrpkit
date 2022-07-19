@@ -65,7 +65,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_deps(dependencies = TRUE)
+          remotes::install_deps(
+            dependencies = TRUE,
+            # hack due to issue compiling on windows (should remove this and use default when possible)
+            type = if (.Platform$OS.type == "windows") "binary" else getOption("pkgType")
+          )
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
@@ -76,7 +80,7 @@ jobs:
           options(crayon.enabled = TRUE)
           rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
-      
+
       - name: Show testthat output
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
