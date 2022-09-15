@@ -86,7 +86,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
   )
 }
 
-if (requireNamespace("brms", quietly = TRUE) && .Platform$OS.type != "windows") {
+if (requireNamespace("brms", quietly = TRUE)) {
   brms_backend <- ifelse(requireNamespace("cmdstanr", quietly = TRUE),
                          "cmdstanr", "rstan")
   suppressWarnings(
