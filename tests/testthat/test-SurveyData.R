@@ -360,7 +360,7 @@ test_that("error thrown if dataframe response given in wrong format", {
       ),
       responses = list(
         pet_own = data.frame(data = c("cat", "kitten", "dog", "puppy"),
-                             actual = c(data = c("adult cat > 1 year", "young cat < 1 year", "adult dog > 1 year", "young dog < 1 year"))),
+                             actual = c("adult cat > 1 year", "young cat < 1 year", "adult dog > 1 year", "young dog < 1 year")),
         y = data.frame(data = c("no", "yes"),
                        asked = c("Prefer Dogs","Prefer Cats"))
       ),
