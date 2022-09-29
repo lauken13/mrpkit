@@ -164,7 +164,7 @@
 #' fit_1$plot(estimates_popn, additional_stats = "wtd")
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
-#'
+#' }
 
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
@@ -478,7 +478,7 @@ SurveyMap <- R6::R6Class(
         private$mapped_population_data_ %>%
         dplyr::mutate(wts = private$population_$weights()) %>%
         dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-        dplyr::summarize(N_j = sum(.data$wts), .groups = 'drop')
+        dplyr::summarize(N_j = sum(.data$wts), .groups = "drop")
       invisible(self)
     },
 

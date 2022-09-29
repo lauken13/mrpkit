@@ -31,19 +31,21 @@ LazyData: true
 RoxygenNote: 7.1.2
 Imports:
     dplyr,
-    tidyr,
     forcats,
     ggplot2,
     survey,
-    R6
+    R6,
+    tidyr
 Suggests:
-    testthat,
-    rstanarm (>= 2.21.0),
+    BH,
     brms,
+    knitr,
     lme4,
     merTools,
-    knitr,
+    RcppEigen,
     rmarkdown,
+    rstanarm (>= 2.21.0),
+    testthat,
     vdiffr
 Roxygen: list(markdown = TRUE)
 Depends: 

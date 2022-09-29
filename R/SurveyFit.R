@@ -137,13 +137,15 @@ SurveyFit <- R6::R6Class(
         if (length(by) != 1) {
           stop("Currently only one variable can be named in 'by'.", call. = FALSE)
         }
-        ps_and_posterior <- cbind(poststrat_data,poststrat_estimates)
+        ps_and_posterior <- cbind(poststrat_data, poststrat_estimates)
         out <- ps_and_posterior %>%
-          tidyr::pivot_longer(cols = -colnames(poststrat_data),
-                       names_to = "draws",
-                       values_to = "posterior_sample")%>%
-          dplyr::group_by(.data[[by]], .data$draws)%>%
-          dplyr::summarise(value = sum(.data$posterior_sample*.data$N_j)/sum(.data$N_j))%>%
+          tidyr::pivot_longer(
+            cols = -colnames(poststrat_data),
+            names_to = "draws",
+            values_to = "posterior_sample"
+          ) %>%
+          dplyr::group_by(.data[[by]], .data$draws) %>%
+          dplyr::summarise(value = sum(.data$posterior_sample * .data$N_j) / sum(.data$N_j)) %>%
           dplyr::ungroup()
         out <- out %>%
           dplyr::select(-"draws")
