@@ -180,8 +180,6 @@ SurveyFit <- R6::R6Class(
           dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "mrp")
 
-          levels(wtd_ests[[by_var]]) <- levels(mrp_ests[[by_var]])
-
           lhs_binary <- self$map()$sample()$survey_data() %>%
           dplyr::select(lhs_var, .key)%>%
           dplyr::mutate(lhs_binary = force_factor(.data[[lhs_var]]))
@@ -199,7 +197,6 @@ SurveyFit <- R6::R6Class(
           dplyr::relocate(by_var, .after="sd")%>%
           dplyr::mutate(method = "raw")
 
-        levels(raw_ests[[by_var]]) <- levels(mrp_ests[[by_var]])
        } else {
         wtd_ests <- data.frame(create_wtd_ests(self, lhs_var), method = "wtd")
         mrp_ests <- data.frame(
