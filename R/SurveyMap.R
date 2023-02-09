@@ -27,7 +27,10 @@
 #'   responses = list(
 #'     age = levels(shape_survey$age),
 #'     gender = levels(shape_survey$gender),
-#'     vote_for = levels(shape_survey$vote_for),
+#'     # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+#'     # This can be useful when surveys have brief/non descriptive responses.
+#'     vote_for = data.frame(data = levels(shape_survey$vote_for),
+#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
 #'     y = c("no","yes")
 #'   ),
 #'   weights = "wt",
@@ -137,10 +140,14 @@
 #'
 #' # estimates by age level
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+#' estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 #'
 #' fit_1$summary(estimates_by_age)
 #' fit_2$summary(estimates_by_age)
-#'# fit_3$summary(estimates_by_age)
+#' fit_3$summary(estimates_by_age)
+#'
+#' fit_1$summary(estimates_by_party)
+#' fit_1$plot(estimates_by_party)
 #'
 #' # plot estimates by age
 #' fit_1$plot(estimates_by_age)

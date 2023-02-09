@@ -39,6 +39,7 @@ Imports:
 Suggests:
     BH,
     brms,
+    covr,
     knitr,
     lme4,
     merTools,
