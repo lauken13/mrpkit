@@ -1,15 +1,9 @@
-**NOTE: This package is still a work in progress and is yet not released or officially supported**
-
-<!-- badges: start
-
-<!-- badges to enable once on CRAN in the future
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/mrpkit?color=blue)](https://cran.r-project.org/web/packages/mrpkit)
-[![Downloads](https://cranlogs.r-pkg.org/badges/mrpkit?color=blue)](https://cran.rstudio.com/package=mrpkit)
- -->
- 
-[![R-CMD-check](https://github.com/lauken13/mrpkit/workflows/R-CMD-check/badge.svg)](https://github.com/lauken13/mrpkit/actions)
-[![codecov](https://codecov.io/gh/lauken13/mrpkit/branch/master/graph/badge.svg)](https://codecov.io/gh/lauken13/mrpkit)
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/lauken13/mrpkit/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/lauken13/mrpkit/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/lauken13/mrpkit/branch/master/graph/badge.svg)](https://app.codecov.io/gh/lauken13/mrpkit?branch=master)
 <!-- badges: end -->
+
+**NOTE: This package is still a work in progress and is yet not released or officially supported**
 
 # mrpkit
 
