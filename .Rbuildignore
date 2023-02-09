@@ -13,3 +13,5 @@
 ^pkgdown$
 ^sandbox
 ^\.github$
+^cran-comments\.md$
+^codecov\.yml$

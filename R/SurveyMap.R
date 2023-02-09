@@ -27,7 +27,10 @@
 #'   responses = list(
 #'     age = levels(shape_survey$age),
 #'     gender = levels(shape_survey$gender),
-#'     vote_for = levels(shape_survey$vote_for),
+#'     # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+#'     # This can be useful when surveys have brief/non descriptive responses.
+#'     vote_for = data.frame(data = levels(shape_survey$vote_for),
+#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
 #'     y = c("no","yes")
 #'   ),
 #'   weights = "wt",
@@ -116,12 +119,12 @@
 #' )
 #'
 #' # Example lme4 usage
-#' # fit_2 <- ex_map$fit(
-#' #   fun = lme4::glmer,
-#' #   formula = y ~ (1|age) + (1|gender),
-#' #   family = "binomial"
-#' # )
-#' #
+#' fit_2 <- ex_map$fit(
+#'   fun = lme4::glmer,
+#'   formula = y ~ (1|age) + (1|gender),
+#'   family = "binomial"
+#' )
+#'
 #' # Example brms usage
 #' # fit_3 <- ex_map$fit(
 #' #   fun = brms::brm,
@@ -137,23 +140,34 @@
 #'
 #' # estimates by age level
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
-#' head(estimates_by_age)
-#' estimates_by_age %>%
-#'   group_by(age) %>%
-#'   summarize(mean = mean(value), sd = sd(value))
+#' estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
+#'
+#' fit_1$summary(estimates_by_age)
+#' fit_2$summary(estimates_by_age)
+#' fit_3$summary(estimates_by_age)
+#'
+#' fit_1$summary(estimates_by_party)
+#' fit_1$plot(estimates_by_party)
 #'
 #' # plot estimates by age
-#' fit_1$plot(estimates_by_age, weights = FALSE)
-#' fit_1$plot(estimates_by_age, weights = TRUE)
+#' fit_1$plot(estimates_by_age)
+#' fit_1$plot(estimates_by_age, additional_stats = "none")
+#' fit_1$plot(estimates_by_age, additional_stats = "wtd")
+#' fit_1$plot(estimates_by_age, additional_stats = "raw")
+#' fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 #'
 #' # population estimate
 #' estimates_popn <- fit_1$aggregate(poststrat_estimates)
-#' mean(estimates_popn$value)
+#' fit_1$summary(estimates_popn)
 #'
 #' # plot population estimate
-#' fit_1$plot(estimates_popn, weights = FALSE)
-#' fit_1$plot(estimates_popn, weights = TRUE)
+#' fit_1$plot(estimates_popn)
+#' fit_1$plot(estimates_popn, additional_stats = "none")
+#' fit_1$plot(estimates_popn, additional_stats = "wtd")
+#' fit_1$plot(estimates_popn, additional_stats = "raw")
+#' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 #' }
+
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
@@ -466,7 +480,7 @@ SurveyMap <- R6::R6Class(
         private$mapped_population_data_ %>%
         dplyr::mutate(wts = private$population_$weights()) %>%
         dplyr::group_by_at(dplyr::all_of(grouping_vars)) %>%
-        dplyr::summarize(N_j = sum(wts), .groups = 'drop')
+        dplyr::summarize(N_j = sum(.data$wts), .groups = "drop")
       invisible(self)
     },
 
@@ -541,7 +555,7 @@ SurveyMap <- R6::R6Class(
       args$formula <- formula
       args$data <- cbind(mapped_data, y_and_x)
       fit <- do.call(fun, args)
-      SurveyFit$new(fit = fit, map = self)
+      SurveyFit$new(fit = fit, map = self, formula = formula)
     },
 
     #' @description Access the `item_map`
