@@ -14,7 +14,14 @@ notation.
 }
 \examples{
 
+## ------------------------------------------------
+## Method `SurveyData$new`
+## ------------------------------------------------
+
+# Example sample data
 head(shape_survey)
+
+# SurveyData object for sample data
 box_prefs <- SurveyData$new(
   data = shape_survey,
   questions = list(
@@ -40,31 +47,11 @@ box_prefs <- SurveyData$new(
 box_prefs$print()
 box_prefs$n_questions()
 
+
+# Example population data
 head(approx_voters_popn)
-popn_obj <- SurveyData$new(
-  data = approx_voters_popn,
-  questions = list(
-    age_group = "Which age group are you?",
-    gender = "Gender?",
-    vote_pref = "Which party do you prefer to vote for?"
-  ),
-  # order doesn't matter (gender before age here) because
-  # the list has the names of the variables
-  responses = list(
-    gender = levels(approx_voters_popn$gender),
-    age_group = levels(approx_voters_popn$age_group),
-    vote_pref = levels(approx_voters_popn$vote_pref)
-  ),
-  weights = "wt"
-)
-popn_obj$print()
 
-
-## ------------------------------------------------
-## Method `SurveyData$new`
-## ------------------------------------------------
-
-# Population estimated from large survey
+# SurveyData object for population if estimated from large survey
 popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -80,7 +67,7 @@ popn_obj1 <- SurveyData$new(
   weights = "wt" # use the wt column from approx_voters_popn data
 )
 
-# Population poststratification matrix already known
+# SurveyData object for population if poststratification matrix already known
 library(dplyr)
 popn_ps <- approx_voters_popn \%>\%
   group_by(age_group,gender) \%>\%
@@ -99,8 +86,8 @@ popn_obj2 <- SurveyData$new(
   weights = "N_j"# use N_j column from popn_ps data
 )
 
-# Individual population data known:
-# Pretend that approx_voters_popn is the full population
+# SurveyData object for population if individual population data known:
+# (pretend that approx_voters_popn is the full population)
 popn_obj3 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -115,6 +102,7 @@ popn_obj3 <- SurveyData$new(
 popn_obj1
 popn_obj2
 popn_obj3
+
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -136,14 +124,14 @@ popn_obj3
 \if{html}{\out{<a id="method-SurveyData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyData-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new SurveyData object using an existing data frame and other
-survey information.
-This method is used to create the objects for both the sample and the population data.
-If a population is approximated from a large survey (like the ACS or DHS),
-then the package will enable the creation of a weighted poststratification matrix.
-If the population is summarized as a poststratification matrix already, then set the weights
-as the size in each cell $N_j$.
-If the entire individual level population data is given, then weights should
+Create a new \code{SurveyData} object using an existing data
+frame and other survey information. This method is used to create the
+objects for both the sample and the population data. If a population is
+approximated from a large survey (like the ACS or DHS), then the
+package will enable the creation of a weighted poststratification
+matrix. If the population is summarized as a poststratification matrix
+already, then set the weights as the size in each cell $N_j$. If the
+entire individual level population data is given, then weights should
 be omitted and will be automatically set to 1.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$new(
@@ -179,7 +167,40 @@ survey weights.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{# Population estimated from large survey
+\preformatted{# Example sample data
+head(shape_survey)
+
+# SurveyData object for sample data
+box_prefs <- SurveyData$new(
+  data = shape_survey,
+  questions = list(
+    age = "Please identify your age group",
+    gender = "Please select your gender",
+    vote_for = "Which party did you vote for in the 2018 election?",
+    y = "If today is the election day, would you vote for the Box Party?"
+  ),
+  responses = list(
+    age = levels(shape_survey$age),
+    gender = levels(shape_survey$gender),
+    # Here we use a dataframe for the responses because the levels
+    # in the data are abridged versions of the actual responses.
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(data = levels(shape_survey$vote_for),
+    asked = c("Box Party Faction A", "Box Party Faction B",
+              "Circle Party Coalition", "Circle Party")),
+    y = c("no","yes")
+  ),
+  weights = "wt",
+  design = list(ids =~1)
+)
+box_prefs$print()
+box_prefs$n_questions()
+
+
+# Example population data
+head(approx_voters_popn)
+
+# SurveyData object for population if estimated from large survey
 popn_obj1 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -195,7 +216,7 @@ popn_obj1 <- SurveyData$new(
   weights = "wt" # use the wt column from approx_voters_popn data
 )
 
-# Population poststratification matrix already known
+# SurveyData object for population if poststratification matrix already known
 library(dplyr)
 popn_ps <- approx_voters_popn \%>\%
   group_by(age_group,gender) \%>\%
@@ -214,8 +235,8 @@ popn_obj2 <- SurveyData$new(
   weights = "N_j"# use N_j column from popn_ps data
 )
 
-# Individual population data known:
-# Pretend that approx_voters_popn is the full population
+# SurveyData object for population if individual population data known:
+# (pretend that approx_voters_popn is the full population)
 popn_obj3 <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -230,6 +251,7 @@ popn_obj3 <- SurveyData$new(
 popn_obj1
 popn_obj2
 popn_obj3
+
 }
 \if{html}{\out{</div>}}
 
