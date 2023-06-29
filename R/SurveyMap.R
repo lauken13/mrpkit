@@ -13,9 +13,11 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' library(dplyr)
 #'
+#' # Some fake survey data for demonstration
 #' head(shape_survey)
+#'
+#' # Create SurveyData object for the sample
 #' box_prefs <- SurveyData$new(
 #'   data = shape_survey,
 #'   questions = list(
@@ -39,7 +41,11 @@
 #' box_prefs$print()
 #' box_prefs$n_questions()
 #'
+#'
+#' # Some fake population data for demonstration
 #' head(approx_voters_popn)
+#'
+#' # Create SurveyData object for the population
 #' popn_obj <- SurveyData$new(
 #'   data = approx_voters_popn,
 #'   questions = list(
@@ -47,7 +53,7 @@
 #'     gender = "Gender?",
 #'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
-#'   # order doesn't matter (gender before age2 here) because
+#'   # order doesn't matter (gender before age here) because
 #'   # the list has the names of the variables
 #'   responses = list(
 #'     gender = levels(approx_voters_popn$gender),
@@ -58,6 +64,9 @@
 #' )
 #' popn_obj$print()
 #'
+#'
+#' # Create the QuestionMap objects mapping each question between the
+#' # survey and population dataset
 #' q_age <- QuestionMap$new(
 #'   name = "age",
 #'   col_names = c("age","age_group"),
@@ -79,6 +88,7 @@
 #'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
+#'
 #' # Create SurveyMap object adding all questions at once
 #' ex_map <- SurveyMap$new(
 #'   sample = box_prefs,
@@ -99,6 +109,7 @@
 #' ex_map$add(q_gender)
 #' print(ex_map)
 #'
+#'
 #' # Create the mapping between sample and population
 #' ex_map$mapping()
 #'
@@ -106,24 +117,27 @@
 #' # (alternatively, can specify particular variables, e.g. tabulate("age"))
 #' ex_map$tabulate()
 #'
-#' # Example rstanarm usage
-#' # Returns a SurveyFit object
+#' # Take a peak at the poststrat data frame
+#' head(ex_map$poststrat_data())
+#'
 #' \dontrun{
+#' # Fit regression model using rstanarm (returns a SurveyFit object)
 #' fit_1 <- ex_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
 #'   seed = 1111,
-#'   # just to keep the example fast and small
-#'   chains = 1
+#'   chains = 1, # just to keep the example fast and small
+#'   refresh = 0 # suppress printed sampling iteration updates
 #' )
 #'
+#' # To use lme4 or brms instead of rstanarm you would use:
 #' # Example lme4 usage
-#' fit_2 <- ex_map$fit(
-#'   fun = lme4::glmer,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "binomial"
-#' )
+#' # fit_2 <- ex_map$fit(
+#' #   fun = lme4::glmer,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "binomial"
+#' # )
 #'
 #' # Example brms usage
 #' # fit_3 <- ex_map$fit(
@@ -134,40 +148,39 @@
 #' # )
 #'
 #'
-#' # predicted probabilities
+#' # Predicted probabilities
 #' # returns matrix with rows for poststrat cells, cols for posterior draws
 #' poststrat_estimates <- fit_1$population_predict()
 #'
-#' # estimates by age level
+#' # Compute and summarize estimates by age level and party preference
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
 #' estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 #'
 #' fit_1$summary(estimates_by_age)
-#' fit_2$summary(estimates_by_age)
-#' fit_3$summary(estimates_by_age)
-#'
 #' fit_1$summary(estimates_by_party)
+#'
+#' # Plot estimates
 #' fit_1$plot(estimates_by_party)
 #'
-#' # plot estimates by age
 #' fit_1$plot(estimates_by_age)
+#'
 #' fit_1$plot(estimates_by_age, additional_stats = "none")
 #' fit_1$plot(estimates_by_age, additional_stats = "wtd")
 #' fit_1$plot(estimates_by_age, additional_stats = "raw")
 #' fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 #'
-#' # population estimate
+#' # Compute and summarize the population estimate
 #' estimates_popn <- fit_1$aggregate(poststrat_estimates)
 #' fit_1$summary(estimates_popn)
 #'
-#' # plot population estimate
+#' # Plot population estimate
 #' fit_1$plot(estimates_popn)
 #' fit_1$plot(estimates_popn, additional_stats = "none")
 #' fit_1$plot(estimates_popn, additional_stats = "wtd")
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 #' }
-
+#'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
@@ -463,8 +476,10 @@ SurveyMap <- R6::R6Class(
     invisible(self)
     },
 
-    #' @description Prepare the poststratification table
-    #' @param ... The variables to include.
+    #' @description Prepare the poststratification table. The resulting data
+    #'   frame is available via the `SurveyMap$poststrat_data()` method. See
+    #'   **Examples**.
+    #' @param ... The names of the variables to include as strings.
     tabulate = function(...) {
       if (ncol(self$mapped_population_data(key = FALSE)) == 0) {
         stop("Please call the mapping() method before tabulate()", call. = FALSE)

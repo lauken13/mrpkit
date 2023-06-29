@@ -3,12 +3,13 @@
 #' @name SurveyData
 #' @export
 #' @description
-#' A `SurveyData` object represents a survey and its metadata. The survey itself
-#' is a data frame containing all data from the survey. The survey data object
-#' also includes the survey questions and responses (if left empty these will
-#' just be the column and factor level names). To enable weighted comparisons,
-#' survey weights and a survey design can be specified, with the survey design
-#' specified using \pkg{survey} package notation.
+#' An [R6][R6::R6Class] `SurveyData` object represents a survey and its
+#' metadata. The survey itself is a data frame containing all data from the
+#' survey. The `SurveyData` object also includes the survey questions and
+#' responses (if left empty these will just be the column and factor level
+#' names). To enable weighted comparisons, survey weights and a survey design
+#' can be specified, with the survey design specified using \pkg{survey} package
+#' notation.
 #'
 #' @examples
 #'
@@ -44,7 +45,7 @@
 #'     gender = "Gender?",
 #'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
-#'   # order doesn't matter (gender before age2 here) because
+#'   # order doesn't matter (gender before age here) because
 #'   # the list has the names of the variables
 #'   responses = list(
 #'     gender = levels(approx_voters_popn$gender),
@@ -95,7 +96,7 @@ SurveyData <- R6::R6Class(
     #'     age_group = "Which age group are you?",
     #'     gender = "Gender?"
     #'   ),
-    #'   # order doesn't matter (gender before age2 here) because
+    #'   # order doesn't matter (gender before age here) because
     #'   # the list has the names of the variables
     #'   responses = list(
     #'     gender = levels(approx_voters_popn$gender),

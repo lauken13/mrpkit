@@ -4,12 +4,13 @@
 \alias{SurveyData}
 \title{SurveyData objects}
 \description{
-A \code{SurveyData} object represents a survey and its metadata. The survey itself
-is a data frame containing all data from the survey. The survey data object
-also includes the survey questions and responses (if left empty these will
-just be the column and factor level names). To enable weighted comparisons,
-survey weights and a survey design can be specified, with the survey design
-specified using \pkg{survey} package notation.
+An \link[R6:R6Class]{R6} \code{SurveyData} object represents a survey and its
+metadata. The survey itself is a data frame containing all data from the
+survey. The \code{SurveyData} object also includes the survey questions and
+responses (if left empty these will just be the column and factor level
+names). To enable weighted comparisons, survey weights and a survey design
+can be specified, with the survey design specified using \pkg{survey} package
+notation.
 }
 \examples{
 
@@ -25,7 +26,10 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
+    # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(data = levels(shape_survey$vote_for),
+    asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
     y = c("no","yes")
   ),
   weights = "wt",
@@ -42,7 +46,7 @@ popn_obj <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
+  # order doesn't matter (gender before age here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -65,7 +69,7 @@ popn_obj1 <- SurveyData$new(
     age_group = "Which age group are you?",
     gender = "Gender?"
   ),
-  # order doesn't matter (gender before age2 here) because
+  # order doesn't matter (gender before age here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -113,22 +117,22 @@ popn_obj3
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SurveyData$new()}}
-\item \href{#method-n_obs}{\code{SurveyData$n_obs()}}
-\item \href{#method-n_questions}{\code{SurveyData$n_questions()}}
-\item \href{#method-print}{\code{SurveyData$print()}}
-\item \href{#method-add_survey_data_column}{\code{SurveyData$add_survey_data_column()}}
-\item \href{#method-survey_data}{\code{SurveyData$survey_data()}}
-\item \href{#method-questions}{\code{SurveyData$questions()}}
-\item \href{#method-responses}{\code{SurveyData$responses()}}
-\item \href{#method-weights}{\code{SurveyData$weights()}}
-\item \href{#method-design}{\code{SurveyData$design()}}
-\item \href{#method-clone}{\code{SurveyData$clone()}}
+\item \href{#method-SurveyData-new}{\code{SurveyData$new()}}
+\item \href{#method-SurveyData-n_obs}{\code{SurveyData$n_obs()}}
+\item \href{#method-SurveyData-n_questions}{\code{SurveyData$n_questions()}}
+\item \href{#method-SurveyData-print}{\code{SurveyData$print()}}
+\item \href{#method-SurveyData-add_survey_data_column}{\code{SurveyData$add_survey_data_column()}}
+\item \href{#method-SurveyData-survey_data}{\code{SurveyData$survey_data()}}
+\item \href{#method-SurveyData-questions}{\code{SurveyData$questions()}}
+\item \href{#method-SurveyData-responses}{\code{SurveyData$responses()}}
+\item \href{#method-SurveyData-weights}{\code{SurveyData$weights()}}
+\item \href{#method-SurveyData-design}{\code{SurveyData$design()}}
+\item \href{#method-SurveyData-clone}{\code{SurveyData$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SurveyData-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new SurveyData object using an existing data frame and other
 survey information.
@@ -158,7 +162,10 @@ be omitted and will be automatically set to 1.
 questions and the allowed responses, respectively. The names must
 correspond to the names of variables in \code{data}. See \strong{Examples}. If
 these aren't provided then they will be created internally using all
-factor, character, and binary variables in \code{data}.}
+factor, character, and binary variables in \code{data}. Responses can also be
+provided as a dataframe with column names "data" and "asked", which
+reflect the responses as coded in the data ("data") and their
+corresponding actual survey responses ("asked").}
 
 \item{\code{weights}}{Optionally, the name of a variable in \code{data} containing
 survey weights.}
@@ -177,7 +184,7 @@ popn_obj1 <- SurveyData$new(
     age_group = "Which age group are you?",
     gender = "Gender?"
   ),
-  # order doesn't matter (gender before age2 here) because
+  # order doesn't matter (gender before age here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -228,8 +235,8 @@ popn_obj3
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-n_obs"></a>}}
-\if{latex}{\out{\hypertarget{method-n_obs}{}}}
+\if{html}{\out{<a id="method-SurveyData-n_obs"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-n_obs}{}}}
 \subsection{Method \code{n_obs()}}{
 Number of observations in the survey data
 \subsection{Usage}{
@@ -238,8 +245,8 @@ Number of observations in the survey data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-n_questions"></a>}}
-\if{latex}{\out{\hypertarget{method-n_questions}{}}}
+\if{html}{\out{<a id="method-SurveyData-n_questions"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-n_questions}{}}}
 \subsection{Method \code{n_questions()}}{
 Number of survey questions
 \subsection{Usage}{
@@ -248,8 +255,8 @@ Number of survey questions
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SurveyData-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-print}{}}}
 \subsection{Method \code{print()}}{
 Print a summary of the survey data
 \subsection{Usage}{
@@ -265,8 +272,8 @@ Print a summary of the survey data
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-add_survey_data_column"></a>}}
-\if{latex}{\out{\hypertarget{method-add_survey_data_column}{}}}
+\if{html}{\out{<a id="method-SurveyData-add_survey_data_column"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-add_survey_data_column}{}}}
 \subsection{Method \code{add_survey_data_column()}}{
 Add a column to the sample data. This is primarily
 intended for internal use but may occasionally be useful.
@@ -284,8 +291,8 @@ vector of values to add to the data frame.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-survey_data"></a>}}
-\if{latex}{\out{\hypertarget{method-survey_data}{}}}
+\if{html}{\out{<a id="method-SurveyData-survey_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-survey_data}{}}}
 \subsection{Method \code{survey_data()}}{
 Access the data frame containing the sample data.
 \subsection{Usage}{
@@ -303,8 +310,8 @@ for internal use.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-questions"></a>}}
-\if{latex}{\out{\hypertarget{method-questions}{}}}
+\if{html}{\out{<a id="method-SurveyData-questions"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-questions}{}}}
 \subsection{Method \code{questions()}}{
 Access the list of survey questions
 \subsection{Usage}{
@@ -313,8 +320,8 @@ Access the list of survey questions
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-responses"></a>}}
-\if{latex}{\out{\hypertarget{method-responses}{}}}
+\if{html}{\out{<a id="method-SurveyData-responses"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-responses}{}}}
 \subsection{Method \code{responses()}}{
 Access the list of allowed survey responses
 \subsection{Usage}{
@@ -323,8 +330,8 @@ Access the list of allowed survey responses
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-weights"></a>}}
-\if{latex}{\out{\hypertarget{method-weights}{}}}
+\if{html}{\out{<a id="method-SurveyData-weights"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-weights}{}}}
 \subsection{Method \code{weights()}}{
 Access the survey weights
 \subsection{Usage}{
@@ -333,8 +340,8 @@ Access the survey weights
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-design"></a>}}
-\if{latex}{\out{\hypertarget{method-design}{}}}
+\if{html}{\out{<a id="method-SurveyData-design"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-design}{}}}
 \subsection{Method \code{design()}}{
 Access the survey design
 \subsection{Usage}{
@@ -343,8 +350,8 @@ Access the survey design
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SurveyData-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyData-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -4,8 +4,8 @@
 #' @export
 #' @description An [R6][R6::R6Class] `SurveyFit` object stores a fitted model
 #'   object and provides methods for generating predicted probabilities for all
-#'   poststrat cells, generating population and group estimates, and visualizing
-#'   results.
+#'   poststratification cells, generating population and group estimates, and
+#'   visualizing results.
 #' @inherit SurveyMap examples
 #'
 SurveyFit <- R6::R6Class(
@@ -121,7 +121,7 @@ SurveyFit <- R6::R6Class(
     },
 
     #' @description Aggregate estimates to the population level or by level of a grouping variable
-    #' @param poststrat_estimates The object returned by `population_predict`.
+    #' @param poststrat_estimates The object returned by the `population_predict` method.
     #' @param by Optionally a string specifying a grouping variable. If
     #'   specified the aggregation will happen by level of the named variable.
     #'   If not specified population-level estimates will be computed.
@@ -157,7 +157,7 @@ SurveyFit <- R6::R6Class(
     },
     #' @description Creates a set of summary statistics of the mrp estimate,
     #' and corresponding weighted and raw data estimates
-    #' @param aggregated_estimates The data frame returned by the `aggregate() method`.
+    #' @param aggregated_estimates The data frame returned by the `aggregate` method.
     #' @return A data frame that consists of a minimum three rows with the raw, MRP
     #' and weighted estimates, plus an estimate of standard error. If the aggregated estimates
     #' were specified with a `by` argument (indicating sub population or small area estimates),
@@ -218,18 +218,19 @@ SurveyFit <- R6::R6Class(
 
     #' @description Plot takes the aggregated MRP estimates and produces a quick
     #' visualization of total and sub-population estimates.
-    #' @param aggregated_estimates The data frame returned by `aggregate`.
+    #' @param aggregated_estimates The data frame returned by the `aggregate` method.
     #' @param additional_stats A vector that specifies which of three additional
-    #'   stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
-    #'   default value is to include the weighted estimate (wtd) and raw data
-    #'   mean (raw), but an analogous bar for MRP (mrp) can be added using the
+    #'   stats ("wtd", "raw", "mrp", "none") should be overlayed on the plot.
+    #'   The default is to include the weighted estimate (wtd) and raw data mean
+    #'   (raw), but an analogous bar for MRP (mrp) can be added using the
     #'   posterior mean and sd. The sd for the weighted estimate uses the survey
     #'   design and the \pkg{survey} package, whilst the raw estimate is a
-    #'   direct mean and binomial sd of the binary responses. Uncertainty is included on
-    #'   violin plots but not on density plots. Intervals are 95% CI.
-    #' @return A ggplot object that is either a violin plot (if aggregated estimates is
-    #' at a small area level) or density plot (if aggregated estimates is at the population
-    #' level).
+    #'   direct mean and binomial sd of the binary responses. Uncertainty is
+    #'   included on violin plots but not on density plots. Intervals are 95%
+    #'   CI.
+    #' @return A ggplot object that is either a violin plot (if aggregated
+    #'   estimates is at a small area level) or density plot (if aggregated
+    #'   estimates is at the population level).
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       if (!is.character(additional_stats)) {
         stop("'additional_stats' must be a character vector.", call. = FALSE)
