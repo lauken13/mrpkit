@@ -367,7 +367,7 @@ poststrat_est_fit1 <- fit1$population_predict()
 
 ### Aggregate the probability of the outcome to a higher level of estimate
 
-The next step is to generate the population estimate or group estimate using the `SurveyFit$aggregate` method. This method takes two arguments, namely the post-stratification estimate data and the variable whose level to which the estimated value would be aggregated to. In this example, we want to aggregate the estimated value by the level of `age` and `state`. If the variable is not specified, then this method would generate a population estimate.
+The next step is to generate the population estimate or group estimate using the `SurveyFit$aggregate` method. This method takes two arguments, namely the post-stratification estimate data and the variable whose level to which the estimated value would be aggregated to. In this example, we want to aggregate the estimated value by the level of `age` and `state`. If the variable is not specified, then this method will generate a population estimate.
 
 ```{r aggregate}
 
@@ -382,7 +382,11 @@ popn_estimation <- fit1$aggregate(poststrat_est_fit1)
 
 ```
 
-This method then will return a data frame with the variable levels and probability of the outcome, `y`. In this example, `age_estimation` represents the age group and the probability of voting for the Box Party for each age group.
+The returned object is a data frame with number of rows equal to the number of
+posterior draws times the number of levels of the `by` variable. Each of the
+numbers in the `value` column represents the estimated probability of the
+outcome. In this example, `age_estimation` contains the probability of voting
+for the Box Party for each age group for each posterior draw. 
 
 ```{r show-aggr}
 head(age_estimation) 
@@ -397,11 +401,27 @@ age_estimation %>%
 
 ### Summarise and compare
 
-The output of aggregate is a posterior predictive distribution for the population (or sub-populations) of interest. This can be used with the plot function to visualize. However, we also might wish to make a table summary of the posterior mean and standard deviation, along with comparisons with raw estimates and weighted estimates. We can use the `summary` method do to this. This method takes the aggregated data frame and produces a dataframe of mean and standard deviation estimates for each group (if in the aggregated frame) or overall in the population. The standard deviation for the weights is created by wrapping the survey package using the original design specified, and the raw standard deviation is $\sqrt\frac{pq}{n}$. This is called automatically in the plot method. 
+The output of aggregate is a posterior predictive distribution for the
+population (or sub-populations) of interest. This can be used with the plot
+function to visualize. However, we also might wish to make a table summary of
+the posterior mean and standard deviation, along with comparisons with raw
+estimates and weighted estimates. We can use the `summary` method do to this.
+This method takes the aggregated data frame and produces a data frame of mean and
+standard deviation estimates for each group (if in the aggregated frame) or
+overall in the population.
+
+```{r summarize}
+fit1$summary(age_estimation)
+fit1$summary(state_estimation)
+fit1$summary(popn_estimation)
+```
+The standard deviation for the weighted estimate (`wtd`) is created by wrapping
+the survey package using the original design specified, and the raw standard
+deviation is $\sqrt\frac{pq}{n}$.\
 
 ### Visualize it
 
-Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are raw, wtd and mrp; more than one can be specified as a vector), these are added as points with error bars representing the 95% confidence interval.  
+Once we have the aggregated estimates, we can visualize them using the `plot` method. This method takes the aggregated data frame and additional_stats option (the default is wtd and raw estimates) as its arguments. It generates a violin plot of the aggregated estimate by the level of a certain variable. When additional statistics are specified (options are `raw`, `wtd` and `mrp`; more than one can be specified as a vector), these are added as points with error bars representing the 95% confidence interval.  
 In this example, we display the estimated plot for `age` and `state` and a density plot for the population estimates. 
 
 
