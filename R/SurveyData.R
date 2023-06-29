@@ -29,7 +29,8 @@
 #'     # in the data are abridged versions of the actual responses.
 #'     # This can be useful when surveys have brief/non descriptive responses.
 #'     vote_for = data.frame(data = levels(shape_survey$vote_for),
-#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
+#'     asked = c("Box Party Faction A", "Box Party Faction B",
+#'               "Circle Party Coalition", "Circle Party")),
 #'     y = c("no","yes")
 #'   ),
 #'   weights = "wt",

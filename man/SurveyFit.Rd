@@ -26,10 +26,12 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+    # Here we use a dataframe for the responses because the levels
+    # in the data are abridged versions of the actual responses.
     # This can be useful when surveys have brief/non descriptive responses.
     vote_for = data.frame(data = levels(shape_survey$vote_for),
-    asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
+    asked = c("Box Party Faction A", "Box Party Faction B",
+              "Circle Party Coalition", "Circle Party")),
     y = c("no","yes")
   ),
   weights = "wt",
