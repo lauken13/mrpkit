@@ -470,3 +470,26 @@ test_that("force factor works appropriately",{
   x <- c(1,1, NA)
   expect_equal(force_factor(x), c(1,1, NA))
 })
+
+
+test_that("custom prediction function works", {
+  myfit <- function(data, formula, ...) {
+    rstanarm::stan_glm(formula = formula, data = data, ...)
+  }
+  mypred <- function(mod, ps, ...) {
+    t(suppressMessages(rstanarm::posterior_linpred(
+      mod,
+      newdata = ps,
+      transform = TRUE
+    )))
+  }
+  fit1 <- ex_map$fit(
+    fun = myfit,
+    formula = y ~ age + gender,
+    family = "binomial",
+    iter = 1000,
+    refresh = 0
+  )
+  p <- fit1$population_predict(fun = mypred)
+  expect_equal(dim(p), c(nrow(ex_map$poststrat_data()), 2000))
+})

@@ -116,7 +116,7 @@ SurveyFit <- R6::R6Class(
         }
       } else {
         fun <- match.fun(fun)
-        fun(fitted_model, poststrat, ...)
+        fun(private$fit_, poststrat, ...)
       }
     },
 
