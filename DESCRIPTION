@@ -39,6 +39,7 @@ Imports:
 Suggests:
     BH,
     brms,
+    haven,
     covr,
     knitr,
     lme4,
