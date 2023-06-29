@@ -203,7 +203,7 @@ fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 \if{latex}{\out{\hypertarget{method-SurveyFit-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{SurveyFit} object. This method is called
-internally by the \verb{$fit()} method of the \code{\link{SurveyMap}} object and does
+internally by the \code{fit} method of the \code{\link{SurveyMap}} object and does
 not need to be called directly by the user.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$new(fit, map, formula)}\if{html}{\out{</div>}}
@@ -216,46 +216,62 @@ not need to be called directly by the user.
 
 \item{\code{map}}{A \code{\link{SurveyMap}} object.}
 
-\item{\code{formula}}{A formula object representing the model ran.}
+\item{\code{formula}}{A formula object for the model that was fit.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{SurveyFit} object.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyFit-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-fit}{}}}
 \subsection{Method \code{fit()}}{
-Access the fitted model object
+Access the fitted model object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$fit()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The fitted model object created by the modeling function called
+by the \code{fit} method of the \code{\link{SurveyMap}} object. For example, if using
+\code{rstanarm::stan_glmer()} then a \code{stanreg} object from \pkg{rstanarm} is
+returned.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyFit-map"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-map}{}}}
 \subsection{Method \code{map()}}{
-Access the SurveyMap object
+Access the \code{\link{SurveyMap}} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$map()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{\link{SurveyMap}} associated with the \code{SurveyFit} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyFit-formula"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-formula}{}}}
 \subsection{Method \code{formula()}}{
-Access the SurveyMap object
+Access the model formula.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$formula()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The model formula used when fitting the model.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyFit-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-print}{}}}
 \subsection{Method \code{print()}}{
-Call the fitted model object's print method
+Call the fitted model object's print method. The console
+output from this method depends on the model fitting function used.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$print(...)}\if{html}{\out{</div>}}
 }
@@ -267,12 +283,16 @@ Call the fitted model object's print method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyFit} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyFit-population_predict"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-population_predict}{}}}
 \subsection{Method \code{population_predict()}}{
-Use fitted model to add predicted probabilities to post-stratification dataset.
+Use fitted model to add predicted probabilities to
+post-stratification dataset.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$population_predict(..., fun = NULL)}\if{html}{\out{</div>}}
 }
@@ -308,7 +328,8 @@ in the case of \pkg{lme4} models).
 \if{html}{\out{<a id="method-SurveyFit-aggregate"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-aggregate}{}}}
 \subsection{Method \code{aggregate()}}{
-Aggregate estimates to the population level or by level of a grouping variable
+Aggregate estimates to the population level or by level of a
+grouping variable.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_estimates, by = NULL)}\if{html}{\out{</div>}}
 }

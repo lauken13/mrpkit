@@ -592,11 +592,11 @@ SurveyMap <- R6::R6Class(
     #' @return A named list of [`QuestionMap`]s.
     item_map = function() private$item_map_,
 
-    #' @description Access the [SurveyData] object containing the sample data.
+    #' @description Access the [`SurveyData`] object containing the sample data.
     #' @return A [`SurveyData`] object.
     sample = function() private$sample_,
 
-    #' @description Access the [SurveyData] object containing the population data.
+    #' @description Access the [`SurveyData`] object containing the population data.
     #' @return A [`SurveyData`] object.
     population = function() private$population_,
 

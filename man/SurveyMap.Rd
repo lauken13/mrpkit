@@ -418,7 +418,7 @@ A named list of \code{\link{QuestionMap}}s.
 \if{html}{\out{<a id="method-SurveyMap-sample"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-sample}{}}}
 \subsection{Method \code{sample()}}{
-Access the \link{SurveyData} object containing the sample data.
+Access the \code{\link{SurveyData}} object containing the sample data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$sample()}\if{html}{\out{</div>}}
 }
@@ -431,7 +431,7 @@ A \code{\link{SurveyData}} object.
 \if{html}{\out{<a id="method-SurveyMap-population"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-population}{}}}
 \subsection{Method \code{population()}}{
-Access the \link{SurveyData} object containing the population data.
+Access the \code{\link{SurveyData}} object containing the population data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$population()}\if{html}{\out{</div>}}
 }

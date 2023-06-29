@@ -18,11 +18,12 @@ SurveyFit <- R6::R6Class(
   public = list(
 
     #' @description Create a new `SurveyFit` object. This method is called
-    #'   internally by the `$fit()` method of the [`SurveyMap`] object and does
+    #'   internally by the `fit` method of the [`SurveyMap`] object and does
     #'   not need to be called directly by the user.
     #' @param fit A fitted model object.
     #' @param map A [`SurveyMap`] object.
-    #' @param formula A formula object representing the model ran.
+    #' @param formula A formula object for the model that was fit.
+    #' @return A `SurveyFit` object.
     initialize = function(fit, map, formula) {
       private$fit_ <- fit
       private$map_ <- map
@@ -30,29 +31,38 @@ SurveyFit <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Access the fitted model object
+    #' @description Access the fitted model object.
+    #' @return The fitted model object created by the modeling function called
+    #'   by the `fit` method of the [`SurveyMap`] object. For example, if using
+    #'   `rstanarm::stan_glmer()` then a `stanreg` object from \pkg{rstanarm} is
+    #'   returned.
     fit = function() {
       private$fit_
     },
 
-    #' @description Access the SurveyMap object
+    #' @description Access the [`SurveyMap`] object.
+    #' @return The [`SurveyMap`] associated with the `SurveyFit` object.
     map = function() {
       private$map_
     },
 
-    #' @description Access the SurveyMap object
+    #' @description Access the model formula.
+    #' @return The model formula used when fitting the model.
     formula = function() {
       private$formula_
     },
 
-    #' @description Call the fitted model object's print method
+    #' @description Call the fitted model object's print method. The console
+    #'   output from this method depends on the model fitting function used.
     #' @param ... Optional arguments to pass the print method.
+    #' @return The `SurveyFit` object, invisibly.
     print = function(...) {
       print(private$fit_, ...)
       invisible(self)
     },
 
-    #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
+    #' @description Use fitted model to add predicted probabilities to
+    #'   post-stratification dataset.
     #' @param fun The function to use to generate the predicted probabilities.
     #'   This should only be specified if you used a model fitting function
     #'   not natively supported by \pkg{mrpkit}.
@@ -120,7 +130,8 @@ SurveyFit <- R6::R6Class(
       }
     },
 
-    #' @description Aggregate estimates to the population level or by level of a grouping variable
+    #' @description Aggregate estimates to the population level or by level of a
+    #'   grouping variable.
     #' @param poststrat_estimates The object returned by the `population_predict` method.
     #' @param by Optionally a string specifying a grouping variable. If
     #'   specified the aggregation will happen by level of the named variable.
