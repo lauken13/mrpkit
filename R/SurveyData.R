@@ -33,16 +33,20 @@ SurveyData <- R6::R6Class(
     #' @param data A data frame containing the survey data.
     #' @param questions,responses Named lists containing the text of the survey
     #'   questions and the allowed responses, respectively. The names must
-    #'   correspond to the names of variables in `data`. See **Examples**. If
-    #'   these aren't provided then they will be created internally using all
-    #'   factor, character, and binary variables in `data`. Responses can also be
-    #'   provided as a dataframe with column names "data" and "asked", which
-    #'   reflect the responses as coded in the data ("data") and their
-    #'   corresponding actual survey responses ("asked").
+    #'   correspond to the names of variables in `data`. If these aren't
+    #'   provided then they will be created internally using all factor,
+    #'   character, and binary variables in `data`. Responses can also be
+    #'   provided as a data frame with column names `"data"` and `"asked"`,
+    #'   which reflect the responses as coded in the data (`"data"`) and their
+    #'   corresponding actual survey responses (`"asked"`). See **Examples**.
     #' @param weights Optionally, the name of a variable in `data` containing
     #'   survey weights.
     #' @param design Optionally, a named list of arguments (except `weights` and
     #'   `data`) to pass to `survey::svydesign()` to specify the survey design.
+    #'
+    #' @return A `SurveyData` object that can be used in the creation of a
+    #'   [`SurveyMap`] object.
+    #'
     #' @examples
     #' # Example sample data
     #' head(shape_survey)
@@ -59,12 +63,14 @@ SurveyData <- R6::R6Class(
     #'   responses = list(
     #'     age = levels(shape_survey$age),
     #'     gender = levels(shape_survey$gender),
-    #'     # Here we use a dataframe for the responses because the levels
+    #'     # Here we use a data frame for the responses because the levels
     #'     # in the data are abridged versions of the actual responses.
     #'     # This can be useful when surveys have brief/non descriptive responses.
-    #'     vote_for = data.frame(data = levels(shape_survey$vote_for),
-    #'     asked = c("Box Party Faction A", "Box Party Faction B",
-    #'               "Circle Party Coalition", "Circle Party")),
+    #'     vote_for = data.frame(
+    #'       data = levels(shape_survey$vote_for),
+    #'       asked = c("Box Party Faction A", "Box Party Faction B",
+    #'                 "Circle Party Coalition", "Circle Party")
+    #'     ),
     #'     y = c("no","yes")
     #'   ),
     #'   weights = "wt",
@@ -236,13 +242,16 @@ SurveyData <- R6::R6Class(
     },
 
     #' @description Number of observations in the survey data
+    #' @return An integer.
     n_obs = function() nrow(private$survey_data_),
 
     #' @description Number of survey questions
+    #' @return An integer.
     n_questions = function() length(private$questions_),
 
     #' @description Print a summary of the survey data
     #' @param ... Currently ignored.
+    #' @return The `SurveyData` object, invisibly.
     print = function(...) {
       cat("Survey with",
           self$n_obs(), "observations,",
@@ -258,6 +267,7 @@ SurveyData <- R6::R6Class(
     #'   intended for internal use but may occasionally be useful.
     #' @param name,value The name of the new variable (a string) and the
     #' vector of values to add to the data frame.
+    #' @return The `SurveyData` object, invisibly.
     add_survey_data_column = function(name, value) {
       if (length(value) != nrow(private$survey_data_)) {
         stop("New variable must have same number of observations as the survey data.",
@@ -271,6 +281,7 @@ SurveyData <- R6::R6Class(
     #' @param key Should the `.key` column be included? This column just
     #'   indicates the original order of the rows and is primarily intended
     #'   for internal use.
+    #' @return A data frame.
     survey_data = function(key = TRUE) {
       if (key) {
         private$survey_data_
@@ -280,11 +291,17 @@ SurveyData <- R6::R6Class(
     },
 
     #' @description Access the list of survey questions
+    #' @return A named list.
     questions = function() private$questions_,
+
     #' @description Access the list of allowed survey responses
+    #' @return A named list.
     responses = function() private$responses_,
+
     #' @description Access the survey weights
+    #' @return A numeric vector.
     weights = function() private$weights_,
+
     #' @description Access the survey design
     design = function() private$design_
   )

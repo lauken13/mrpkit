@@ -30,13 +30,15 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    # Here we use a dataframe for the responses because the levels
+    # Here we use a data frame for the responses because the levels
     # in the data are abridged versions of the actual responses.
     # This can be useful when surveys have brief/non descriptive responses.
-    vote_for = data.frame(data = levels(shape_survey$vote_for),
-    asked = c("Box Party Faction A", "Box Party Faction B",
-              "Circle Party Coalition", "Circle Party")),
-    y = c("no","yes")
+    vote_for = data.frame(
+      data = levels(shape_survey$vote_for),
+      asked = c("Box Party Faction A", "Box Party Faction B",
+                "Circle Party Coalition", "Circle Party")
+    ),
+    y = c("no", "yes")
   ),
   weights = "wt",
   design = list(ids =~1)
@@ -226,6 +228,9 @@ Create a new SurveyMap object
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A \code{SurveyMap} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-print"></a>}}
@@ -242,6 +247,9 @@ Print a summary of the mapping.
 \item{\code{...}}{Currently ignored.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -260,6 +268,9 @@ Add new \link{QuestionMap}s.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-delete"></a>}}
@@ -276,6 +287,9 @@ Delete \link{QuestionMap}s.
 \item{\code{...}}{The \link{QuestionMap}s to delete.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -296,31 +310,45 @@ Replace one \link{QuestionMap} with another.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-validate"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-validate}{}}}
 \subsection{Method \code{validate()}}{
-Validate the mapping
+Validate the mapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$validate()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-mapping}{}}}
 \subsection{Method \code{mapping()}}{
-The mapping method uses the given maps between questions to create new sample and population data
-that has unified variable names (i.e., if the underlying construct is called \code{age}, both sample and population will have
-an \code{age} column, even if in the the raw data both had different variable names). The method also unifies the levels of each
-variable in the sample and population so that the maximum set of consistent levels is created. Names of these new levels are
-made according the the sample level names. If multiple levels are combined, the new name will be existing levels seperated by a
-\code{+}.
+The mapping method uses the given maps between questions to
+create new sample and population data that has unified variable names
+(i.e., if the underlying construct is called \code{age}, both sample and
+population will have an \code{age} column, even if in the the raw data both
+had different variable names). The method also unifies the levels of
+each variable in the sample and population so that the maximum set of
+consistent levels is created. Names of these new levels are made
+according the the sample level names. If multiple levels are combined,
+the new name will be the existing levels separated by a \code{+} (e.g.
+if age groups "18-25" and "26-30" are combined the new name will be
+"18-25 + 26-30").
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapping()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-tabulate"></a>}}
@@ -339,6 +367,9 @@ frame is available via the \code{SurveyMap$poststrat_data()} method. See
 \item{\code{...}}{The names of the variables to include as strings.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -374,48 +405,60 @@ A \link{SurveyFit} object.
 \if{html}{\out{<a id="method-SurveyMap-item_map"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-item_map}{}}}
 \subsection{Method \code{item_map()}}{
-Access the \code{item_map}
+Access the \code{item_map}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$item_map()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A named list of \code{\link{QuestionMap}}s.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-sample"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-sample}{}}}
 \subsection{Method \code{sample()}}{
-Access the \link{SurveyData} object containing the sample data
+Access the \link{SurveyData} object containing the sample data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$sample()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A \code{\link{SurveyData}} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-population"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-population}{}}}
 \subsection{Method \code{population()}}{
-Access the \link{SurveyData} object containing the population data
+Access the \link{SurveyData} object containing the population data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$population()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A \code{\link{SurveyData}} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-poststrat_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-poststrat_data}{}}}
 \subsection{Method \code{poststrat_data()}}{
-Access the poststratification data frame created by the \code{tabulate} method
+Access the poststratification data frame created by the \code{tabulate} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$poststrat_data()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyMap-mapped_sample_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-mapped_sample_data}{}}}
 \subsection{Method \code{mapped_sample_data()}}{
 Access the data frame containing the mapped sample data
-created by the \code{mapping} method
+created by the \code{mapping} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapped_sample_data(key = TRUE)}\if{html}{\out{</div>}}
 }
@@ -428,6 +471,9 @@ indicates the original order of the rows and is primarily intended
 for internal use.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data frame.
 }
 }
 \if{html}{\out{<hr>}}
@@ -448,6 +494,9 @@ indicates the original order of the rows and is primarily intended
 for internal use.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data frame.
 }
 }
 \if{html}{\out{<hr>}}

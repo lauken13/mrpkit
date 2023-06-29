@@ -33,12 +33,14 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    # Here we use a dataframe for the responses because the levels
+    # Here we use a data frame for the responses because the levels
     # in the data are abridged versions of the actual responses.
     # This can be useful when surveys have brief/non descriptive responses.
-    vote_for = data.frame(data = levels(shape_survey$vote_for),
-    asked = c("Box Party Faction A", "Box Party Faction B",
-              "Circle Party Coalition", "Circle Party")),
+    vote_for = data.frame(
+      data = levels(shape_survey$vote_for),
+      asked = c("Box Party Faction A", "Box Party Faction B",
+                "Circle Party Coalition", "Circle Party")
+    ),
     y = c("no","yes")
   ),
   weights = "wt",
@@ -150,12 +152,12 @@ be omitted and will be automatically set to 1.
 
 \item{\code{questions, responses}}{Named lists containing the text of the survey
 questions and the allowed responses, respectively. The names must
-correspond to the names of variables in \code{data}. See \strong{Examples}. If
-these aren't provided then they will be created internally using all
-factor, character, and binary variables in \code{data}. Responses can also be
-provided as a dataframe with column names "data" and "asked", which
-reflect the responses as coded in the data ("data") and their
-corresponding actual survey responses ("asked").}
+correspond to the names of variables in \code{data}. If these aren't
+provided then they will be created internally using all factor,
+character, and binary variables in \code{data}. Responses can also be
+provided as a data frame with column names \code{"data"} and \code{"asked"},
+which reflect the responses as coded in the data (\code{"data"}) and their
+corresponding actual survey responses (\code{"asked"}). See \strong{Examples}.}
 
 \item{\code{weights}}{Optionally, the name of a variable in \code{data} containing
 survey weights.}
@@ -164,6 +166,10 @@ survey weights.}
 \code{data}) to pass to \code{survey::svydesign()} to specify the survey design.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{SurveyData} object that can be used in the creation of a
+\code{\link{SurveyMap}} object.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -182,12 +188,14 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    # Here we use a dataframe for the responses because the levels
+    # Here we use a data frame for the responses because the levels
     # in the data are abridged versions of the actual responses.
     # This can be useful when surveys have brief/non descriptive responses.
-    vote_for = data.frame(data = levels(shape_survey$vote_for),
-    asked = c("Box Party Faction A", "Box Party Faction B",
-              "Circle Party Coalition", "Circle Party")),
+    vote_for = data.frame(
+      data = levels(shape_survey$vote_for),
+      asked = c("Box Party Faction A", "Box Party Faction B",
+                "Circle Party Coalition", "Circle Party")
+    ),
     y = c("no","yes")
   ),
   weights = "wt",
@@ -267,6 +275,9 @@ Number of observations in the survey data
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$n_obs()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+An integer.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-n_questions"></a>}}
@@ -277,6 +288,9 @@ Number of survey questions
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$n_questions()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+An integer.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-print"></a>}}
@@ -293,6 +307,9 @@ Print a summary of the survey data
 \item{\code{...}}{Currently ignored.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{SurveyData} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -313,6 +330,9 @@ vector of values to add to the data frame.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyData} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-survey_data"></a>}}
@@ -332,6 +352,9 @@ for internal use.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-questions"></a>}}
@@ -342,6 +365,9 @@ Access the list of survey questions
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$questions()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A named list.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-responses"></a>}}
@@ -352,6 +378,9 @@ Access the list of allowed survey responses
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$responses()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A named list.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-weights"></a>}}
@@ -362,6 +391,9 @@ Access the survey weights
 \if{html}{\out{<div class="r">}}\preformatted{SurveyData$weights()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A numeric vector.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SurveyData-design"></a>}}

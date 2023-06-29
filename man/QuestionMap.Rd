@@ -4,33 +4,48 @@
 \alias{QuestionMap}
 \title{QuestionMap}
 \description{
-An \link[R6:R6Class]{R6} \code{QuestionMap} object holds the mapping
-for one question or demographic between the survey and population dataset.
+An \link[R6:R6Class]{R6} \code{QuestionMap} object holds the mapping for
+one question or demographic between the sample data and population data.
 }
 \examples{
+
+## ------------------------------------------------
+## Method `QuestionMap$new`
+## ------------------------------------------------
+
 q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age","age_group"),
   values_map = list(
-    "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
-    "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
+    "18-25" = "18-35",
+    "26-35" = "18-35",
+    "36-45" = "36-55",
+    "46-55" = "36-55",
+    "56-65" = "56-65",
+    "66-75" = "66+",
+    "76-90" = "66+"
   )
 )
 print(q_age)
 
-q_party_pref <- QuestionMap$new(
-  name = "party_pref",
-  col_names = c("vote_for","vote_pref"),
-  values_map = list("Box Party" = "The BP",
-                    "The BP" = "The BP",
-                    "The Circle Party" = "The Circles",
-                    "The Circles" = "The Circles")
-)
 q_gender <- QuestionMap$new(
   name = "gender",
   col_names = c("gender", "gender"),
   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
+print(q_gender)
+
+q_party_pref <- QuestionMap$new(
+  name = "party_pref",
+  col_names = c("vote_for", "vote_pref"),
+  values_map = list(
+    "Box Party" = "The BP",
+    "The BP" = "The BP",
+    "The Circle Party" = "The Circles",
+    "The Circles" = "The Circles"
+  )
+)
+print(q_party_pref)
 
 }
 \section{Methods}{
@@ -57,8 +72,8 @@ Create a new \code{QuestionMap}
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{name}}{The name of the underlying construct. For example if the
-sample data uses the name \code{age1} and the population data uses
-the name \code{age2} then \code{name} could be \code{age}.}
+sample data uses the name \code{"age_bracket"} and the population data uses
+the name \code{"age_group"} then \code{name} could be \code{"age"}.}
 
 \item{\code{col_names}}{A character vector of length two giving the column names
 of the question in the sample data (first element) and the population
@@ -66,12 +81,18 @@ data (second element).}
 
 \item{\code{values_map}}{A named list where the names correspond to the
 responses to the question in the sample data and the values correspond
-to the responses in the population data. If there is a meaningful
-ordering over the values, they should be listed in that order, either
-descending or ascending. Note that if responses were given with both the
-values in the data and the actual responses given (useful as these will
-be used for plotting), mapping should use the values in the data
-(generally shorter). See \strong{Examples}.}
+to the responses in the population data. In some cases multiple values
+in the sample may correspond to a single value in the population, or
+vice versa (e.g., the sample survey has age groups 18-25 and 26-35 but
+the population data only uses 18-35, see
+\strong{Examples}).
+
+If there is a meaningful ordering over the values, they should be
+listed in that order, either descending or ascending. Note that if
+responses were given with both the values in the data and the actual
+responses given (useful as these will be used for plotting), the
+mapping should use the values in the data (generally shorter). See
+\strong{Examples}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -79,6 +100,47 @@ be used for plotting), mapping should use the values in the data
 A \code{QuestionMap} object that can be added to a \code{\link{SurveyMap}}
 object.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{q_age <- QuestionMap$new(
+  name = "age",
+  col_names = c("age","age_group"),
+  values_map = list(
+    "18-25" = "18-35",
+    "26-35" = "18-35",
+    "36-45" = "36-55",
+    "46-55" = "36-55",
+    "56-65" = "56-65",
+    "66-75" = "66+",
+    "76-90" = "66+"
+  )
+)
+print(q_age)
+
+q_gender <- QuestionMap$new(
+  name = "gender",
+  col_names = c("gender", "gender"),
+  values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
+)
+print(q_gender)
+
+q_party_pref <- QuestionMap$new(
+  name = "party_pref",
+  col_names = c("vote_for", "vote_pref"),
+  values_map = list(
+    "Box Party" = "The BP",
+    "The BP" = "The BP",
+    "The Circle Party" = "The Circles",
+    "The Circles" = "The Circles"
+  )
+)
+print(q_party_pref)
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-QuestionMap-print"></a>}}
@@ -109,6 +171,9 @@ Access \code{name}
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$name()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A string.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-QuestionMap-col_names"></a>}}
@@ -119,6 +184,9 @@ Access \code{col_names}
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$col_names()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A character vector of length 2.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-QuestionMap-values"></a>}}
@@ -129,6 +197,9 @@ Access \code{values}
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$values()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-QuestionMap-clone"></a>}}
