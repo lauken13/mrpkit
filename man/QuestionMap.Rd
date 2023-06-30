@@ -73,7 +73,8 @@ Create a new \code{QuestionMap}
 \describe{
 \item{\code{name}}{The name of the underlying construct. For example if the
 sample data uses the name \code{"age_bracket"} and the population data uses
-the name \code{"age_group"} then \code{name} could be \code{"age"}.}
+the name \code{"age_group"} then \code{name} could be \code{"age"}. This name will be
+used later in the workflow when creating a data set with unified names.}
 
 \item{\code{col_names}}{A character vector of length two giving the column names
 of the question in the sample data (first element) and the population

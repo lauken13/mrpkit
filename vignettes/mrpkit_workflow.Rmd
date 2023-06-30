@@ -317,7 +317,7 @@ ex_map$tabulate()
 
 7. `SurveyMap$fit`
 
-    Finally, we can fit the model using `fit` method. Currently, `mrpkit` supports `rstanarm::stan_glmer` and `rstanarm::stan_glm` (Goodrich, Gabry, Ali, & Brilleman, 2020), `lme4::glmer` (Bates, Maechler, Bolker, & Walker, 2015) , `brms::brm` (Bürkner, 2018) as the built-in functions. However, you could also specify your own function. In this case, you should give a `data` argument that accepts a data frame. In this example, we fit three models using `fun=rstanarm::stan_glmer`, `fun=lme4::glmer`, and `fun=brms:brm` with `age`, `gender`, and `education` as the predictors.
+    Finally, we can fit the model using `fit` method. Currently, `mrpkit` natively supports `rstanarm::stan_glmer` and `rstanarm::stan_glm` (Goodrich, Gabry, Ali, & Brilleman, 2020), `lme4::glmer` (Bates, Maechler, Bolker, & Walker, 2015) , `brms::brm` (Bürkner, 2018). However, you can also specify your own function. In this case, it should give a `formula` argument and a `data` argument that accepts a data frame (the requirement for a formula may be relaxed in the future). In this example, we fit three models using `fun=rstanarm::stan_glmer`, `fun=lme4::glmer`, and `fun=brms::brm` with `age`, `gender`, and `education` as the predictors.
 
 ```{r  fitting}
 # Example of using rstanarm::stan_glmer
@@ -325,7 +325,7 @@ fit1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1 | age) + (1 | gender) + (1 | highest_educ) + (1 | state),
   family = "binomial",
-  refresh = 100,
+  refresh = 0,
   cores = 2)
 
 # Example of using lme4::glmer
@@ -356,7 +356,7 @@ In this stage, we already have the fitted model object, i.e., `fit1` and `fit2`.
 
 After creating the `SurveyFit` object, we can generate the predicted probability of the outcome of each post-stratification cell using the `SurveyFit$population_predict` method. It returns a matrix with rows that correspond to the columns of post-stratification data and columns that correspond to the posterior samples.
 
-Furthermore, if the model fitting is done with one of the built-in functions (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a customized function in the model fitting, then this method takes multiple arguments, including a custom prediction function 
+Furthermore, if the model fitting is done with one of the natively supported functions (`rstanarm::stan_glmer`, `lme4::glmer`, `brms::brm`), then this method does not take any arguments. However, if you used a custom function in the model fitting, then this method takes multiple arguments, including a custom prediction function 
 (see `?SurveyFit` for details). In this example, we will show how to use this method for the `fit1` object created using `rstanarm::stan_glmer`.
 
 ```{r predict}
@@ -401,11 +401,11 @@ age_estimation %>%
 
 ### Summarise and compare
 
-The output of aggregate is a posterior predictive distribution for the
+The output of `aggregate` is a posterior predictive distribution for the
 population (or sub-populations) of interest. This can be used with the plot
 function to visualize. However, we also might wish to make a table summary of
 the posterior mean and standard deviation, along with comparisons with raw
-estimates and weighted estimates. We can use the `summary` method do to this.
+estimates and weighted estimates. We can use the `summary` method to do this.
 This method takes the aggregated data frame and produces a data frame of mean and
 standard deviation estimates for each group (if in the aggregated frame) or
 overall in the population.

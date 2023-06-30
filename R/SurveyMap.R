@@ -381,18 +381,24 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description The mapping method uses the given maps between questions to
-    #'   create new sample and population data that has unified variable names
-    #'   (i.e., if the underlying construct is called `age`, both sample and
-    #'   population will have an `age` column, even if in the the raw data both
-    #'   had different variable names). The method also unifies the levels of
-    #'   each variable in the sample and population so that the maximum set of
-    #'   consistent levels is created. Names of these new levels are made
-    #'   according the the sample level names. If multiple levels are combined,
-    #'   the new name will be the existing levels separated by a ` + ` (e.g.
-    #'   if age groups "18-25" and "26-30" are combined the new name will be
-    #'   "18-25 + 26-30").
+    #' @description The `mapping` method uses the given maps between questions
+    #'   to create new sample and population data frames that have unified
+    #'   variable names (e.g., if the underlying construct is called `age`, both
+    #'   sample and population will have an `age` column, even if in the the raw
+    #'   data both had different variable names).
+    #'
+    #'   This method also unifies the levels of each variable in the sample and
+    #'   population so that the maximum set of consistent levels is created.
+    #'   Names of these new levels are made according the the sample level
+    #'   names. If multiple levels are combined, the new name will be the
+    #'   existing levels separated by a ` + ` (e.g. if age groups `"18-25"` and
+    #'   `"26-30"` are combined the new name will be `"18-25 + 26-30"`).
+    #'
+    #'   Use the `mapped_sample_data` and `mapped_population_data` methods to
+    #'   access the resulting data frames.
+    #'
     #' @return The `SurveyMap` object, invisibly.
+    #'
     mapping  = function() {
       for (j in 1:length(private$item_map_)) {
         samp_mapnames <- private$item_map_[[j]]$col_names()[1]
@@ -491,7 +497,7 @@ SurveyMap <- R6::R6Class(
     },
 
     #' @description Prepare the poststratification table. The resulting data
-    #'   frame is available via the `SurveyMap$poststrat_data()` method. See
+    #'   frame is available via the `poststrat_data` method. See
     #'   **Examples**.
     #' @param ... The names of the variables to include as strings.
     #' @return The `SurveyMap` object, invisibly.
@@ -514,15 +520,21 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Fit a model.
+    #' @description Fit a model. \pkg{rstanarm}, \pkg{brms}, and \pkg{lme4} are
+    #' supported natively. Custom modeling functions can also be used if they
+    #' meet certain requirements.
     #' @param fun The model fitting function to use. For example,
-    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`.
-    #'   If using a custom `fun` it must have a `data` argument that accepts
-    #'   a data frame (like standard R modeling functions).
+    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`. If
+    #'   using a custom `fun` it must have a `formula` argument and a `data`
+    #'   argument that accepts a data frame (like standard R modeling
+    #'   functions). Other arguments can be passed via `...`. The `formula`
+    #'   argument will be taken from the `formula` argument below and the `data`
+    #'   argument will be automatically set to the the mapped data created by
+    #'   the `mapping` method (you can access this data via the
+    #'   `mapped_sample_data` method).
     #' @param formula The model formula. Can be either a string or a formula
     #'   object.
     #' @param ... Arguments other than `formula` and `data` to pass to `fun`.
-    #'   The data argument will be automatically specified internally.
     #' @return A [SurveyFit] object.
     #'
     fit = function(fun, formula, ...) {

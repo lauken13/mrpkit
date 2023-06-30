@@ -17,7 +17,8 @@ QuestionMap <- R6::R6Class(
     #' @description Create a new `QuestionMap`
     #' @param name The name of the underlying construct. For example if the
     #'   sample data uses the name `"age_bracket"` and the population data uses
-    #'   the name `"age_group"` then `name` could be `"age"`.
+    #'   the name `"age_group"` then `name` could be `"age"`. This name will be
+    #'   used later in the workflow when creating a data set with unified names.
     #' @param col_names A character vector of length two giving the column names
     #'   of the question in the sample data (first element) and the population
     #'   data (second element).

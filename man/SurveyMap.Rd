@@ -331,17 +331,21 @@ The \code{SurveyMap} object, invisibly.
 \if{html}{\out{<a id="method-SurveyMap-mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-mapping}{}}}
 \subsection{Method \code{mapping()}}{
-The mapping method uses the given maps between questions to
-create new sample and population data that has unified variable names
-(i.e., if the underlying construct is called \code{age}, both sample and
-population will have an \code{age} column, even if in the the raw data both
-had different variable names). The method also unifies the levels of
-each variable in the sample and population so that the maximum set of
-consistent levels is created. Names of these new levels are made
-according the the sample level names. If multiple levels are combined,
-the new name will be the existing levels separated by a \code{+} (e.g.
-if age groups "18-25" and "26-30" are combined the new name will be
-"18-25 + 26-30").
+The \code{mapping} method uses the given maps between questions
+to create new sample and population data frames that have unified
+variable names (e.g., if the underlying construct is called \code{age}, both
+sample and population will have an \code{age} column, even if in the the raw
+data both had different variable names).
+
+This method also unifies the levels of each variable in the sample and
+population so that the maximum set of consistent levels is created.
+Names of these new levels are made according the the sample level
+names. If multiple levels are combined, the new name will be the
+existing levels separated by a \code{+} (e.g. if age groups \code{"18-25"} and
+\code{"26-30"} are combined the new name will be \code{"18-25 + 26-30"}).
+
+Use the \code{mapped_sample_data} and \code{mapped_population_data} methods to
+access the resulting data frames.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapping()}\if{html}{\out{</div>}}
 }
@@ -355,7 +359,7 @@ The \code{SurveyMap} object, invisibly.
 \if{latex}{\out{\hypertarget{method-SurveyMap-tabulate}{}}}
 \subsection{Method \code{tabulate()}}{
 Prepare the poststratification table. The resulting data
-frame is available via the \code{SurveyMap$poststrat_data()} method. See
+frame is available via the \code{poststrat_data} method. See
 \strong{Examples}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$tabulate(...)}\if{html}{\out{</div>}}
@@ -376,7 +380,9 @@ The \code{SurveyMap} object, invisibly.
 \if{html}{\out{<a id="method-SurveyMap-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyMap-fit}{}}}
 \subsection{Method \code{fit()}}{
-Fit a model.
+Fit a model. \pkg{rstanarm}, \pkg{brms}, and \pkg{lme4} are
+supported natively. Custom modeling functions can also be used if they
+meet certain requirements.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$fit(fun, formula, ...)}\if{html}{\out{</div>}}
 }
@@ -385,15 +391,19 @@ Fit a model.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{fun}}{The model fitting function to use. For example,
-\code{fun=rstanarm::stan_glmer}, \code{fun=brms::brm}, \code{fun=lme4::glmer}.
-If using a custom \code{fun} it must have a \code{data} argument that accepts
-a data frame (like standard R modeling functions).}
+\code{fun=rstanarm::stan_glmer}, \code{fun=brms::brm}, \code{fun=lme4::glmer}. If
+using a custom \code{fun} it must have a \code{formula} argument and a \code{data}
+argument that accepts a data frame (like standard R modeling
+functions). Other arguments can be passed via \code{...}. The \code{formula}
+argument will be taken from the \code{formula} argument below and the \code{data}
+argument will be automatically set to the the mapped data created by
+the \code{mapping} method (you can access this data via the
+\code{mapped_sample_data} method).}
 
 \item{\code{formula}}{The model formula. Can be either a string or a formula
 object.}
 
-\item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to \code{fun}.
-The data argument will be automatically specified internally.}
+\item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to \code{fun}.}
 }
 \if{html}{\out{</div>}}
 }
