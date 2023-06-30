@@ -382,8 +382,14 @@ then produces a dataframe with number of rows equal to three times the number of
 \if{html}{\out{<a id="method-SurveyFit-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-SurveyFit-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot takes the aggregated MRP estimates and produces a quick
-visualization of total and sub-population estimates.
+Visualize population or sub-population estimates.
+
+When passed the data frame containing the posterior distribution of the
+population MRP estimate a density plot is generated.  If visualizing
+sub-populations it generates a violin plot of the posterior
+distribution of the aggregated MRP estimates for each level of the
+grouping variable. The \code{additional_stats} argument controls which
+other information is overlaid on the plot.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, additional_stats = c("wtd", "raw"))}\if{html}{\out{</div>}}
 }
@@ -394,21 +400,22 @@ visualization of total and sub-population estimates.
 \item{\code{aggregated_estimates}}{The data frame returned by the \code{aggregate} method.}
 
 \item{\code{additional_stats}}{A vector that specifies which of three additional
-stats ("wtd", "raw", "mrp", "none") should be overlayed on the plot.
-The default is to include the weighted estimate (wtd) and raw data mean
-(raw), but an analogous bar for MRP (mrp) can be added using the
-posterior mean and sd. The sd for the weighted estimate uses the survey
-design and the \pkg{survey} package, whilst the raw estimate is a
-direct mean and binomial sd of the binary responses. Uncertainty is
+stats (\code{"wtd"}, \code{"raw"}, \code{"mrp"}, \code{"none"}) should be overlaid on the
+plot. The default is to overlay intervals for the weighted and raw
+estimates on top of the density plot representing the MRP estimates.
+The weighted estimates are computed by passing the optional survey
+weights and design specified in the \code{\link{SurveyData}} to the \pkg{survey}
+package. The raw estimate is a direct mean and binomial sd of the
+binary responses. Uncertainty estimates for the \code{additional_stats} are
 included on violin plots but not on density plots. Intervals are 95\%
 CI.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A ggplot object that is either a violin plot (if aggregated
-estimates is at a small area level) or density plot (if aggregated
-estimates is at the population level).
+A ggplot object that is either a violin plot if showing small
+area level (sub-population) estimates, or a density plot if showing
+population estimates.
 }
 }
 \if{html}{\out{<hr>}}

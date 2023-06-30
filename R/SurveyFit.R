@@ -227,21 +227,29 @@ SurveyFit <- R6::R6Class(
       as.data.frame(out)
     },
 
-    #' @description Plot takes the aggregated MRP estimates and produces a quick
-    #' visualization of total and sub-population estimates.
+    #' @description Visualize population or sub-population estimates.
+    #'
+    #'   When passed the data frame containing the posterior distribution of the
+    #'   population MRP estimate a density plot is generated.  If visualizing
+    #'   sub-populations it generates a violin plot of the posterior
+    #'   distribution of the aggregated MRP estimates for each level of the
+    #'   grouping variable. The `additional_stats` argument controls which
+    #'   other information is overlaid on the plot.
+    #'
     #' @param aggregated_estimates The data frame returned by the `aggregate` method.
     #' @param additional_stats A vector that specifies which of three additional
-    #'   stats ("wtd", "raw", "mrp", "none") should be overlayed on the plot.
-    #'   The default is to include the weighted estimate (wtd) and raw data mean
-    #'   (raw), but an analogous bar for MRP (mrp) can be added using the
-    #'   posterior mean and sd. The sd for the weighted estimate uses the survey
-    #'   design and the \pkg{survey} package, whilst the raw estimate is a
-    #'   direct mean and binomial sd of the binary responses. Uncertainty is
+    #'   stats (`"wtd"`, `"raw"`, `"mrp"`, `"none"`) should be overlaid on the
+    #'   plot. The default is to overlay intervals for the weighted and raw
+    #'   estimates on top of the density plot representing the MRP estimates.
+    #'   The weighted estimates are computed by passing the optional survey
+    #'   weights and design specified in the [`SurveyData`] to the \pkg{survey}
+    #'   package. The raw estimate is a direct mean and binomial sd of the
+    #'   binary responses. Uncertainty estimates for the `additional_stats` are
     #'   included on violin plots but not on density plots. Intervals are 95%
     #'   CI.
-    #' @return A ggplot object that is either a violin plot (if aggregated
-    #'   estimates is at a small area level) or density plot (if aggregated
-    #'   estimates is at the population level).
+    #' @return A ggplot object that is either a violin plot if showing small
+    #'   area level (sub-population) estimates, or a density plot if showing
+    #'   population estimates.
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       if (!is.character(additional_stats)) {
         stop("'additional_stats' must be a character vector.", call. = FALSE)
@@ -269,10 +277,10 @@ SurveyFit <- R6::R6Class(
         focus_var_which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
         focus_var_responses <- private$map_$sample()$responses()[[focus_var_which_q]]
-        if(is.data.frame(focus_var_responses)){
+        if (is.data.frame(focus_var_responses)){
           num_modelled_levels <- length(levels(aggregated_estimates[[focus_var]]))
           combined_levels_asked <- rep(NA, num_modelled_levels)
-          for(i in 1:num_modelled_levels){
+          for (i in 1:num_modelled_levels){
             combined_levels_data <- unlist(strsplit(levels(aggregated_estimates[[focus_var]])[i], split = " \\+ "))
             combined_levels_asked[i] <- paste0(focus_var_responses$asked[focus_var_responses$data %in% combined_levels_data], collapse = " + ")
           }
