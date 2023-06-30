@@ -37,13 +37,11 @@ Imports:
     R6,
     tidyr
 Suggests:
-    BH,
     brms,
     covr,
     knitr,
     lme4,
     merTools,
-    RcppEigen,
     rmarkdown,
     rstanarm (>= 2.21.0),
     testthat,
