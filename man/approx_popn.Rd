@@ -26,4 +26,4 @@ Example approximate population (modelled after ACS)
 str(approx_popn)
 
 }
-\keyword{datasets}
+\keyword{internal}

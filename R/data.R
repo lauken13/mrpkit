@@ -1,5 +1,8 @@
 #' Example survey for package testing
+#'
 #' @source Created in CreateTestData.R
+#' @keywords internal
+#'
 #' @format A data frame with columns:
 #' \describe{
 #'  \item{age1}{Age group}
@@ -17,6 +20,7 @@
 #' Example approximate population (modelled after ACS)
 #'
 #' @source Created in CreateTestData.R
+#' @keywords internal
 #' @format A data frame with columns:
 #' \describe{
 #'  \item{age2}{Age group}

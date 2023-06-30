@@ -22,9 +22,9 @@ Authors@R: c(
            family = "Morris",
            role = c("ctb"))
            )
-Description: Conducts multilevel regression with post-stratification in an opinionated 
-    and specific way. Users specify two datasets (sample and population), establish 
-    a correspondence between them, and then conduct analysis.
+Description: Conducts multilevel regression with post-stratification (MRP) in an 
+    opinionated and specific way. Users specify two datasets (sample and population), 
+    establish a correspondence between them, and then conduct analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
