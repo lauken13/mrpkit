@@ -17,19 +17,21 @@ or officially supported**
 
 For students and researchers who are comfortable with at least `glm()`
 and want to conduct multilevel regression with post-stratification
-(MRP), `mrpkit` provides a reproducible, opinionated, and highly
-structured workflow. Unlike writing all the code yourself, using
+(MRP), the `mrpkit` R package provides a reproducible, opinionated, and
+highly structured workflow. Unlike writing all the code yourself, using
 `mrpkit` proactively addresses many common issues, and makes it possible
-for folks who are new to MRP to quickly conduct their first analysis.
+for people who are new to MRP to quickly conduct their first analysis.
 
-The package assists in setting up the survey data and relationships
-between different variables in the sample and the population. From
-there, a substantial amount of data cleaning is automated, saving time
-and reducing the risk of coding errors. The package has native support
-for multilevel binomial and Bernoulli models fit with lme4 and Stan (via
-brms and rstanarm) and also allows for the use of custom modeling
-functions. Summaries and simple visualizations of the resulting
-post-stratified estimates are provided.
+The package first assists in setting up the survey data and
+relationships between different variables in the sample and the
+population. From there, a substantial amount of data cleaning is
+automated, saving time and reducing the risk of coding errors. `mrpkit`
+has native support for multilevel binomial and Bernoulli models fit with
+lme4 and Stan (via brms and rstanarm) and also allows for the use of
+custom modeling functions. After model fitting, `mrpkit` handles the
+post-stratification step, producing population and sub-population
+estimates. Summary statistics and simple visualizations of the resulting
+MRP estimates are provided.
 
 ## Installation
 
