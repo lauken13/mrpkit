@@ -126,7 +126,7 @@ SurveyFit <- R6::R6Class(
         }
       } else {
         fun <- match.fun(fun)
-        fun(fitted_model, poststrat, ...)
+        fun(private$fit_, poststrat, ...)
       }
     },
 
@@ -192,7 +192,7 @@ SurveyFit <- R6::R6Class(
           dplyr::mutate(method = "mrp")
 
           lhs_binary <- self$map()$sample()$survey_data() %>%
-          dplyr::select(lhs_var, .key)%>%
+          dplyr::select(dplyr::all_of(lhs_var), .key)%>%
           dplyr::mutate(lhs_binary = force_factor(.data[[lhs_var]]))
 
         raw_data <- self$map()$mapped_sample_data() %>%
