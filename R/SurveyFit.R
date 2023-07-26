@@ -4,8 +4,8 @@
 #' @export
 #' @description An [R6][R6::R6Class] `SurveyFit` object stores a fitted model
 #'   object and provides methods for generating predicted probabilities for all
-#'   poststrat cells, generating population and group estimates, and visualizing
-#'   results.
+#'   poststratification cells, generating population and group estimates, and
+#'   visualizing results.
 #' @inherit SurveyMap examples
 #'
 SurveyFit <- R6::R6Class(
@@ -18,11 +18,12 @@ SurveyFit <- R6::R6Class(
   public = list(
 
     #' @description Create a new `SurveyFit` object. This method is called
-    #'   internally by the `$fit()` method of the [`SurveyMap`] object and does
+    #'   internally by the `fit` method of the [`SurveyMap`] object and does
     #'   not need to be called directly by the user.
     #' @param fit A fitted model object.
     #' @param map A [`SurveyMap`] object.
-    #' @param formula A formula object representing the model ran.
+    #' @param formula A formula object for the model that was fit.
+    #' @return A `SurveyFit` object.
     initialize = function(fit, map, formula) {
       private$fit_ <- fit
       private$map_ <- map
@@ -30,29 +31,38 @@ SurveyFit <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Access the fitted model object
+    #' @description Access the fitted model object.
+    #' @return The fitted model object created by the modeling function called
+    #'   by the `fit` method of the [`SurveyMap`] object. For example, if using
+    #'   `rstanarm::stan_glmer()` then a `stanreg` object from \pkg{rstanarm} is
+    #'   returned.
     fit = function() {
       private$fit_
     },
 
-    #' @description Access the SurveyMap object
+    #' @description Access the [`SurveyMap`] object.
+    #' @return The [`SurveyMap`] associated with the `SurveyFit` object.
     map = function() {
       private$map_
     },
 
-    #' @description Access the SurveyMap object
+    #' @description Access the model formula.
+    #' @return The model formula used when fitting the model.
     formula = function() {
       private$formula_
     },
 
-    #' @description Call the fitted model object's print method
+    #' @description Call the fitted model object's print method. The console
+    #'   output from this method depends on the model fitting function used.
     #' @param ... Optional arguments to pass the print method.
+    #' @return The `SurveyFit` object, invisibly.
     print = function(...) {
       print(private$fit_, ...)
       invisible(self)
     },
 
-    #' @description Use fitted model to add predicted probabilities to post-stratification dataset.
+    #' @description Use fitted model to add predicted probabilities to
+    #'   post-stratification dataset.
     #' @param fun The function to use to generate the predicted probabilities.
     #'   This should only be specified if you used a model fitting function
     #'   not natively supported by \pkg{mrpkit}.
@@ -120,8 +130,9 @@ SurveyFit <- R6::R6Class(
       }
     },
 
-    #' @description Aggregate estimates to the population level or by level of a grouping variable
-    #' @param poststrat_estimates The object returned by `population_predict`.
+    #' @description Aggregate estimates to the population level or by level of a
+    #'   grouping variable.
+    #' @param poststrat_estimates The object returned by the `population_predict` method.
     #' @param by Optionally a string specifying a grouping variable. If
     #'   specified the aggregation will happen by level of the named variable.
     #'   If not specified population-level estimates will be computed.
@@ -157,7 +168,7 @@ SurveyFit <- R6::R6Class(
     },
     #' @description Creates a set of summary statistics of the mrp estimate,
     #' and corresponding weighted and raw data estimates
-    #' @param aggregated_estimates The data frame returned by the `aggregate() method`.
+    #' @param aggregated_estimates The data frame returned by the `aggregate` method.
     #' @return A data frame that consists of a minimum three rows with the raw, MRP
     #' and weighted estimates, plus an estimate of standard error. If the aggregated estimates
     #' were specified with a `by` argument (indicating sub population or small area estimates),
@@ -216,20 +227,29 @@ SurveyFit <- R6::R6Class(
       as.data.frame(out)
     },
 
-    #' @description Plot takes the aggregated MRP estimates and produces a quick
-    #' visualization of total and sub-population estimates.
-    #' @param aggregated_estimates The data frame returned by `aggregate`.
+    #' @description Visualize population or sub-population estimates.
+    #'
+    #'   When passed the data frame containing the posterior distribution of the
+    #'   population MRP estimate a density plot is generated.  If visualizing
+    #'   sub-populations it generates a violin plot of the posterior
+    #'   distribution of the aggregated MRP estimates for each level of the
+    #'   grouping variable. The `additional_stats` argument controls which
+    #'   other information is overlaid on the plot.
+    #'
+    #' @param aggregated_estimates The data frame returned by the `aggregate` method.
     #' @param additional_stats A vector that specifies which of three additional
-    #'   stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
-    #'   default value is to include the weighted estimate (wtd) and raw data
-    #'   mean (raw), but an analogous bar for MRP (mrp) can be added using the
-    #'   posterior mean and sd. The sd for the weighted estimate uses the survey
-    #'   design and the \pkg{survey} package, whilst the raw estimate is a
-    #'   direct mean and binomial sd of the binary responses. Uncertainty is included on
-    #'   violin plots but not on density plots. Intervals are 95% CI.
-    #' @return A ggplot object that is either a violin plot (if aggregated estimates is
-    #' at a small area level) or density plot (if aggregated estimates is at the population
-    #' level).
+    #'   stats (`"wtd"`, `"raw"`, `"mrp"`, `"none"`) should be overlaid on the
+    #'   plot. The default is to overlay intervals for the weighted and raw
+    #'   estimates on top of the density plot representing the MRP estimates.
+    #'   The weighted estimates are computed by passing the optional survey
+    #'   weights and design specified in the [`SurveyData`] to the \pkg{survey}
+    #'   package. The raw estimate is a direct mean and binomial sd of the
+    #'   binary responses. Uncertainty estimates for the `additional_stats` are
+    #'   included on violin plots but not on density plots. Intervals are 95%
+    #'   CI.
+    #' @return A ggplot object that is either a violin plot if showing small
+    #'   area level (sub-population) estimates, or a density plot if showing
+    #'   population estimates.
     plot = function(aggregated_estimates, additional_stats = c("wtd","raw")) {
       if (!is.character(additional_stats)) {
         stop("'additional_stats' must be a character vector.", call. = FALSE)
@@ -257,10 +277,10 @@ SurveyFit <- R6::R6Class(
         focus_var_which_q <- private$map_$item_map()[[focus_var]]$col_names()[1]
         focus_var_svy_q <- private$map_$sample()$questions()[[focus_var_which_q]]
         focus_var_responses <- private$map_$sample()$responses()[[focus_var_which_q]]
-        if(is.data.frame(focus_var_responses)){
+        if (is.data.frame(focus_var_responses)){
           num_modelled_levels <- length(levels(aggregated_estimates[[focus_var]]))
           combined_levels_asked <- rep(NA, num_modelled_levels)
-          for(i in 1:num_modelled_levels){
+          for (i in 1:num_modelled_levels){
             combined_levels_data <- unlist(strsplit(levels(aggregated_estimates[[focus_var]])[i], split = " \\+ "))
             combined_levels_asked[i] <- paste0(focus_var_responses$asked[focus_var_responses$data %in% combined_levels_data], collapse = " + ")
           }

@@ -14,9 +14,11 @@ are equivalent.  If there is a meaningful ordering over the values,
 they should be listed in that order, either descending or ascending.
 }
 \examples{
-library(dplyr)
 
+# Some fake survey data for demonstration
 head(shape_survey)
+
+# Create SurveyData object for the sample
 box_prefs <- SurveyData$new(
   data = shape_survey,
   questions = list(
@@ -28,8 +30,15 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
-    y = c("no","yes")
+    # Here we use a data frame for the responses because the levels
+    # in the data are abridged versions of the actual responses.
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(
+      data = levels(shape_survey$vote_for),
+      asked = c("Box Party Faction A", "Box Party Faction B",
+                "Circle Party Coalition", "Circle Party")
+    ),
+    y = c("no", "yes")
   ),
   weights = "wt",
   design = list(ids =~1)
@@ -37,7 +46,11 @@ box_prefs <- SurveyData$new(
 box_prefs$print()
 box_prefs$n_questions()
 
+
+# Some fake population data for demonstration
 head(approx_voters_popn)
+
+# Create SurveyData object for the population
 popn_obj <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -45,7 +58,7 @@ popn_obj <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
+  # order doesn't matter (gender before age here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -56,6 +69,9 @@ popn_obj <- SurveyData$new(
 )
 popn_obj$print()
 
+
+# Create the QuestionMap objects mapping each question between the
+# survey and population dataset
 q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age","age_group"),
@@ -77,6 +93,7 @@ q_gender <- QuestionMap$new(
   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 
+
 # Create SurveyMap object adding all questions at once
 ex_map <- SurveyMap$new(
   sample = box_prefs,
@@ -97,6 +114,7 @@ print(ex_map)
 ex_map$add(q_gender)
 print(ex_map)
 
+
 # Create the mapping between sample and population
 ex_map$mapping()
 
@@ -104,24 +122,27 @@ ex_map$mapping()
 # (alternatively, can specify particular variables, e.g. tabulate("age"))
 ex_map$tabulate()
 
-# Example rstanarm usage
-# Returns a SurveyFit object
+# Take a peak at the poststrat data frame
+head(ex_map$poststrat_data())
+
 \dontrun{
+# Fit regression model using rstanarm (returns a SurveyFit object)
 fit_1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
   seed = 1111,
-  # just to keep the example fast and small
-  chains = 1
+  chains = 1, # just to keep the example fast and small
+  refresh = 0 # suppress printed sampling iteration updates
 )
 
+# To use lme4 or brms instead of rstanarm you would use:
 # Example lme4 usage
-fit_2 <- ex_map$fit(
-  fun = lme4::glmer,
-  formula = y ~ (1|age) + (1|gender),
-  family = "binomial"
-)
+# fit_2 <- ex_map$fit(
+#   fun = lme4::glmer,
+#   formula = y ~ (1|age) + (1|gender),
+#   family = "binomial"
+# )
 
 # Example brms usage
 # fit_3 <- ex_map$fit(
@@ -132,60 +153,64 @@ fit_2 <- ex_map$fit(
 # )
 
 
-# predicted probabilities
+# Predicted probabilities
 # returns matrix with rows for poststrat cells, cols for posterior draws
 poststrat_estimates <- fit_1$population_predict()
 
-# estimates by age level
+# Compute and summarize estimates by age level and party preference
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 
 fit_1$summary(estimates_by_age)
-fit_2$summary(estimates_by_age)
-# fit_3$summary(estimates_by_age)
+fit_1$summary(estimates_by_party)
 
-# plot estimates by age
+# Plot estimates
+fit_1$plot(estimates_by_party)
+
 fit_1$plot(estimates_by_age)
+
 fit_1$plot(estimates_by_age, additional_stats = "none")
 fit_1$plot(estimates_by_age, additional_stats = "wtd")
 fit_1$plot(estimates_by_age, additional_stats = "raw")
 fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
-# population estimate
+# Compute and summarize the population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 fit_1$summary(estimates_popn)
 
-# plot population estimate
+# Plot population estimate
 fit_1$plot(estimates_popn)
 fit_1$plot(estimates_popn, additional_stats = "none")
 fit_1$plot(estimates_popn, additional_stats = "wtd")
 fit_1$plot(estimates_popn, additional_stats = "raw")
 fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 }
+
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SurveyMap$new()}}
-\item \href{#method-print}{\code{SurveyMap$print()}}
-\item \href{#method-add}{\code{SurveyMap$add()}}
-\item \href{#method-delete}{\code{SurveyMap$delete()}}
-\item \href{#method-replace}{\code{SurveyMap$replace()}}
-\item \href{#method-validate}{\code{SurveyMap$validate()}}
-\item \href{#method-mapping}{\code{SurveyMap$mapping()}}
-\item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
-\item \href{#method-fit}{\code{SurveyMap$fit()}}
-\item \href{#method-item_map}{\code{SurveyMap$item_map()}}
-\item \href{#method-sample}{\code{SurveyMap$sample()}}
-\item \href{#method-population}{\code{SurveyMap$population()}}
-\item \href{#method-poststrat_data}{\code{SurveyMap$poststrat_data()}}
-\item \href{#method-mapped_sample_data}{\code{SurveyMap$mapped_sample_data()}}
-\item \href{#method-mapped_population_data}{\code{SurveyMap$mapped_population_data()}}
-\item \href{#method-clone}{\code{SurveyMap$clone()}}
+\item \href{#method-SurveyMap-new}{\code{SurveyMap$new()}}
+\item \href{#method-SurveyMap-print}{\code{SurveyMap$print()}}
+\item \href{#method-SurveyMap-add}{\code{SurveyMap$add()}}
+\item \href{#method-SurveyMap-delete}{\code{SurveyMap$delete()}}
+\item \href{#method-SurveyMap-replace}{\code{SurveyMap$replace()}}
+\item \href{#method-SurveyMap-validate}{\code{SurveyMap$validate()}}
+\item \href{#method-SurveyMap-mapping}{\code{SurveyMap$mapping()}}
+\item \href{#method-SurveyMap-tabulate}{\code{SurveyMap$tabulate()}}
+\item \href{#method-SurveyMap-fit}{\code{SurveyMap$fit()}}
+\item \href{#method-SurveyMap-item_map}{\code{SurveyMap$item_map()}}
+\item \href{#method-SurveyMap-sample}{\code{SurveyMap$sample()}}
+\item \href{#method-SurveyMap-population}{\code{SurveyMap$population()}}
+\item \href{#method-SurveyMap-poststrat_data}{\code{SurveyMap$poststrat_data()}}
+\item \href{#method-SurveyMap-mapped_sample_data}{\code{SurveyMap$mapped_sample_data()}}
+\item \href{#method-SurveyMap-mapped_population_data}{\code{SurveyMap$mapped_population_data()}}
+\item \href{#method-SurveyMap-clone}{\code{SurveyMap$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SurveyMap-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new SurveyMap object
 \subsection{Usage}{
@@ -203,10 +228,13 @@ Create a new SurveyMap object
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A \code{SurveyMap} object.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SurveyMap-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-print}{}}}
 \subsection{Method \code{print()}}{
 Print a summary of the mapping.
 \subsection{Usage}{
@@ -220,10 +248,13 @@ Print a summary of the mapping.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-add"></a>}}
-\if{latex}{\out{\hypertarget{method-add}{}}}
+\if{html}{\out{<a id="method-SurveyMap-add"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-add}{}}}
 \subsection{Method \code{add()}}{
 Add new \link{QuestionMap}s.
 \subsection{Usage}{
@@ -237,10 +268,13 @@ Add new \link{QuestionMap}s.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-delete"></a>}}
-\if{latex}{\out{\hypertarget{method-delete}{}}}
+\if{html}{\out{<a id="method-SurveyMap-delete"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-delete}{}}}
 \subsection{Method \code{delete()}}{
 Delete \link{QuestionMap}s.
 \subsection{Usage}{
@@ -254,10 +288,13 @@ Delete \link{QuestionMap}s.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-replace"></a>}}
-\if{latex}{\out{\hypertarget{method-replace}{}}}
+\if{html}{\out{<a id="method-SurveyMap-replace"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-replace}{}}}
 \subsection{Method \code{replace()}}{
 Replace one \link{QuestionMap} with another.
 \subsection{Usage}{
@@ -273,37 +310,57 @@ Replace one \link{QuestionMap} with another.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-validate}{}}}
+\if{html}{\out{<a id="method-SurveyMap-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-validate}{}}}
 \subsection{Method \code{validate()}}{
-Validate the mapping
+Validate the mapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$validate()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapping"></a>}}
-\if{latex}{\out{\hypertarget{method-mapping}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapping"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapping}{}}}
 \subsection{Method \code{mapping()}}{
-The mapping method uses the given maps between questions to create new sample and population data
-that has unified variable names (i.e., if the underlying construct is called \code{age}, both sample and population will have
-an \code{age} column, even if in the the raw data both had different variable names). The method also unifies the levels of each
-variable in the sample and population so that the maximum set of consistent levels is created. Names of these new levels are
-made according the the sample level names. If multiple levels are combined, the new name will be existing levels seperated by a
-\code{+}.
+The \code{mapping} method uses the given maps between questions
+to create new sample and population data frames that have unified
+variable names (e.g., if the underlying construct is called \code{age}, both
+sample and population will have an \code{age} column, even if in the the raw
+data both had different variable names).
+
+This method also unifies the levels of each variable in the sample and
+population so that the maximum set of consistent levels is created.
+Names of these new levels are made according the the sample level
+names. If multiple levels are combined, the new name will be the
+existing levels separated by a \code{+} (e.g. if age groups \code{"18-25"} and
+\code{"26-30"} are combined the new name will be \code{"18-25 + 26-30"}).
+
+Use the \code{mapped_sample_data} and \code{mapped_population_data} methods to
+access the resulting data frames.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapping()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-tabulate"></a>}}
-\if{latex}{\out{\hypertarget{method-tabulate}{}}}
+\if{html}{\out{<a id="method-SurveyMap-tabulate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-tabulate}{}}}
 \subsection{Method \code{tabulate()}}{
-Prepare the poststratification table
+Prepare the poststratification table. The resulting data
+frame is available via the \code{poststrat_data} method. See
+\strong{Examples}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$tabulate(...)}\if{html}{\out{</div>}}
 }
@@ -311,16 +368,21 @@ Prepare the poststratification table
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{The variables to include.}
+\item{\code{...}}{The names of the variables to include as strings.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyMap} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-fit}{}}}
+\if{html}{\out{<a id="method-SurveyMap-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-fit}{}}}
 \subsection{Method \code{fit()}}{
-Fit a model.
+Fit a model. \pkg{rstanarm}, \pkg{brms}, and \pkg{lme4} are
+supported natively. Custom modeling functions can also be used if they
+meet certain requirements.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$fit(fun, formula, ...)}\if{html}{\out{</div>}}
 }
@@ -329,15 +391,19 @@ Fit a model.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{fun}}{The model fitting function to use. For example,
-\code{fun=rstanarm::stan_glmer}, \code{fun=brms::brm}, \code{fun=lme4::glmer}.
-If using a custom \code{fun} it must have a \code{data} argument that accepts
-a data frame (like standard R modeling functions).}
+\code{fun=rstanarm::stan_glmer}, \code{fun=brms::brm}, \code{fun=lme4::glmer}. If
+using a custom \code{fun} it must have a \code{formula} argument and a \code{data}
+argument that accepts a data frame (like standard R modeling
+functions). Other arguments can be passed via \code{...}. The \code{formula}
+argument will be taken from the \code{formula} argument below and the \code{data}
+argument will be automatically set to the the mapped data created by
+the \code{mapping} method (you can access this data via the
+\code{mapped_sample_data} method).}
 
 \item{\code{formula}}{The model formula. Can be either a string or a formula
 object.}
 
-\item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to \code{fun}.
-The data argument will be automatically specified internally.}
+\item{\code{...}}{Arguments other than \code{formula} and \code{data} to pass to \code{fun}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -346,51 +412,63 @@ A \link{SurveyFit} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-item_map"></a>}}
-\if{latex}{\out{\hypertarget{method-item_map}{}}}
+\if{html}{\out{<a id="method-SurveyMap-item_map"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-item_map}{}}}
 \subsection{Method \code{item_map()}}{
-Access the \code{item_map}
+Access the \code{item_map}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$item_map()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A named list of \code{\link{QuestionMap}}s.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-sample"></a>}}
-\if{latex}{\out{\hypertarget{method-sample}{}}}
+\if{html}{\out{<a id="method-SurveyMap-sample"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-sample}{}}}
 \subsection{Method \code{sample()}}{
-Access the \link{SurveyData} object containing the sample data
+Access the \code{\link{SurveyData}} object containing the sample data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$sample()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A \code{\link{SurveyData}} object.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-population"></a>}}
-\if{latex}{\out{\hypertarget{method-population}{}}}
+\if{html}{\out{<a id="method-SurveyMap-population"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-population}{}}}
 \subsection{Method \code{population()}}{
-Access the \link{SurveyData} object containing the population data
+Access the \code{\link{SurveyData}} object containing the population data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$population()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A \code{\link{SurveyData}} object.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-poststrat_data"></a>}}
-\if{latex}{\out{\hypertarget{method-poststrat_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-poststrat_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-poststrat_data}{}}}
 \subsection{Method \code{poststrat_data()}}{
-Access the poststratification data frame created by the \code{tabulate} method
+Access the poststratification data frame created by the \code{tabulate} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$poststrat_data()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapped_sample_data"></a>}}
-\if{latex}{\out{\hypertarget{method-mapped_sample_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapped_sample_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapped_sample_data}{}}}
 \subsection{Method \code{mapped_sample_data()}}{
 Access the data frame containing the mapped sample data
-created by the \code{mapping} method
+created by the \code{mapping} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyMap$mapped_sample_data(key = TRUE)}\if{html}{\out{</div>}}
 }
@@ -404,10 +482,13 @@ for internal use.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapped_population_data"></a>}}
-\if{latex}{\out{\hypertarget{method-mapped_population_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapped_population_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapped_population_data}{}}}
 \subsection{Method \code{mapped_population_data()}}{
 Access the data frame containing the mapped population data
 created by the \code{mapping} method
@@ -424,10 +505,13 @@ for internal use.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SurveyMap-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

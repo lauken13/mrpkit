@@ -6,13 +6,15 @@
 \description{
 An \link[R6:R6Class]{R6} \code{SurveyFit} object stores a fitted model
 object and provides methods for generating predicted probabilities for all
-poststrat cells, generating population and group estimates, and visualizing
-results.
+poststratification cells, generating population and group estimates, and
+visualizing results.
 }
 \examples{
-library(dplyr)
 
+# Some fake survey data for demonstration
 head(shape_survey)
+
+# Create SurveyData object for the sample
 box_prefs <- SurveyData$new(
   data = shape_survey,
   questions = list(
@@ -24,8 +26,15 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
-    y = c("no","yes")
+    # Here we use a data frame for the responses because the levels
+    # in the data are abridged versions of the actual responses.
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(
+      data = levels(shape_survey$vote_for),
+      asked = c("Box Party Faction A", "Box Party Faction B",
+                "Circle Party Coalition", "Circle Party")
+    ),
+    y = c("no", "yes")
   ),
   weights = "wt",
   design = list(ids =~1)
@@ -33,7 +42,11 @@ box_prefs <- SurveyData$new(
 box_prefs$print()
 box_prefs$n_questions()
 
+
+# Some fake population data for demonstration
 head(approx_voters_popn)
+
+# Create SurveyData object for the population
 popn_obj <- SurveyData$new(
   data = approx_voters_popn,
   questions = list(
@@ -41,7 +54,7 @@ popn_obj <- SurveyData$new(
     gender = "Gender?",
     vote_pref = "Which party do you prefer to vote for?"
   ),
-  # order doesn't matter (gender before age2 here) because
+  # order doesn't matter (gender before age here) because
   # the list has the names of the variables
   responses = list(
     gender = levels(approx_voters_popn$gender),
@@ -52,6 +65,9 @@ popn_obj <- SurveyData$new(
 )
 popn_obj$print()
 
+
+# Create the QuestionMap objects mapping each question between the
+# survey and population dataset
 q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age","age_group"),
@@ -73,6 +89,7 @@ q_gender <- QuestionMap$new(
   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
 
+
 # Create SurveyMap object adding all questions at once
 ex_map <- SurveyMap$new(
   sample = box_prefs,
@@ -93,6 +110,7 @@ print(ex_map)
 ex_map$add(q_gender)
 print(ex_map)
 
+
 # Create the mapping between sample and population
 ex_map$mapping()
 
@@ -100,24 +118,27 @@ ex_map$mapping()
 # (alternatively, can specify particular variables, e.g. tabulate("age"))
 ex_map$tabulate()
 
-# Example rstanarm usage
-# Returns a SurveyFit object
+# Take a peak at the poststrat data frame
+head(ex_map$poststrat_data())
+
 \dontrun{
+# Fit regression model using rstanarm (returns a SurveyFit object)
 fit_1 <- ex_map$fit(
   fun = rstanarm::stan_glmer,
   formula = y ~ (1|age) + (1|gender),
   family = "binomial",
   seed = 1111,
-  # just to keep the example fast and small
-  chains = 1
+  chains = 1, # just to keep the example fast and small
+  refresh = 0 # suppress printed sampling iteration updates
 )
 
+# To use lme4 or brms instead of rstanarm you would use:
 # Example lme4 usage
-fit_2 <- ex_map$fit(
-  fun = lme4::glmer,
-  formula = y ~ (1|age) + (1|gender),
-  family = "binomial"
-)
+# fit_2 <- ex_map$fit(
+#   fun = lme4::glmer,
+#   formula = y ~ (1|age) + (1|gender),
+#   family = "binomial"
+# )
 
 # Example brms usage
 # fit_3 <- ex_map$fit(
@@ -128,57 +149,61 @@ fit_2 <- ex_map$fit(
 # )
 
 
-# predicted probabilities
+# Predicted probabilities
 # returns matrix with rows for poststrat cells, cols for posterior draws
 poststrat_estimates <- fit_1$population_predict()
 
-# estimates by age level
+# Compute and summarize estimates by age level and party preference
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 
 fit_1$summary(estimates_by_age)
-fit_2$summary(estimates_by_age)
-# fit_3$summary(estimates_by_age)
+fit_1$summary(estimates_by_party)
 
-# plot estimates by age
+# Plot estimates
+fit_1$plot(estimates_by_party)
+
 fit_1$plot(estimates_by_age)
+
 fit_1$plot(estimates_by_age, additional_stats = "none")
 fit_1$plot(estimates_by_age, additional_stats = "wtd")
 fit_1$plot(estimates_by_age, additional_stats = "raw")
 fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 
-# population estimate
+# Compute and summarize the population estimate
 estimates_popn <- fit_1$aggregate(poststrat_estimates)
 fit_1$summary(estimates_popn)
 
-# plot population estimate
+# Plot population estimate
 fit_1$plot(estimates_popn)
 fit_1$plot(estimates_popn, additional_stats = "none")
 fit_1$plot(estimates_popn, additional_stats = "wtd")
 fit_1$plot(estimates_popn, additional_stats = "raw")
 fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 }
+
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SurveyFit$new()}}
-\item \href{#method-fit}{\code{SurveyFit$fit()}}
-\item \href{#method-map}{\code{SurveyFit$map()}}
-\item \href{#method-formula}{\code{SurveyFit$formula()}}
-\item \href{#method-print}{\code{SurveyFit$print()}}
-\item \href{#method-population_predict}{\code{SurveyFit$population_predict()}}
-\item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
-\item \href{#method-summary}{\code{SurveyFit$summary()}}
-\item \href{#method-plot}{\code{SurveyFit$plot()}}
-\item \href{#method-clone}{\code{SurveyFit$clone()}}
+\item \href{#method-SurveyFit-new}{\code{SurveyFit$new()}}
+\item \href{#method-SurveyFit-fit}{\code{SurveyFit$fit()}}
+\item \href{#method-SurveyFit-map}{\code{SurveyFit$map()}}
+\item \href{#method-SurveyFit-formula}{\code{SurveyFit$formula()}}
+\item \href{#method-SurveyFit-print}{\code{SurveyFit$print()}}
+\item \href{#method-SurveyFit-population_predict}{\code{SurveyFit$population_predict()}}
+\item \href{#method-SurveyFit-aggregate}{\code{SurveyFit$aggregate()}}
+\item \href{#method-SurveyFit-summary}{\code{SurveyFit$summary()}}
+\item \href{#method-SurveyFit-plot}{\code{SurveyFit$plot()}}
+\item \href{#method-SurveyFit-clone}{\code{SurveyFit$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SurveyFit-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{SurveyFit} object. This method is called
-internally by the \verb{$fit()} method of the \code{\link{SurveyMap}} object and does
+internally by the \code{fit} method of the \code{\link{SurveyMap}} object and does
 not need to be called directly by the user.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$new(fit, map, formula)}\if{html}{\out{</div>}}
@@ -191,46 +216,62 @@ not need to be called directly by the user.
 
 \item{\code{map}}{A \code{\link{SurveyMap}} object.}
 
-\item{\code{formula}}{A formula object representing the model ran.}
+\item{\code{formula}}{A formula object for the model that was fit.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+A \code{SurveyFit} object.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-fit}{}}}
+\if{html}{\out{<a id="method-SurveyFit-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-fit}{}}}
 \subsection{Method \code{fit()}}{
-Access the fitted model object
+Access the fitted model object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$fit()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The fitted model object created by the modeling function called
+by the \code{fit} method of the \code{\link{SurveyMap}} object. For example, if using
+\code{rstanarm::stan_glmer()} then a \code{stanreg} object from \pkg{rstanarm} is
+returned.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-map"></a>}}
-\if{latex}{\out{\hypertarget{method-map}{}}}
+\if{html}{\out{<a id="method-SurveyFit-map"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-map}{}}}
 \subsection{Method \code{map()}}{
-Access the SurveyMap object
+Access the \code{\link{SurveyMap}} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$map()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The \code{\link{SurveyMap}} associated with the \code{SurveyFit} object.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-formula"></a>}}
-\if{latex}{\out{\hypertarget{method-formula}{}}}
+\if{html}{\out{<a id="method-SurveyFit-formula"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-formula}{}}}
 \subsection{Method \code{formula()}}{
-Access the SurveyMap object
+Access the model formula.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$formula()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The model formula used when fitting the model.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SurveyFit-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-print}{}}}
 \subsection{Method \code{print()}}{
-Call the fitted model object's print method
+Call the fitted model object's print method. The console
+output from this method depends on the model fitting function used.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$print(...)}\if{html}{\out{</div>}}
 }
@@ -242,12 +283,16 @@ Call the fitted model object's print method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The \code{SurveyFit} object, invisibly.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-population_predict"></a>}}
-\if{latex}{\out{\hypertarget{method-population_predict}{}}}
+\if{html}{\out{<a id="method-SurveyFit-population_predict"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-population_predict}{}}}
 \subsection{Method \code{population_predict()}}{
-Use fitted model to add predicted probabilities to post-stratification dataset.
+Use fitted model to add predicted probabilities to
+post-stratification dataset.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$population_predict(..., fun = NULL)}\if{html}{\out{</div>}}
 }
@@ -280,10 +325,11 @@ in the case of \pkg{lme4} models).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-aggregate"></a>}}
-\if{latex}{\out{\hypertarget{method-aggregate}{}}}
+\if{html}{\out{<a id="method-SurveyFit-aggregate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-aggregate}{}}}
 \subsection{Method \code{aggregate()}}{
-Aggregate estimates to the population level or by level of a grouping variable
+Aggregate estimates to the population level or by level of a
+grouping variable.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$aggregate(poststrat_estimates, by = NULL)}\if{html}{\out{</div>}}
 }
@@ -291,7 +337,7 @@ Aggregate estimates to the population level or by level of a grouping variable
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{poststrat_estimates}}{The object returned by \code{population_predict}.}
+\item{\code{poststrat_estimates}}{The object returned by the \code{population_predict} method.}
 
 \item{\code{by}}{Optionally a string specifying a grouping variable. If
 specified the aggregation will happen by level of the named variable.
@@ -309,8 +355,8 @@ variable each row corresponds to.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-SurveyFit-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-summary}{}}}
 \subsection{Method \code{summary()}}{
 Creates a set of summary statistics of the mrp estimate,
 and corresponding weighted and raw data estimates
@@ -321,7 +367,7 @@ and corresponding weighted and raw data estimates
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{aggregated_estimates}}{The data frame returned by the \verb{aggregate() method}.}
+\item{\code{aggregated_estimates}}{The data frame returned by the \code{aggregate} method.}
 }
 \if{html}{\out{</div>}}
 }
@@ -333,11 +379,17 @@ then produces a dataframe with number of rows equal to three times the number of
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-SurveyFit-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot takes the aggregated MRP estimates and produces a quick
-visualization of total and sub-population estimates.
+Visualize population or sub-population estimates.
+
+When passed the data frame containing the posterior distribution of the
+population MRP estimate a density plot is generated.  If visualizing
+sub-populations it generates a violin plot of the posterior
+distribution of the aggregated MRP estimates for each level of the
+grouping variable. The \code{additional_stats} argument controls which
+other information is overlaid on the plot.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SurveyFit$plot(aggregated_estimates, additional_stats = c("wtd", "raw"))}\if{html}{\out{</div>}}
 }
@@ -345,28 +397,30 @@ visualization of total and sub-population estimates.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{aggregated_estimates}}{The data frame returned by \code{aggregate}.}
+\item{\code{aggregated_estimates}}{The data frame returned by the \code{aggregate} method.}
 
 \item{\code{additional_stats}}{A vector that specifies which of three additional
-stats ("wtd", "raw", "mrp", "none") should be included on the plot. The
-default value is to include the weighted estimate (wtd) and raw data
-mean (raw), but an analogous bar for MRP (mrp) can be added using the
-posterior mean and sd. The sd for the weighted estimate uses the survey
-design and the \pkg{survey} package, whilst the raw estimate is a
-direct mean and binomial sd of the binary responses. Uncertainty is included on
-violin plots but not on density plots. Intervals are 95\% CI.}
+stats (\code{"wtd"}, \code{"raw"}, \code{"mrp"}, \code{"none"}) should be overlaid on the
+plot. The default is to overlay intervals for the weighted and raw
+estimates on top of the density plot representing the MRP estimates.
+The weighted estimates are computed by passing the optional survey
+weights and design specified in the \code{\link{SurveyData}} to the \pkg{survey}
+package. The raw estimate is a direct mean and binomial sd of the
+binary responses. Uncertainty estimates for the \code{additional_stats} are
+included on violin plots but not on density plots. Intervals are 95\%
+CI.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A ggplot object that is either a violin plot (if aggregated estimates is
-at a small area level) or density plot (if aggregated estimates is at the population
-level).
+A ggplot object that is either a violin plot if showing small
+area level (sub-population) estimates, or a density plot if showing
+population estimates.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SurveyFit-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

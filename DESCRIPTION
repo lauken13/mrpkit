@@ -22,13 +22,13 @@ Authors@R: c(
            family = "Morris",
            role = c("ctb"))
            )
-Description: Conducts multilevel regression with post-stratification in an opinionated 
-    and specific way. Users specify two datasets (sample and population), establish 
-    a correspondence between them, and then conduct analysis.
+Description: Conducts multilevel regression with post-stratification (MRP) in an 
+    opinionated and specific way. Users specify two datasets (sample and population), 
+    establish a correspondence between them, and then conduct analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Imports:
     dplyr,
     forcats,
@@ -37,13 +37,11 @@ Imports:
     R6,
     tidyr
 Suggests:
-    BH,
     brms,
     covr,
     knitr,
     lme4,
     merTools,
-    RcppEigen,
     rmarkdown,
     rstanarm (>= 2.21.0),
     testthat,

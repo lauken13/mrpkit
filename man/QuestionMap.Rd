@@ -4,49 +4,64 @@
 \alias{QuestionMap}
 \title{QuestionMap}
 \description{
-An \link[R6:R6Class]{R6} \code{QuestionMap} object holds the mapping
-for one question or demographic between the survey and population dataset.
+An \link[R6:R6Class]{R6} \code{QuestionMap} object holds the mapping for
+one question or demographic between the sample data and population data.
 }
 \examples{
+
+## ------------------------------------------------
+## Method `QuestionMap$new`
+## ------------------------------------------------
+
 q_age <- QuestionMap$new(
   name = "age",
   col_names = c("age","age_group"),
   values_map = list(
-    "18-25" = "18-35", "26-35" = "18-35","36-45" = "36-55",
-    "46-55" = "36-55", "56-65" = "56-65", "66-75" = "66+", "76-90" = "66+"
+    "18-25" = "18-35",
+    "26-35" = "18-35",
+    "36-45" = "36-55",
+    "46-55" = "36-55",
+    "56-65" = "56-65",
+    "66-75" = "66+",
+    "76-90" = "66+"
   )
 )
 print(q_age)
 
-q_party_pref <- QuestionMap$new(
-  name = "party_pref",
-  col_names = c("vote_for","vote_pref"),
-  values_map = list("Box Party" = "The BP",
-                    "The BP" = "The BP",
-                    "The Circle Party" = "The Circles",
-                    "The Circles" = "The Circles")
-)
 q_gender <- QuestionMap$new(
   name = "gender",
   col_names = c("gender", "gender"),
   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 )
+print(q_gender)
+
+q_party_pref <- QuestionMap$new(
+  name = "party_pref",
+  col_names = c("vote_for", "vote_pref"),
+  values_map = list(
+    "Box Party" = "The BP",
+    "The BP" = "The BP",
+    "The Circle Party" = "The Circles",
+    "The Circles" = "The Circles"
+  )
+)
+print(q_party_pref)
 
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{QuestionMap$new()}}
-\item \href{#method-print}{\code{QuestionMap$print()}}
-\item \href{#method-name}{\code{QuestionMap$name()}}
-\item \href{#method-col_names}{\code{QuestionMap$col_names()}}
-\item \href{#method-values}{\code{QuestionMap$values()}}
-\item \href{#method-clone}{\code{QuestionMap$clone()}}
+\item \href{#method-QuestionMap-new}{\code{QuestionMap$new()}}
+\item \href{#method-QuestionMap-print}{\code{QuestionMap$print()}}
+\item \href{#method-QuestionMap-name}{\code{QuestionMap$name()}}
+\item \href{#method-QuestionMap-col_names}{\code{QuestionMap$col_names()}}
+\item \href{#method-QuestionMap-values}{\code{QuestionMap$values()}}
+\item \href{#method-QuestionMap-clone}{\code{QuestionMap$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-QuestionMap-new"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{QuestionMap}
 \subsection{Usage}{
@@ -57,8 +72,9 @@ Create a new \code{QuestionMap}
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{name}}{The name of the underlying construct. For example if the
-sample data uses the name \code{age1} and the population data uses
-the name \code{age2} then \code{name} could be \code{age}.}
+sample data uses the name \code{"age_bracket"} and the population data uses
+the name \code{"age_group"} then \code{name} could be \code{"age"}. This name will be
+used later in the workflow when creating a data set with unified names.}
 
 \item{\code{col_names}}{A character vector of length two giving the column names
 of the question in the sample data (first element) and the population
@@ -66,9 +82,18 @@ data (second element).}
 
 \item{\code{values_map}}{A named list where the names correspond to the
 responses to the question in the sample data and the values correspond
-to the responses in the population data. If there is a meaningful
-ordering over the values, they should be listed in that order, either
-descending or ascending. See \strong{Examples}.}
+to the responses in the population data. In some cases multiple values
+in the sample may correspond to a single value in the population, or
+vice versa (e.g., the sample survey has age groups 18-25 and 26-35 but
+the population data only uses 18-35, see
+\strong{Examples}).
+
+If there is a meaningful ordering over the values, they should be
+listed in that order, either descending or ascending. Note that if
+responses were given with both the values in the data and the actual
+responses given (useful as these will be used for plotting), the
+mapping should use the values in the data (generally shorter). See
+\strong{Examples}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -76,10 +101,51 @@ descending or ascending. See \strong{Examples}.}
 A \code{QuestionMap} object that can be added to a \code{\link{SurveyMap}}
 object.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{q_age <- QuestionMap$new(
+  name = "age",
+  col_names = c("age","age_group"),
+  values_map = list(
+    "18-25" = "18-35",
+    "26-35" = "18-35",
+    "36-45" = "36-55",
+    "46-55" = "36-55",
+    "56-65" = "56-65",
+    "66-75" = "66+",
+    "76-90" = "66+"
+  )
+)
+print(q_age)
+
+q_gender <- QuestionMap$new(
+  name = "gender",
+  col_names = c("gender", "gender"),
+  values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
+)
+print(q_gender)
+
+q_party_pref <- QuestionMap$new(
+  name = "party_pref",
+  col_names = c("vote_for", "vote_pref"),
+  values_map = list(
+    "Box Party" = "The BP",
+    "The BP" = "The BP",
+    "The Circle Party" = "The Circles",
+    "The Circles" = "The Circles"
+  )
+)
+print(q_party_pref)
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-QuestionMap-print"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-print}{}}}
 \subsection{Method \code{print()}}{
 Print a \code{QuestionMap}.
 \subsection{Usage}{
@@ -98,38 +164,47 @@ The \code{QuestionMap} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-name"></a>}}
-\if{latex}{\out{\hypertarget{method-name}{}}}
+\if{html}{\out{<a id="method-QuestionMap-name"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-name}{}}}
 \subsection{Method \code{name()}}{
 Access \code{name}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$name()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A string.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-col_names"></a>}}
-\if{latex}{\out{\hypertarget{method-col_names}{}}}
+\if{html}{\out{<a id="method-QuestionMap-col_names"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-col_names}{}}}
 \subsection{Method \code{col_names()}}{
 Access \code{col_names}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$col_names()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A character vector of length 2.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-values"></a>}}
-\if{latex}{\out{\hypertarget{method-values}{}}}
+\if{html}{\out{<a id="method-QuestionMap-values"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-values}{}}}
 \subsection{Method \code{values()}}{
 Access \code{values}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QuestionMap$values()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A data frame.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-QuestionMap-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

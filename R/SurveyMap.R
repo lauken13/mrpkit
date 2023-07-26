@@ -13,9 +13,11 @@
 #' they should be listed in that order, either descending or ascending.
 #'
 #' @examples
-#' library(dplyr)
 #'
+#' # Some fake survey data for demonstration
 #' head(shape_survey)
+#'
+#' # Create SurveyData object for the sample
 #' box_prefs <- SurveyData$new(
 #'   data = shape_survey,
 #'   questions = list(
@@ -27,11 +29,15 @@
 #'   responses = list(
 #'     age = levels(shape_survey$age),
 #'     gender = levels(shape_survey$gender),
-#'     # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+#'     # Here we use a data frame for the responses because the levels
+#'     # in the data are abridged versions of the actual responses.
 #'     # This can be useful when surveys have brief/non descriptive responses.
-#'     vote_for = data.frame(data = levels(shape_survey$vote_for),
-#'     asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
-#'     y = c("no","yes")
+#'     vote_for = data.frame(
+#'       data = levels(shape_survey$vote_for),
+#'       asked = c("Box Party Faction A", "Box Party Faction B",
+#'                 "Circle Party Coalition", "Circle Party")
+#'     ),
+#'     y = c("no", "yes")
 #'   ),
 #'   weights = "wt",
 #'   design = list(ids =~1)
@@ -39,7 +45,11 @@
 #' box_prefs$print()
 #' box_prefs$n_questions()
 #'
+#'
+#' # Some fake population data for demonstration
 #' head(approx_voters_popn)
+#'
+#' # Create SurveyData object for the population
 #' popn_obj <- SurveyData$new(
 #'   data = approx_voters_popn,
 #'   questions = list(
@@ -47,7 +57,7 @@
 #'     gender = "Gender?",
 #'     vote_pref = "Which party do you prefer to vote for?"
 #'   ),
-#'   # order doesn't matter (gender before age2 here) because
+#'   # order doesn't matter (gender before age here) because
 #'   # the list has the names of the variables
 #'   responses = list(
 #'     gender = levels(approx_voters_popn$gender),
@@ -58,6 +68,9 @@
 #' )
 #' popn_obj$print()
 #'
+#'
+#' # Create the QuestionMap objects mapping each question between the
+#' # survey and population dataset
 #' q_age <- QuestionMap$new(
 #'   name = "age",
 #'   col_names = c("age","age_group"),
@@ -79,6 +92,7 @@
 #'   values_map = list("male" = "m","female" = "f", "nonbinary" = "nb")
 #' )
 #'
+#'
 #' # Create SurveyMap object adding all questions at once
 #' ex_map <- SurveyMap$new(
 #'   sample = box_prefs,
@@ -99,6 +113,7 @@
 #' ex_map$add(q_gender)
 #' print(ex_map)
 #'
+#'
 #' # Create the mapping between sample and population
 #' ex_map$mapping()
 #'
@@ -106,24 +121,27 @@
 #' # (alternatively, can specify particular variables, e.g. tabulate("age"))
 #' ex_map$tabulate()
 #'
-#' # Example rstanarm usage
-#' # Returns a SurveyFit object
+#' # Take a peak at the poststrat data frame
+#' head(ex_map$poststrat_data())
+#'
 #' \dontrun{
+#' # Fit regression model using rstanarm (returns a SurveyFit object)
 #' fit_1 <- ex_map$fit(
 #'   fun = rstanarm::stan_glmer,
 #'   formula = y ~ (1|age) + (1|gender),
 #'   family = "binomial",
 #'   seed = 1111,
-#'   # just to keep the example fast and small
-#'   chains = 1
+#'   chains = 1, # just to keep the example fast and small
+#'   refresh = 0 # suppress printed sampling iteration updates
 #' )
 #'
+#' # To use lme4 or brms instead of rstanarm you would use:
 #' # Example lme4 usage
-#' fit_2 <- ex_map$fit(
-#'   fun = lme4::glmer,
-#'   formula = y ~ (1|age) + (1|gender),
-#'   family = "binomial"
-#' )
+#' # fit_2 <- ex_map$fit(
+#' #   fun = lme4::glmer,
+#' #   formula = y ~ (1|age) + (1|gender),
+#' #   family = "binomial"
+#' # )
 #'
 #' # Example brms usage
 #' # fit_3 <- ex_map$fit(
@@ -134,40 +152,39 @@
 #' # )
 #'
 #'
-#' # predicted probabilities
+#' # Predicted probabilities
 #' # returns matrix with rows for poststrat cells, cols for posterior draws
 #' poststrat_estimates <- fit_1$population_predict()
 #'
-#' # estimates by age level
+#' # Compute and summarize estimates by age level and party preference
 #' estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
 #' estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 #'
 #' fit_1$summary(estimates_by_age)
-#' fit_2$summary(estimates_by_age)
-#' fit_3$summary(estimates_by_age)
-#'
 #' fit_1$summary(estimates_by_party)
+#'
+#' # Plot estimates
 #' fit_1$plot(estimates_by_party)
 #'
-#' # plot estimates by age
 #' fit_1$plot(estimates_by_age)
+#'
 #' fit_1$plot(estimates_by_age, additional_stats = "none")
 #' fit_1$plot(estimates_by_age, additional_stats = "wtd")
 #' fit_1$plot(estimates_by_age, additional_stats = "raw")
 #' fit_1$plot(estimates_by_age, additional_stats = c("wtd","raw","mrp"))
 #'
-#' # population estimate
+#' # Compute and summarize the population estimate
 #' estimates_popn <- fit_1$aggregate(poststrat_estimates)
 #' fit_1$summary(estimates_popn)
 #'
-#' # plot population estimate
+#' # Plot population estimate
 #' fit_1$plot(estimates_popn)
 #' fit_1$plot(estimates_popn, additional_stats = "none")
 #' fit_1$plot(estimates_popn, additional_stats = "wtd")
 #' fit_1$plot(estimates_popn, additional_stats = "raw")
 #' fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 #' }
-
+#'
 SurveyMap <- R6::R6Class(
   classname = "SurveyMap",
   private = list(
@@ -184,6 +201,7 @@ SurveyMap <- R6::R6Class(
     #' @param sample The [SurveyData] object corresponding to the sample data.
     #' @param population The [SurveyData] object corresponding to the population data.
     #' @param ... [QuestionMap] objects.
+    #' @return A `SurveyMap` object.
     initialize = function(sample, population, ...) {
       if (!inherits(sample, "SurveyData")) {
         stop("'sample' must be a SurveyData object.", call. = FALSE)
@@ -207,6 +225,7 @@ SurveyMap <- R6::R6Class(
 
     #' @description Print a summary of the mapping.
     #' @param ... Currently ignored.
+    #' @return The `SurveyMap` object, invisibly.
     print = function(...) {
       if (length(private$item_map_) > 0) {
         for (i in 1:length(private$item_map_)) {
@@ -228,6 +247,7 @@ SurveyMap <- R6::R6Class(
 
     #' @description Add new [QuestionMap]s.
     #' @param ... The [QuestionMap]s to add.
+    #' @return The `SurveyMap` object, invisibly.
     add = function(...) {
       dots <- list(...)
       for (i in 1:length(dots)) {
@@ -245,6 +265,7 @@ SurveyMap <- R6::R6Class(
 
     #' @description Delete [QuestionMap]s.
     #' @param ... The [QuestionMap]s to delete.
+    #' @return The `SurveyMap` object, invisibly.
     delete = function(...) {
       tmp_list <- list(...)
       for (i in length(tmp_list)) {
@@ -269,14 +290,15 @@ SurveyMap <- R6::R6Class(
     #' @description Replace one [QuestionMap] with another.
     #' @param old_question The [QuestionMap] object to replace.
     #' @param new_question The [QuestionMap] object to use instead.
-    #'
+    #' @return The `SurveyMap` object, invisibly.
     replace = function(old_question, new_question) {
       self$delete(old_question)
       self$add(new_question)
       invisible(self)
     },
 
-    #' @description Validate the mapping
+    #' @description Validate the mapping.
+    #' @return The `SurveyMap` object, invisibly.
     validate = function() {
       if (length(private$item_map_) == 0) {
         return(invisible(self))
@@ -359,12 +381,23 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description The mapping method uses the given maps between questions to create new sample and population data
-    #' that has unified variable names (i.e., if the underlying construct is called `age`, both sample and population will have
-    #' an `age` column, even if in the the raw data both had different variable names). The method also unifies the levels of each
-    #' variable in the sample and population so that the maximum set of consistent levels is created. Names of these new levels are
-    #' made according the the sample level names. If multiple levels are combined, the new name will be existing levels seperated by a
-    #' ` + `.
+    #' @description The `mapping` method uses the given maps between questions
+    #'   to create new sample and population data frames that have unified
+    #'   variable names (e.g., if the underlying construct is called `age`, both
+    #'   sample and population will have an `age` column, even if in the the raw
+    #'   data both had different variable names).
+    #'
+    #'   This method also unifies the levels of each variable in the sample and
+    #'   population so that the maximum set of consistent levels is created.
+    #'   Names of these new levels are made according the the sample level
+    #'   names. If multiple levels are combined, the new name will be the
+    #'   existing levels separated by a ` + ` (e.g. if age groups `"18-25"` and
+    #'   `"26-30"` are combined the new name will be `"18-25 + 26-30"`).
+    #'
+    #'   Use the `mapped_sample_data` and `mapped_population_data` methods to
+    #'   access the resulting data frames.
+    #'
+    #' @return The `SurveyMap` object, invisibly.
     #'
     mapping  = function() {
       for (j in 1:length(private$item_map_)) {
@@ -463,8 +496,11 @@ SurveyMap <- R6::R6Class(
     invisible(self)
     },
 
-    #' @description Prepare the poststratification table
-    #' @param ... The variables to include.
+    #' @description Prepare the poststratification table. The resulting data
+    #'   frame is available via the `poststrat_data` method. See
+    #'   **Examples**.
+    #' @param ... The names of the variables to include as strings.
+    #' @return The `SurveyMap` object, invisibly.
     tabulate = function(...) {
       if (ncol(self$mapped_population_data(key = FALSE)) == 0) {
         stop("Please call the mapping() method before tabulate()", call. = FALSE)
@@ -484,15 +520,21 @@ SurveyMap <- R6::R6Class(
       invisible(self)
     },
 
-    #' @description Fit a model.
+    #' @description Fit a model. \pkg{rstanarm}, \pkg{brms}, and \pkg{lme4} are
+    #' supported natively. Custom modeling functions can also be used if they
+    #' meet certain requirements.
     #' @param fun The model fitting function to use. For example,
-    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`.
-    #'   If using a custom `fun` it must have a `data` argument that accepts
-    #'   a data frame (like standard R modeling functions).
+    #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`. If
+    #'   using a custom `fun` it must have a `formula` argument and a `data`
+    #'   argument that accepts a data frame (like standard R modeling
+    #'   functions). Other arguments can be passed via `...`. The `formula`
+    #'   argument will be taken from the `formula` argument below and the `data`
+    #'   argument will be automatically set to the the mapped data created by
+    #'   the `mapping` method (you can access this data via the
+    #'   `mapped_sample_data` method).
     #' @param formula The model formula. Can be either a string or a formula
     #'   object.
     #' @param ... Arguments other than `formula` and `data` to pass to `fun`.
-    #'   The data argument will be automatically specified internally.
     #' @return A [SurveyFit] object.
     #'
     fit = function(fun, formula, ...) {
@@ -558,16 +600,20 @@ SurveyMap <- R6::R6Class(
       SurveyFit$new(fit = fit, map = self, formula = formula)
     },
 
-    #' @description Access the `item_map`
+    #' @description Access the `item_map`.
+    #' @return A named list of [`QuestionMap`]s.
     item_map = function() private$item_map_,
 
-    #' @description Access the [SurveyData] object containing the sample data
+    #' @description Access the [`SurveyData`] object containing the sample data.
+    #' @return A [`SurveyData`] object.
     sample = function() private$sample_,
 
-    #' @description Access the [SurveyData] object containing the population data
+    #' @description Access the [`SurveyData`] object containing the population data.
+    #' @return A [`SurveyData`] object.
     population = function() private$population_,
 
-    #' @description Access the poststratification data frame created by the `tabulate` method
+    #' @description Access the poststratification data frame created by the `tabulate` method.
+    #' @return A data frame.
     poststrat_data = function() {
       if (is.null(private$poststrat_data_)) {
         stop("Please call the tabulate() method before accessing the poststrat data.",
@@ -577,10 +623,11 @@ SurveyMap <- R6::R6Class(
     },
 
     #' @description Access the data frame containing the mapped sample data
-    #'   created by the `mapping` method
+    #'   created by the `mapping` method.
     #' @param key Should the `.key` column be included? This column just
     #'   indicates the original order of the rows and is primarily intended
     #'   for internal use.
+    #' @return A data frame.
     mapped_sample_data = function(key = TRUE) {
       if (key) {
         private$mapped_sample_data_
@@ -594,6 +641,7 @@ SurveyMap <- R6::R6Class(
     #' @param key Should the `.key` column be included? This column just
     #'   indicates the original order of the rows and is primarily intended
     #'   for internal use.
+    #' @return A data frame.
     mapped_population_data = function(key = TRUE) {
       if (key) {
         private$mapped_population_data_

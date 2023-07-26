@@ -27,4 +27,4 @@ Example survey for package testing
 str(feline_survey)
 
 }
-\keyword{datasets}
+\keyword{internal}
