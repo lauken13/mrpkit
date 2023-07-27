@@ -465,12 +465,12 @@ SurveyMap <- R6::R6Class(
         # For the sample
         new_levels_samp_names <- length(new_levels_samp)
         for(samp_level in 1:length(levels_samp)){
-          if(length(grep(levels_samp[samp_level],row.names(mapped_levels_fin)))>1){
+          if(length(grep(levels_samp[samp_level],row.names(mapped_levels_fin), fixed = TRUE))>1){
             #specific match
             new_levels_samp_names[samp_level] <- row.names(mapped_levels_fin)[grep(paste0("^",levels_samp[samp_level],"$"),row.names(mapped_levels_fin))]
           }else{
             #partial match
-            new_levels_samp_names[samp_level] <- row.names(mapped_levels_fin)[grep(levels_samp[samp_level],row.names(mapped_levels_fin))]
+            new_levels_samp_names[samp_level] <- row.names(mapped_levels_fin)[grep(levels_samp[samp_level],row.names(mapped_levels_fin), fixed = TRUE)]
           }
         }
         new_levels_samp <- levels_samp
@@ -478,10 +478,10 @@ SurveyMap <- R6::R6Class(
         # For the population
         new_levels_popn_names <- length(new_levels_popn)
         for(popn_level in 1:length(levels_popn)){
-          if(length(grep(paste0(levels_popn[popn_level]),colnames(mapped_levels_fin)))>1){
+          if(length(grep(paste0(levels_popn[popn_level]),colnames(mapped_levels_fin), fixed = TRUE))>1){
             popn_level_loc <- grep(paste0("^",levels_popn[popn_level],"$"),colnames(mapped_levels_fin))
           } else{
-            popn_level_loc <- grep(levels_popn[popn_level],colnames(mapped_levels_fin))
+            popn_level_loc <- grep(levels_popn[popn_level],colnames(mapped_levels_fin), fixed = TRUE)
           }
           #name the population levels according to the sample data
           new_levels_popn_names[popn_level] <- row.names(mapped_levels_fin)[mapped_levels_fin[,popn_level_loc]==1]

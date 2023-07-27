@@ -159,7 +159,7 @@ SurveyFit <- R6::R6Class(
           dplyr::summarise(value = sum(.data$posterior_sample * .data$N_j) / sum(.data$N_j)) %>%
           dplyr::ungroup()
         out <- out %>%
-          dplyr::select(-"draws")
+          dplyr::select(-dplyr::contains("draws"))
       } else {
         out <- data.frame(value = apply(poststrat_estimates, 2, function(x) sum(poststrat_data$N_j*x)/sum(poststrat_data$N_j)))
       }

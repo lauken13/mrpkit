@@ -742,3 +742,38 @@ test_that("tabulate doesn't error if no weights were specified", {
   expect_equal(dim(ex_map$poststrat_data()), c(4, 2))
 })
 
+test_that("exact matches don't cause an error", {
+  lga_names <- c(
+    "Central Coast (NSW)",
+    "Murray River",
+    "Port Macquarie-Hastings",
+    "Logan",
+    "Newcastle",
+    "Tamworth",
+    "Busselton"
+  )
+  suppressWarnings(dat <- mrpkit::SurveyData$new(data=data.frame(
+    lga = sample(lga_names, 1000, TRUE),
+    y = rnorm(1000)
+  )))
+
+  pop <- data.frame(
+    lga = lga_names,
+    n = runif(length(lga_names), 100, 10000)
+  )
+  pop <- pop[pop$lga %in% dat$responses()$lga, ]
+  suppressWarnings(pop <- mrpkit::SurveyData$new(data = pop, weights = "n"))
+
+  suppressWarnings(mapper <- mrpkit::SurveyMap$new(
+      dat, pop,
+      mrpkit::QuestionMap$new(
+        "lga",
+        c("lga", "lga"),
+        `names<-`(as.list(dat$responses()$lga), dat$responses()$lga) # Map names to themselves
+      )
+    )
+  )
+
+  expect_silent(mapper$mapping())
+})
+
