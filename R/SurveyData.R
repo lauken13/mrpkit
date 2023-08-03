@@ -158,7 +158,7 @@ SurveyData <- R6::R6Class(
         responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(stats::na.omit(x)))
         warning(
           "No 'questions' and 'responses' provided. ",
-          "Using all factor, character, and binary variables in 'data' by default.",
+          "Using all factor, character, binary variables, and haven-labelled data in 'data' by default.",
           call. = FALSE
         )
       }
