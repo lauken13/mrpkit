@@ -52,15 +52,15 @@ test_that("require_suggested_package throws correct errors", {
   )
 })
 
-test_that("family_is_binomial works correctly", {
-  expect_true(family_is_binomial(stats::binomial()))
-  expect_true(family_is_binomial("bernoulli"))
-  expect_true(family_is_binomial("binomial"))
-  expect_false(family_is_binomial("poisson"))
-  expect_false(family_is_binomial(stats::poisson()))
+test_that("family_is_binomial_or_bernoulli works correctly", {
+  expect_true(family_is_binomial_or_bernoulli(stats::binomial()))
+  expect_true(family_is_binomial_or_bernoulli("bernoulli"))
+  expect_true(family_is_binomial_or_bernoulli("binomial"))
+  expect_false(family_is_binomial_or_bernoulli("poisson"))
+  expect_false(family_is_binomial_or_bernoulli(stats::poisson()))
 
   expect_error(
-    family_is_binomial(TRUE),
+    family_is_binomial_or_bernoulli(TRUE),
     "Model family must be a string or family object"
   )
 })

@@ -15,7 +15,7 @@ is_family <- function(x) {
 #' @noRd
 #' @param x User's specified `family` argument.
 #' @return `TRUE` or `FALSE` if no error.
-family_is_binomial <- function(x) {
+family_is_binomial_or_bernoulli <- function(x) {
   if (is.null(x)) {
     return(FALSE)
   }
@@ -26,6 +26,33 @@ family_is_binomial <- function(x) {
     x <- x$family
   }
   x %in% c("binomial", "bernoulli")
+}
+
+#' Figure out which package was used to fit the model
+#' @noRd
+#' @param fit Fitted model object (not the SurveyFit object)
+detect_fitting_package <- function(fit) {
+  switch(
+    class(fit)[1],
+    "brmsfit" = "brms",
+    "stanreg" = "rstanarm",
+    "glmerMod" = "lme4",
+    "custom"
+  )
+}
+
+is_brms_binomial <- function(fit) {
+  detect_fitting_package(fit) == "brms" && family(fit)$family == "binomial"
+}
+is_rstanarm_binomial <- function(fit) {
+  detect_fitting_package(fit) == "rstanarm" &&
+    family(fit)$family == "binomial" &&
+    grepl("^cbind\\(", as.character(formula(fit))[[2]])
+}
+is_lme4_binomial <- function(fit) {
+  detect_fitting_package(fit) == "lme4" &&
+    family(fit)$family == "binomial" &&
+    grepl("^cbind\\(", as.character(formula(fit))[[2]])
 }
 
 

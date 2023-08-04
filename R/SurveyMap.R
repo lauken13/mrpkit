@@ -545,7 +545,7 @@ SurveyMap <- R6::R6Class(
              call. = FALSE)
       }
       if ("family" %in% names(formals(fun)) &&
-          !family_is_binomial(args$family)) {
+          !family_is_binomial_or_bernoulli(args$family)) {
         stop("Currently only binomial and bernoulli models are supported.",
              call. = FALSE)
       }
