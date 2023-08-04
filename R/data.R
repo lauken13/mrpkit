@@ -17,6 +17,23 @@
 #'
 "feline_survey"
 
+
+#' feline_survey with some variables stored in haven-labelled class.
+#' @source Created in CreateTestData.R
+#' @format A data frame with columns:
+#' \describe{
+#'  \item{age1}{Age group; haven-labelled}
+#'  \item{gender}{Gender; haven-labbeled}
+#'  \item{pet_own}{Pet ownership; haven-labelled}
+#'  \item{y}{Example binary outcome variable}
+#'  \item{wt}{Raked and trimmed survey weight}
+#' }
+#'
+#' @examples
+#' str(feline_survey_haven)
+#'
+"feline_survey_haven"
+
 #' Example approximate population (modelled after ACS)
 #'
 #' @source Created in CreateTestData.R
@@ -33,7 +50,6 @@
 #' str(approx_popn)
 #'
 "approx_popn"
-
 
 #' Simulated Survey Data for Shape World
 #'
@@ -61,6 +77,29 @@
 #'  shape_survey
 #'
 "shape_survey"
+
+#' Simulated Survey Data for Shape World - Haven-labelled Version
+#'
+#' This is the shape_survey data with some variables saved in haven-labelled class.
+#'
+#' @source Created in ShapeWorldVoters.R
+#'
+#' @format A data frame with columns:
+#'
+#' \describe{
+#'  \item{age}{Age group; haven-labelled}
+#'  \item{gender}{Gender; haven-labelled}
+#'  \item{vote_for}{Party voted for in the 2016 election; haven-labelled}
+#'  \item{highest_educ}{Highest grade of education completed; haven-labelled}
+#'  \item{state}{State; haven-labelled}
+#'  \item{y}{Preference for BP over CP in 2020 election}
+#'  \item{wt}{Raked and trimmed survey weight}
+#' }
+#' @examples
+#'
+#'  shape_survey_haven
+#'
+"shape_survey_haven"
 
 #' Simulated approximate population data for the Shape World survey
 #'

@@ -1,6 +1,9 @@
 library(DeclareDesign)
 library(brms)
 library(survey)
+library(dplyr)
+library(haven)
+library(forcats)
 
 design <- declare_population(N = 50000,
                              age_group = sample.int(7, size=N, replace = TRUE, prob = c(1,1,2,2,3,2,1)),
@@ -11,7 +14,7 @@ design <- declare_population(N = 50000,
                                          c(-.2,-.5,.5,.5,1.0,.4,.7)[age_group])))
 ### get population
 popn <- draw_data(design +
-                    declare_sampling(n=50000))
+                    declare_sampling(n=50000, legacy = TRUE))
 
 get_sample <- function(data, n) {
   p = inv_logit_scaled(.5 + c(-1,-2,-1,-.5,1,.5,.1)[data$age_group]+
@@ -57,7 +60,30 @@ rkd_obj_feline_survey <- rake(design = svy_design_feline_survey, sample.margins 
 wts_trim_feline_survey <- trimWeights(rkd_obj_feline_survey, upper = quantile(weights(rkd_obj_feline_survey),.975))
 feline_survey$wt <- weights(wts_trim_feline_survey)
 
-# Adjust measurement  #
+# Adjust measurement - haven labelled
+
+feline_survey_haven <- feline_survey %>%
+  select(-S_inclusion_prob) %>%
+  mutate_at(c("age_group","gender","pet_own","y"), as.factor) %>%
+  mutate(age1 = labelled(age_group, c(`18-25` = 1, `26-35` = 2, `36-45` = 3,`46-55` = 4, `56-65` = 5, `66-75` = 6, `76-90` = 7),
+                         label = "Which age group are you?"),
+         gender = labelled(gender, c("male" = 1, "female" = 2, "nonbinary" = 3)),
+         pet_own = labelled(pet_own, c("cat" = 1, "kitten" = 2, "dog" = 3, "puppy" = 4),
+                            label = "Please select your pet"))
+
+# assign some random NA to 10 observations in y
+random_id <- feline_survey_haven[sample(nrow(feline_survey_haven), 10), ] %>%
+  select(ID)
+
+feline_survey_haven <- feline_survey_haven %>%
+  mutate(y = ifelse(ID %in% random_id$ID, NA, y)) %>%
+  select(c(age1, gender, pet_own, y, wt))
+
+# assign only variable label to y
+attributes(feline_survey_haven$y)$label <- "Will you adopt any new cat?"
+
+
+# Adjust measurement - not haven labelled
 
 feline_survey <- feline_survey %>%
   select(-S_inclusion_prob) %>%
@@ -76,5 +102,6 @@ approx_popn <- approx_popn %>%
          pet_pref = fct_recode(pet_own, "cat" = "1", "cat" = "2", "dog" = "3", "dog" = "4")) %>%
   select(c(age2, gender, pet_pref, wt))
 
-use_data(feline_survey, approx_popn, overwrite = TRUE)
+usethis::use_data(feline_survey, feline_survey_haven, approx_popn, overwrite = TRUE)
+
 

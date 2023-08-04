@@ -145,13 +145,16 @@ SurveyData <- R6::R6Class(
       }
 
       if (length(questions) == 0 && length(responses) == 0) {
-        keep <- function(x) is.factor(x) || is.character(x) || length(unique(stats::na.omit(x))) == 2
+        keep <- function(x) is.factor(x) || is.character(x) || length(unique(stats::na.omit(x))) == 2 || haven::is.labelled(x)
+        data <- data %>%
+          dplyr::mutate_if(haven::is.labelled, haven::as_factor)
         data_use <- data[, sapply(data, keep), drop = FALSE]
-        questions <- setNames(as.list(colnames(data_use)), colnames(data_use))
+        get_ques <- function(x) if (is.character(attr(data_use[[x]], "label"))) attr(data_use[[x]], "label") else names(data_use[x])
+        questions <- setNames(as.list(lapply(seq_along(data_use), get_ques)), colnames(data_use))
         responses <- lapply(data_use, function(x) if (is.factor(x)) levels(x) else unique(stats::na.omit(x)))
         warning(
           "No 'questions' and 'responses' provided. ",
-          "Using all factor, character, and binary variables in 'data' by default.",
+          "Using all factor, character, binary variables, and haven-labelled data in 'data' by default.",
           call. = FALSE
         )
       }
