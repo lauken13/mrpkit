@@ -31,6 +31,7 @@ family_is_binomial_or_bernoulli <- function(x) {
 #' Figure out which package was used to fit the model
 #' @noRd
 #' @param fit Fitted model object (not the SurveyFit object)
+#' @return Package name as a string
 detect_fitting_package <- function(fit) {
   switch(
     class(fit)[1],
@@ -41,8 +42,13 @@ detect_fitting_package <- function(fit) {
   )
 }
 
+#' Detect if a binomial model (as opposed to bernoulli)
+#' @noRd
+#' @param fit Fitted model object (not the SurveyFit object)
+#' @return TRUE/FALSE
 is_brms_binomial <- function(fit) {
-  detect_fitting_package(fit) == "brms" && family(fit)$family == "binomial"
+  detect_fitting_package(fit) == "brms" &&
+    family(fit)$family == "binomial"
 }
 is_rstanarm_binomial <- function(fit) {
   detect_fitting_package(fit) == "rstanarm" &&
@@ -55,6 +61,31 @@ is_lme4_binomial <- function(fit) {
     grepl("^cbind\\(", as.character(formula(fit))[[2]])
 }
 
+#' Get the lhs variable name
+#' @noRd
+#' @return
+#'   - For a model formula `y ~ x` this returns `"y"`
+#'   - For a model formula `cbind(y, n - y) ~ x` this returns `"y"`
+#'   - For a brms model formula `y | trials(n)` this returns `"y"`
+#' @param fit Fitted model object (not the SurveyFit object)
+#' @return A variable name as a string
+lhs_variable_name_lme4 <- function(fit) {
+  formula_obj <- formula(fit)
+  lhs_var <- as.character(formula_obj[[2]])
+  if (lhs_var[[1]] == "cbind") {
+    lhs_var <- lhs_var[[2]]
+  }
+  lhs_var
+}
+lhs_variable_name_rstanarm <- lhs_variable_name_lme4
+lhs_variable_name_brms <- function(fit) {
+  formula_obj <- formula(fit)
+  lhs_var <- as.character(formula_obj$formula[[2]])
+  if (lhs_var[[1]] == "|") {
+    lhs_var <- lhs_var[[2]]
+  }
+  lhs_var
+}
 
 
 #' Generate approximate samples of predicted probabilities from a binomial
