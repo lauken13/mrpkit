@@ -28,7 +28,10 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
+    # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(data = levels(shape_survey$vote_for),
+    asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
     y = c("no","yes")
   ),
   weights = "wt",
@@ -138,10 +141,14 @@ poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 
 fit_1$summary(estimates_by_age)
 fit_2$summary(estimates_by_age)
-# fit_3$summary(estimates_by_age)
+fit_3$summary(estimates_by_age)
+
+fit_1$summary(estimates_by_party)
+fit_1$plot(estimates_by_party)
 
 # plot estimates by age
 fit_1$plot(estimates_by_age)
@@ -165,27 +172,27 @@ fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SurveyMap$new()}}
-\item \href{#method-print}{\code{SurveyMap$print()}}
-\item \href{#method-add}{\code{SurveyMap$add()}}
-\item \href{#method-delete}{\code{SurveyMap$delete()}}
-\item \href{#method-replace}{\code{SurveyMap$replace()}}
-\item \href{#method-validate}{\code{SurveyMap$validate()}}
-\item \href{#method-mapping}{\code{SurveyMap$mapping()}}
-\item \href{#method-tabulate}{\code{SurveyMap$tabulate()}}
-\item \href{#method-fit}{\code{SurveyMap$fit()}}
-\item \href{#method-item_map}{\code{SurveyMap$item_map()}}
-\item \href{#method-sample}{\code{SurveyMap$sample()}}
-\item \href{#method-population}{\code{SurveyMap$population()}}
-\item \href{#method-poststrat_data}{\code{SurveyMap$poststrat_data()}}
-\item \href{#method-mapped_sample_data}{\code{SurveyMap$mapped_sample_data()}}
-\item \href{#method-mapped_population_data}{\code{SurveyMap$mapped_population_data()}}
-\item \href{#method-clone}{\code{SurveyMap$clone()}}
+\item \href{#method-SurveyMap-new}{\code{SurveyMap$new()}}
+\item \href{#method-SurveyMap-print}{\code{SurveyMap$print()}}
+\item \href{#method-SurveyMap-add}{\code{SurveyMap$add()}}
+\item \href{#method-SurveyMap-delete}{\code{SurveyMap$delete()}}
+\item \href{#method-SurveyMap-replace}{\code{SurveyMap$replace()}}
+\item \href{#method-SurveyMap-validate}{\code{SurveyMap$validate()}}
+\item \href{#method-SurveyMap-mapping}{\code{SurveyMap$mapping()}}
+\item \href{#method-SurveyMap-tabulate}{\code{SurveyMap$tabulate()}}
+\item \href{#method-SurveyMap-fit}{\code{SurveyMap$fit()}}
+\item \href{#method-SurveyMap-item_map}{\code{SurveyMap$item_map()}}
+\item \href{#method-SurveyMap-sample}{\code{SurveyMap$sample()}}
+\item \href{#method-SurveyMap-population}{\code{SurveyMap$population()}}
+\item \href{#method-SurveyMap-poststrat_data}{\code{SurveyMap$poststrat_data()}}
+\item \href{#method-SurveyMap-mapped_sample_data}{\code{SurveyMap$mapped_sample_data()}}
+\item \href{#method-SurveyMap-mapped_population_data}{\code{SurveyMap$mapped_population_data()}}
+\item \href{#method-SurveyMap-clone}{\code{SurveyMap$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SurveyMap-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new SurveyMap object
 \subsection{Usage}{
@@ -205,8 +212,8 @@ Create a new SurveyMap object
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SurveyMap-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-print}{}}}
 \subsection{Method \code{print()}}{
 Print a summary of the mapping.
 \subsection{Usage}{
@@ -222,8 +229,8 @@ Print a summary of the mapping.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-add"></a>}}
-\if{latex}{\out{\hypertarget{method-add}{}}}
+\if{html}{\out{<a id="method-SurveyMap-add"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-add}{}}}
 \subsection{Method \code{add()}}{
 Add new \link{QuestionMap}s.
 \subsection{Usage}{
@@ -239,8 +246,8 @@ Add new \link{QuestionMap}s.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-delete"></a>}}
-\if{latex}{\out{\hypertarget{method-delete}{}}}
+\if{html}{\out{<a id="method-SurveyMap-delete"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-delete}{}}}
 \subsection{Method \code{delete()}}{
 Delete \link{QuestionMap}s.
 \subsection{Usage}{
@@ -256,8 +263,8 @@ Delete \link{QuestionMap}s.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-replace"></a>}}
-\if{latex}{\out{\hypertarget{method-replace}{}}}
+\if{html}{\out{<a id="method-SurveyMap-replace"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-replace}{}}}
 \subsection{Method \code{replace()}}{
 Replace one \link{QuestionMap} with another.
 \subsection{Usage}{
@@ -275,8 +282,8 @@ Replace one \link{QuestionMap} with another.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-validate}{}}}
+\if{html}{\out{<a id="method-SurveyMap-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-validate}{}}}
 \subsection{Method \code{validate()}}{
 Validate the mapping
 \subsection{Usage}{
@@ -285,8 +292,8 @@ Validate the mapping
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapping"></a>}}
-\if{latex}{\out{\hypertarget{method-mapping}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapping"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapping}{}}}
 \subsection{Method \code{mapping()}}{
 The mapping method uses the given maps between questions to create new sample and population data
 that has unified variable names (i.e., if the underlying construct is called \code{age}, both sample and population will have
@@ -300,8 +307,8 @@ made according the the sample level names. If multiple levels are combined, the 
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-tabulate"></a>}}
-\if{latex}{\out{\hypertarget{method-tabulate}{}}}
+\if{html}{\out{<a id="method-SurveyMap-tabulate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-tabulate}{}}}
 \subsection{Method \code{tabulate()}}{
 Prepare the poststratification table
 \subsection{Usage}{
@@ -317,8 +324,8 @@ Prepare the poststratification table
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-fit}{}}}
+\if{html}{\out{<a id="method-SurveyMap-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-fit}{}}}
 \subsection{Method \code{fit()}}{
 Fit a model.
 \subsection{Usage}{
@@ -346,8 +353,8 @@ A \link{SurveyFit} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-item_map"></a>}}
-\if{latex}{\out{\hypertarget{method-item_map}{}}}
+\if{html}{\out{<a id="method-SurveyMap-item_map"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-item_map}{}}}
 \subsection{Method \code{item_map()}}{
 Access the \code{item_map}
 \subsection{Usage}{
@@ -356,8 +363,8 @@ Access the \code{item_map}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-sample"></a>}}
-\if{latex}{\out{\hypertarget{method-sample}{}}}
+\if{html}{\out{<a id="method-SurveyMap-sample"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-sample}{}}}
 \subsection{Method \code{sample()}}{
 Access the \link{SurveyData} object containing the sample data
 \subsection{Usage}{
@@ -366,8 +373,8 @@ Access the \link{SurveyData} object containing the sample data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-population"></a>}}
-\if{latex}{\out{\hypertarget{method-population}{}}}
+\if{html}{\out{<a id="method-SurveyMap-population"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-population}{}}}
 \subsection{Method \code{population()}}{
 Access the \link{SurveyData} object containing the population data
 \subsection{Usage}{
@@ -376,8 +383,8 @@ Access the \link{SurveyData} object containing the population data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-poststrat_data"></a>}}
-\if{latex}{\out{\hypertarget{method-poststrat_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-poststrat_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-poststrat_data}{}}}
 \subsection{Method \code{poststrat_data()}}{
 Access the poststratification data frame created by the \code{tabulate} method
 \subsection{Usage}{
@@ -386,8 +393,8 @@ Access the poststratification data frame created by the \code{tabulate} method
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapped_sample_data"></a>}}
-\if{latex}{\out{\hypertarget{method-mapped_sample_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapped_sample_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapped_sample_data}{}}}
 \subsection{Method \code{mapped_sample_data()}}{
 Access the data frame containing the mapped sample data
 created by the \code{mapping} method
@@ -406,8 +413,8 @@ for internal use.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-mapped_population_data"></a>}}
-\if{latex}{\out{\hypertarget{method-mapped_population_data}{}}}
+\if{html}{\out{<a id="method-SurveyMap-mapped_population_data"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-mapped_population_data}{}}}
 \subsection{Method \code{mapped_population_data()}}{
 Access the data frame containing the mapped population data
 created by the \code{mapping} method
@@ -426,8 +433,8 @@ for internal use.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SurveyMap-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyMap-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -24,7 +24,10 @@ box_prefs <- SurveyData$new(
   responses = list(
     age = levels(shape_survey$age),
     gender = levels(shape_survey$gender),
-    vote_for = levels(shape_survey$vote_for),
+    # Here we use a dataframe for the responses because the levels in the data are abridged versions of the actual responses
+    # This can be useful when surveys have brief/non descriptive responses.
+    vote_for = data.frame(data = levels(shape_survey$vote_for),
+    asked = c("Box Party Faction A", "Box Party Faction B", "Circle Party Coalition", "Circle Party")),
     y = c("no","yes")
   ),
   weights = "wt",
@@ -134,10 +137,14 @@ poststrat_estimates <- fit_1$population_predict()
 
 # estimates by age level
 estimates_by_age <- fit_1$aggregate(poststrat_estimates, by = "age")
+estimates_by_party <- fit_1$aggregate(poststrat_estimates, by = "party_pref")
 
 fit_1$summary(estimates_by_age)
 fit_2$summary(estimates_by_age)
-# fit_3$summary(estimates_by_age)
+fit_3$summary(estimates_by_age)
+
+fit_1$summary(estimates_by_party)
+fit_1$plot(estimates_by_party)
 
 # plot estimates by age
 fit_1$plot(estimates_by_age)
@@ -161,21 +168,21 @@ fit_1$plot(estimates_popn, additional_stats = c("wtd","raw","mrp"))
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SurveyFit$new()}}
-\item \href{#method-fit}{\code{SurveyFit$fit()}}
-\item \href{#method-map}{\code{SurveyFit$map()}}
-\item \href{#method-formula}{\code{SurveyFit$formula()}}
-\item \href{#method-print}{\code{SurveyFit$print()}}
-\item \href{#method-population_predict}{\code{SurveyFit$population_predict()}}
-\item \href{#method-aggregate}{\code{SurveyFit$aggregate()}}
-\item \href{#method-summary}{\code{SurveyFit$summary()}}
-\item \href{#method-plot}{\code{SurveyFit$plot()}}
-\item \href{#method-clone}{\code{SurveyFit$clone()}}
+\item \href{#method-SurveyFit-new}{\code{SurveyFit$new()}}
+\item \href{#method-SurveyFit-fit}{\code{SurveyFit$fit()}}
+\item \href{#method-SurveyFit-map}{\code{SurveyFit$map()}}
+\item \href{#method-SurveyFit-formula}{\code{SurveyFit$formula()}}
+\item \href{#method-SurveyFit-print}{\code{SurveyFit$print()}}
+\item \href{#method-SurveyFit-population_predict}{\code{SurveyFit$population_predict()}}
+\item \href{#method-SurveyFit-aggregate}{\code{SurveyFit$aggregate()}}
+\item \href{#method-SurveyFit-summary}{\code{SurveyFit$summary()}}
+\item \href{#method-SurveyFit-plot}{\code{SurveyFit$plot()}}
+\item \href{#method-SurveyFit-clone}{\code{SurveyFit$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SurveyFit-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{SurveyFit} object. This method is called
 internally by the \verb{$fit()} method of the \code{\link{SurveyMap}} object and does
@@ -197,8 +204,8 @@ not need to be called directly by the user.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-fit}{}}}
+\if{html}{\out{<a id="method-SurveyFit-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-fit}{}}}
 \subsection{Method \code{fit()}}{
 Access the fitted model object
 \subsection{Usage}{
@@ -207,8 +214,8 @@ Access the fitted model object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-map"></a>}}
-\if{latex}{\out{\hypertarget{method-map}{}}}
+\if{html}{\out{<a id="method-SurveyFit-map"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-map}{}}}
 \subsection{Method \code{map()}}{
 Access the SurveyMap object
 \subsection{Usage}{
@@ -217,8 +224,8 @@ Access the SurveyMap object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-formula"></a>}}
-\if{latex}{\out{\hypertarget{method-formula}{}}}
+\if{html}{\out{<a id="method-SurveyFit-formula"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-formula}{}}}
 \subsection{Method \code{formula()}}{
 Access the SurveyMap object
 \subsection{Usage}{
@@ -227,8 +234,8 @@ Access the SurveyMap object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SurveyFit-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-print}{}}}
 \subsection{Method \code{print()}}{
 Call the fitted model object's print method
 \subsection{Usage}{
@@ -244,8 +251,8 @@ Call the fitted model object's print method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-population_predict"></a>}}
-\if{latex}{\out{\hypertarget{method-population_predict}{}}}
+\if{html}{\out{<a id="method-SurveyFit-population_predict"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-population_predict}{}}}
 \subsection{Method \code{population_predict()}}{
 Use fitted model to add predicted probabilities to post-stratification dataset.
 \subsection{Usage}{
@@ -280,8 +287,8 @@ in the case of \pkg{lme4} models).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-aggregate"></a>}}
-\if{latex}{\out{\hypertarget{method-aggregate}{}}}
+\if{html}{\out{<a id="method-SurveyFit-aggregate"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-aggregate}{}}}
 \subsection{Method \code{aggregate()}}{
 Aggregate estimates to the population level or by level of a grouping variable
 \subsection{Usage}{
@@ -309,8 +316,8 @@ variable each row corresponds to.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-SurveyFit-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-summary}{}}}
 \subsection{Method \code{summary()}}{
 Creates a set of summary statistics of the mrp estimate,
 and corresponding weighted and raw data estimates
@@ -333,8 +340,8 @@ then produces a dataframe with number of rows equal to three times the number of
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-SurveyFit-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot takes the aggregated MRP estimates and produces a quick
 visualization of total and sub-population estimates.
@@ -365,8 +372,8 @@ level).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SurveyFit-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SurveyFit-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

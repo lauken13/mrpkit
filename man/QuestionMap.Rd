@@ -36,17 +36,17 @@ q_gender <- QuestionMap$new(
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{QuestionMap$new()}}
-\item \href{#method-print}{\code{QuestionMap$print()}}
-\item \href{#method-name}{\code{QuestionMap$name()}}
-\item \href{#method-col_names}{\code{QuestionMap$col_names()}}
-\item \href{#method-values}{\code{QuestionMap$values()}}
-\item \href{#method-clone}{\code{QuestionMap$clone()}}
+\item \href{#method-QuestionMap-new}{\code{QuestionMap$new()}}
+\item \href{#method-QuestionMap-print}{\code{QuestionMap$print()}}
+\item \href{#method-QuestionMap-name}{\code{QuestionMap$name()}}
+\item \href{#method-QuestionMap-col_names}{\code{QuestionMap$col_names()}}
+\item \href{#method-QuestionMap-values}{\code{QuestionMap$values()}}
+\item \href{#method-QuestionMap-clone}{\code{QuestionMap$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-QuestionMap-new"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{QuestionMap}
 \subsection{Usage}{
@@ -68,7 +68,10 @@ data (second element).}
 responses to the question in the sample data and the values correspond
 to the responses in the population data. If there is a meaningful
 ordering over the values, they should be listed in that order, either
-descending or ascending. See \strong{Examples}.}
+descending or ascending. Note that if responses were given with both the
+values in the data and the actual responses given (useful as these will
+be used for plotting), mapping should use the values in the data
+(generally shorter). See \strong{Examples}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -78,8 +81,8 @@ object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-QuestionMap-print"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-print}{}}}
 \subsection{Method \code{print()}}{
 Print a \code{QuestionMap}.
 \subsection{Usage}{
@@ -98,8 +101,8 @@ The \code{QuestionMap} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-name"></a>}}
-\if{latex}{\out{\hypertarget{method-name}{}}}
+\if{html}{\out{<a id="method-QuestionMap-name"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-name}{}}}
 \subsection{Method \code{name()}}{
 Access \code{name}
 \subsection{Usage}{
@@ -108,8 +111,8 @@ Access \code{name}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-col_names"></a>}}
-\if{latex}{\out{\hypertarget{method-col_names}{}}}
+\if{html}{\out{<a id="method-QuestionMap-col_names"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-col_names}{}}}
 \subsection{Method \code{col_names()}}{
 Access \code{col_names}
 \subsection{Usage}{
@@ -118,8 +121,8 @@ Access \code{col_names}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-values"></a>}}
-\if{latex}{\out{\hypertarget{method-values}{}}}
+\if{html}{\out{<a id="method-QuestionMap-values"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-values}{}}}
 \subsection{Method \code{values()}}{
 Access \code{values}
 \subsection{Usage}{
@@ -128,8 +131,8 @@ Access \code{values}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-QuestionMap-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-QuestionMap-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
