@@ -100,10 +100,11 @@ SurveyFit <- R6::R6Class(
         } else if ("brmsfit" %in% class(private$fit_)) {
           require_suggested_package("brms")
           return(
-            t(brms::posterior_epred(
+            t(brms::posterior_linpred(
               object = private$fit_,
               newdata = poststrat,
               dpar = "mu",
+              transform = TRUE,
               allow_new_levels = TRUE,
               sample_new_levels =
                 if (!is.null(args$sample_new_levels)) args$sample_new_levels
