@@ -392,13 +392,13 @@ meet certain requirements.
 \describe{
 \item{\code{fun}}{The model fitting function to use. For example,
 \code{fun=rstanarm::stan_glmer}, \code{fun=brms::brm}, \code{fun=lme4::glmer}. If
-using a custom \code{fun} it must have a \code{formula} argument and a \code{data}
-argument that accepts a data frame (like standard R modeling
-functions). Other arguments can be passed via \code{...}. The \code{formula}
-argument will be taken from the \code{formula} argument below and the \code{data}
-argument will be automatically set to the the mapped data created by
-the \code{mapping} method (you can access this data via the
-\code{mapped_sample_data} method).}
+using a custom \code{fun} it must have a \code{formula} argument (and use
+standard \R formula syntax) and a \code{data} argument that accepts a data
+frame (like standard R modeling functions). Other arguments can be
+passed via \code{...}. The \code{formula} argument will be taken from the
+\code{formula} argument below and the \code{data} argument will be automatically
+set to the the mapped data created by the \code{mapping} method (you can
+access this data via the \code{mapped_sample_data} method).}
 
 \item{\code{formula}}{The model formula. Can be either a string or a formula
 object.}

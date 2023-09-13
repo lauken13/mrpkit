@@ -525,13 +525,13 @@ SurveyMap <- R6::R6Class(
     #' meet certain requirements.
     #' @param fun The model fitting function to use. For example,
     #'   `fun=rstanarm::stan_glmer`, `fun=brms::brm`, `fun=lme4::glmer`. If
-    #'   using a custom `fun` it must have a `formula` argument and a `data`
-    #'   argument that accepts a data frame (like standard R modeling
-    #'   functions). Other arguments can be passed via `...`. The `formula`
-    #'   argument will be taken from the `formula` argument below and the `data`
-    #'   argument will be automatically set to the the mapped data created by
-    #'   the `mapping` method (you can access this data via the
-    #'   `mapped_sample_data` method).
+    #'   using a custom `fun` it must have a `formula` argument (and use
+    #'   standard \R formula syntax) and a `data` argument that accepts a data
+    #'   frame (like standard R modeling functions). Other arguments can be
+    #'   passed via `...`. The `formula` argument will be taken from the
+    #'   `formula` argument below and the `data` argument will be automatically
+    #'   set to the the mapped data created by the `mapping` method (you can
+    #'   access this data via the `mapped_sample_data` method).
     #' @param formula The model formula. Can be either a string or a formula
     #'   object.
     #' @param ... Arguments other than `formula` and `data` to pass to `fun`.
