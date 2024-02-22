@@ -777,3 +777,17 @@ test_that("exact matches don't cause an error", {
   expect_silent(mapper$mapping())
 })
 
+test_that("SurveyMap$fit() errors if weights are provided",{
+  ex_map <- SurveyMap$new(samp, popn, q_age, q_pet, q_gender)
+  ex_map$mapping()
+  ex_map$tabulate()
+  expect_error(
+    ex_map$fit(
+      formula = y ~ (1|age) + (1|gender),
+      fun = lme4::lmer,
+      weights = 1
+    ),
+    "The 'weights' argument is not allowed when fitting models"
+  )
+})
+

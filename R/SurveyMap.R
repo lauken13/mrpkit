@@ -544,6 +544,10 @@ SurveyMap <- R6::R6Class(
         stop("The 'data' argument should not be specified.",
              call. = FALSE)
       }
+      if (!is.null(args$weights)) {
+        stop("The 'weights' argument is not allowed when fitting models.",
+             call. = FALSE)
+      }
       if ("family" %in% names(formals(fun)) &&
           !family_is_binomial(args$family)) {
         stop("Currently only binomial and bernoulli models are supported.",
