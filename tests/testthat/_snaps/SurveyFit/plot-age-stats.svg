@@ -114,19 +114,19 @@
 <text x='618.18' y='516.90' text-anchor='middle' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='55.05px' lengthAdjust='spacingAndGlyphs'>66-75 + 76-90</text>
 <text x='377.33' y='529.04' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='148.61px' lengthAdjust='spacingAndGlyphs'>Please identify your age group</text>
 <text transform='translate(13.05,264.35) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='90.98px' lengthAdjust='spacingAndGlyphs'>Proportion of "yes"</text>
-<rect x='307.97' y='542.28' width='138.71' height='28.24' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<rect x='318.93' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
-<circle cx='327.57' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #7B3294; fill: #7B3294;' />
-<line x1='320.66' y1='556.40' x2='334.48' y2='556.40' style='stroke-width: 1.07; stroke: #7B3294; stroke-opacity: 0.80; stroke-linecap: butt;' />
-<rect x='361.35' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
-<circle cx='369.99' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #252525; fill: #252525;' />
-<line x1='363.08' y1='556.40' x2='376.90' y2='556.40' style='stroke-width: 1.07; stroke: #252525; stroke-opacity: 0.80; stroke-linecap: butt;' />
-<rect x='404.75' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
-<circle cx='413.39' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #008837; fill: #008837;' />
-<line x1='406.48' y1='556.40' x2='420.30' y2='556.40' style='stroke-width: 1.07; stroke: #008837; stroke-opacity: 0.80; stroke-linecap: butt;' />
-<text x='341.69' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='14.18px' lengthAdjust='spacingAndGlyphs'>raw</text>
-<text x='384.11' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='15.16px' lengthAdjust='spacingAndGlyphs'>mrp</text>
-<text x='427.51' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='13.70px' lengthAdjust='spacingAndGlyphs'>wtd</text>
+<rect x='310.71' y='542.28' width='133.23' height='28.24' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<rect x='316.19' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
+<circle cx='324.83' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #7B3294; fill: #7B3294;' />
+<line x1='317.92' y1='556.40' x2='331.74' y2='556.40' style='stroke-width: 1.07; stroke: #7B3294; stroke-opacity: 0.80; stroke-linecap: butt;' />
+<rect x='358.61' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
+<circle cx='367.25' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #252525; fill: #252525;' />
+<line x1='360.34' y1='556.40' x2='374.16' y2='556.40' style='stroke-width: 1.07; stroke: #252525; stroke-opacity: 0.80; stroke-linecap: butt;' />
+<rect x='402.01' y='547.76' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
+<circle cx='410.65' cy='556.40' r='1.95' style='stroke-width: 0.71; stroke: #008837; fill: #008837;' />
+<line x1='403.74' y1='556.40' x2='417.56' y2='556.40' style='stroke-width: 1.07; stroke: #008837; stroke-opacity: 0.80; stroke-linecap: butt;' />
+<text x='338.95' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='14.18px' lengthAdjust='spacingAndGlyphs'>raw</text>
+<text x='381.37' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='15.16px' lengthAdjust='spacingAndGlyphs'>mrp</text>
+<text x='424.77' y='559.43' style='font-size: 8.80px; font-family: sans;' textLength='13.70px' lengthAdjust='spacingAndGlyphs'>wtd</text>
 <text x='40.13' y='14.56' style='font-size: 13.20px; font-family: sans;' textLength='59.46px' lengthAdjust='spacingAndGlyphs'>Response</text>
 </g>
 </svg>
